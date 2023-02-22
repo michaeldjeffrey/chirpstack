@@ -195,6 +195,12 @@ message DeviceProfile {
     // e.g. to provide an 8 channel and 16 channel configuration for the US915
     // band.
     string region_config_id = 29;
+
+    // Device is a Relay device.
+    // Enable this in case the device is a Relay. A Relay device implements TS011
+    // and is able to relay data from relay capable devices.
+    // See for more information the TS011 specification.
+    bool is_relay = 30;
 }
 
 message Measurement {

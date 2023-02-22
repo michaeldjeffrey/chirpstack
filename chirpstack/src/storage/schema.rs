@@ -104,6 +104,7 @@ diesel::table! {
         measurements -> Jsonb,
         auto_detect_measurements -> Bool,
         region_config_id -> Nullable<Varchar>,
+        is_relay -> Bool,
     }
 }
 
@@ -227,6 +228,14 @@ diesel::table! {
 }
 
 diesel::table! {
+    relay_device (relay_dev_eui, dev_eui) {
+        relay_dev_eui -> Bytea,
+        dev_eui -> Bytea,
+        created_at -> Timestamptz,
+    }
+}
+
+diesel::table! {
     tenant (id) {
         id -> Uuid,
         created_at -> Timestamptz,
@@ -301,6 +310,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     multicast_group_device,
     multicast_group_gateway,
     multicast_group_queue_item,
+    relay_device,
     tenant,
     tenant_user,
     user,

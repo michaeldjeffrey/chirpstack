@@ -368,7 +368,8 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     tagsMap: (f = msg.getTagsMap()) ? f.toObject(includeInstance, undefined) : [],
     measurementsMap: (f = msg.getMeasurementsMap()) ? f.toObject(includeInstance, proto.api.Measurement.toObject) : [],
     autoDetectMeasurements: jspb.Message.getBooleanFieldWithDefault(msg, 28, false),
-    regionConfigId: jspb.Message.getFieldWithDefault(msg, 29, "")
+    regionConfigId: jspb.Message.getFieldWithDefault(msg, 29, ""),
+    isRelay: jspb.Message.getBooleanFieldWithDefault(msg, 30, false)
   };
 
   if (includeInstance) {
@@ -524,6 +525,10 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
     case 29:
       var value = /** @type {string} */ (reader.readString());
       msg.setRegionConfigId(value);
+      break;
+    case 30:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setIsRelay(value);
       break;
     default:
       reader.skipField();
@@ -748,6 +753,13 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
   if (f.length > 0) {
     writer.writeString(
       29,
+      f
+    );
+  }
+  f = message.getIsRelay();
+  if (f) {
+    writer.writeBool(
+      30,
       f
     );
   }
@@ -1281,6 +1293,24 @@ proto.api.DeviceProfile.prototype.getRegionConfigId = function() {
  */
 proto.api.DeviceProfile.prototype.setRegionConfigId = function(value) {
   return jspb.Message.setProto3StringField(this, 29, value);
+};
+
+
+/**
+ * optional bool is_relay = 30;
+ * @return {boolean}
+ */
+proto.api.DeviceProfile.prototype.getIsRelay = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 30, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setIsRelay = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 30, value);
 };
 
 

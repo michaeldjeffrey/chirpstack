@@ -309,6 +309,9 @@ class DeviceProfileForm extends Component<IProps, IState> {
     dp.setPayloadCodecRuntime(v.payloadCodecRuntime);
     dp.setPayloadCodecScript(v.payloadCodecScript);
 
+    // relay
+    dp.setIsRelay(v.isRelay);
+
     // tags
     for (const elm of v.tagsMap) {
       dp.getTagsMap().set(elm[0], elm[1]);
@@ -440,9 +443,16 @@ class DeviceProfileForm extends Component<IProps, IState> {
                                     tabActive: "7",
                                   },
                                   () => {
-                                    this.setState({
-                                      tabActive: tabActive,
-                                    });
+                                    this.setState(
+                                      {
+                                        tabActive: "8",
+                                      },
+                                      () => {
+                                        this.setState({
+                                          tabActive: tabActive,
+                                        });
+                                      },
+                                    );
                                   },
                                 );
                               },
@@ -769,7 +779,12 @@ class DeviceProfileForm extends Component<IProps, IState> {
               />
             )}
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Tags" key="6">
+          <Tabs.TabPane tab="Relay" key="6">
+            <Form.Item label="Device is a Relay" name="isRelay" valuePropName="checked">
+              <Switch disabled={this.props.disabled} />
+            </Form.Item>
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Tags" key="7">
             <Form.List name="tagsMap">
               {(fields, { add, remove }) => (
                 <>
@@ -815,7 +830,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
               )}
             </Form.List>
           </Tabs.TabPane>
-          <Tabs.TabPane tab="Measurements" key="7">
+          <Tabs.TabPane tab="Measurements" key="8">
             <Card bordered={false}>
               <p>
                 ChirpStack can aggregate and visualize decoded device measurements in the device dashboard. To setup the
