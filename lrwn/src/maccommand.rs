@@ -152,6 +152,8 @@ pub enum MACCommand {
     // Relay
     RelayConfReq(RelayConfReqPayload),
     RelayConfAns(RelayConfAnsPayload),
+    EndDeviceConfReq(EndDeviceConfReqPayload),
+    EndDeviceConfAns(EndDeviceConfAnsPayload),
     // Raw
     Raw(Vec<u8>),
 }
@@ -200,6 +202,8 @@ impl MACCommand {
             // Relay
             MACCommand::RelayConfReq(_) => CID::RelayConfReq,
             MACCommand::RelayConfAns(_) => CID::RelayConfAns,
+            MACCommand::EndDeviceConfReq(_) => CID::EndDeviceConfReq,
+            MACCommand::EndDeviceConfAns(_) => CID::EndDeviceConfAns,
             // Raw
             MACCommand::Raw(_) => CID::Raw,
         }
@@ -470,6 +474,14 @@ impl MACCommandSet {
                     out.push(0x40);
                     out.extend_from_slice(&pl.to_bytes());
                 }
+                MACCommand::EndDeviceConfReq(pl) => {
+                    out.push(0x41);
+                    out.extend_from_slice(&pl.to_bytes()?);
+                }
+                MACCommand::EndDeviceConfAns(pl) => {
+                    out.push(0x41);
+                    out.extend_from_slice(&pl.to_bytes());
+                }
                 // Raw
                 MACCommand::Raw(v) => out.extend_from_slice(v),
             };
@@ -637,6 +649,16 @@ impl MACCommandSet {
                                 index += RelayConfReqPayload::SIZE;
                                 commands.push(MACCommand::RelayConfReq(
                                     RelayConfReqPayload::from_slice(try_slice(
+                                        b,
+                                        pl_index,
+                                        index + 1,
+                                    )?)?,
+                                ));
+                            }
+                            0x41 => {
+                                index += EndDeviceConfAnsPayload::SIZE;
+                                commands.push(MACCommand::EndDeviceConfAns(
+                                    EndDeviceConfAnsPayload::from_slice(try_slice(
                                         b,
                                         pl_index,
                                         index + 1,
@@ -824,6 +846,16 @@ impl MACCommandSet {
                                 index += RelayConfAnsPayload::SIZE;
                                 commands.push(MACCommand::RelayConfAns(
                                     RelayConfAnsPayload::from_slice(try_slice(
+                                        b,
+                                        pl_index,
+                                        index + 1,
+                                    )?)?,
+                                ));
+                            }
+                            0x41 => {
+                                index += EndDeviceConfReqPayload::SIZE;
+                                commands.push(MACCommand::EndDeviceConfReq(
+                                    EndDeviceConfReqPayload::from_slice(try_slice(
                                         b,
                                         pl_index,
                                         index + 1,
@@ -1905,7 +1937,7 @@ impl ChannelSettingsRelay {
             return Err(anyhow!("max value of start_stop is 1"));
         }
         if self.cad_periodicity > 7 {
-            return Err(anyhow!("max value of cad_periodicity is 8"));
+            return Err(anyhow!("max value of cad_periodicity is 7"));
         }
         if self.default_ch_idx > 1 {
             return Err(anyhow!("max value of default_ch_idx is 1"));
@@ -2053,6 +2085,209 @@ impl RelayConfAnsPayload {
 
         if self.cad_periodicity_ack {
             b |= 0x20;
+        }
+
+        [b]
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+pub enum RelayModeActivation {
+    DisableRelayMode,
+    EnableRelayMode,
+    Dynamic,
+    EndDeviceControlled,
+}
+
+impl RelayModeActivation {
+    pub fn to_u8(&self) -> u8 {
+        match self {
+            RelayModeActivation::DisableRelayMode => 0x00,
+            RelayModeActivation::EnableRelayMode => 0x01,
+            RelayModeActivation::Dynamic => 0x02,
+            RelayModeActivation::EndDeviceControlled => 0x03,
+        }
+    }
+
+    pub fn from_u8(v: u8) -> Result<Self> {
+        Ok(match v {
+            0x00 => RelayModeActivation::DisableRelayMode,
+            0x01 => RelayModeActivation::EnableRelayMode,
+            0x02 => RelayModeActivation::Dynamic,
+            0x03 => RelayModeActivation::EndDeviceControlled,
+            _ => {
+                return Err(anyhow!("invalid RelayModeActivation: {}", v));
+            }
+        })
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct ActivationRelayMode {
+    pub relay_mode_activation: RelayModeActivation,
+    pub smart_enable_level: u8,
+}
+
+impl ActivationRelayMode {
+    const SIZE: usize = 1;
+
+    pub fn from_bytes(b: [u8; Self::SIZE]) -> Result<Self> {
+        Ok(ActivationRelayMode {
+            relay_mode_activation: RelayModeActivation::from_u8((b[0] & 0x0c) >> 2)?,
+            smart_enable_level: b[0] & 0x03,
+        })
+    }
+
+    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+        if self.smart_enable_level > 3 {
+            return Err(anyhow!("max value of smart_enable_level is 3"));
+        }
+
+        Ok([(self.relay_mode_activation.to_u8() << 2) | self.smart_enable_level])
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct ChannelSettingsED {
+    pub second_ch_ack_offset: u8,
+    pub second_ch_dr: u8,
+    pub second_ch_idx: u8,
+    pub backoff: u8,
+}
+
+impl ChannelSettingsED {
+    const SIZE: usize = 2;
+
+    pub fn from_slice(b: &[u8]) -> Result<Self> {
+        if b.len() != Self::SIZE {
+            return Err(anyhow!("ChannelSettingsED expects 2 bytes"));
+        }
+
+        Ok(ChannelSettingsED {
+            second_ch_ack_offset: b[0] & 0x07,
+            second_ch_dr: (b[0] & 0x78) >> 3,
+            second_ch_idx: (b[0] & 0x80) >> 7 | (b[1] & 0x01) << 1,
+            backoff: (b[1] & 0x7e) >> 1,
+        })
+    }
+
+    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+        if self.second_ch_ack_offset > 7 {
+            return Err(anyhow!("max value of second_ch_ack_offset is 7"));
+        }
+        if self.second_ch_dr > 15 {
+            return Err(anyhow!("max value of second_ch_dr is 15"));
+        }
+        if self.second_ch_idx > 3 {
+            return Err(anyhow!("max value of second_ch_idx is 3"));
+        }
+        if self.backoff > 63 {
+            return Err(anyhow!("max value of backoff is 63"));
+        }
+
+        Ok([
+            self.second_ch_ack_offset | (self.second_ch_dr << 3) | (self.second_ch_idx << 7),
+            (self.second_ch_idx >> 1) | (self.backoff << 1),
+        ])
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct EndDeviceConfReqPayload {
+    pub activation_relay_mode: ActivationRelayMode,
+    pub channel_settings_ed: ChannelSettingsED,
+    pub second_ch_freq: u32,
+}
+
+impl EndDeviceConfReqPayload {
+    const SIZE: usize = 6;
+
+    pub fn from_slice(b: &[u8]) -> Result<Self> {
+        if b.len() != Self::SIZE {
+            return Err(anyhow!("EndDeviceConfReqPayload expects 6 bytes"));
+        }
+
+        Ok(EndDeviceConfReqPayload {
+            second_ch_freq: {
+                let mut freq_b: [u8; 4] = [0; 4];
+                freq_b[0..3].copy_from_slice(&b[0..3]);
+                let freq = u32::from_le_bytes(freq_b);
+
+                if freq >= 12000000 {
+                    // 2.4GHz frequency
+                    freq * 200
+                } else {
+                    freq * 100
+                }
+            },
+            channel_settings_ed: ChannelSettingsED::from_slice(&b[3..5])?,
+            activation_relay_mode: ActivationRelayMode::from_bytes([b[5]])?,
+        })
+    }
+
+    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+        let mut freq = self.second_ch_freq;
+
+        // Support LoRaWAN 2.4GHz, in which case the stepping is 200Hz:
+        // See Frequency Encoding in MAC Commands
+        // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/physical-layer-proposal-2.4ghz/
+        if freq >= 2400000000 {
+            freq /= 2;
+        }
+
+        if freq / 100 >= (1 << 24) {
+            return Err(anyhow!("max freq value is 2^24 - 1"));
+        }
+        if freq % 100 != 0 {
+            return Err(anyhow!("freq must be multiple of 100"));
+        }
+
+        let mut b: [u8; Self::SIZE] = [0; Self::SIZE];
+        b[0..3].copy_from_slice(&(freq / 100).to_le_bytes());
+        b[3..5].copy_from_slice(&self.channel_settings_ed.to_bytes()?);
+        b[5..6].copy_from_slice(&self.activation_relay_mode.to_bytes()?);
+        Ok(b)
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct EndDeviceConfAnsPayload {
+    pub second_ch_freq_ack: bool,
+    pub second_ch_dr_ack: bool,
+    pub second_ch_idx_ack: bool,
+    pub backoff_ack: bool,
+}
+
+impl EndDeviceConfAnsPayload {
+    const SIZE: usize = 1;
+
+    pub fn from_slice(b: &[u8]) -> Result<Self> {
+        if b.len() != Self::SIZE {
+            return Err(anyhow!("EndDeviceConfAnsPayload expects 1 byte"));
+        }
+
+        Ok(EndDeviceConfAnsPayload {
+            second_ch_freq_ack: b[0] & 0x01 != 0,
+            second_ch_dr_ack: b[0] & 0x02 != 0,
+            second_ch_idx_ack: b[0] & 0x04 != 0,
+            backoff_ack: b[0] & 0x08 != 0,
+        })
+    }
+
+    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
+        let mut b: u8 = 0;
+
+        if self.second_ch_freq_ack {
+            b |= 0x01;
+        }
+        if self.second_ch_dr_ack {
+            b |= 0x02;
+        }
+        if self.second_ch_idx_ack {
+            b |= 0x04;
+        }
+        if self.backoff_ack {
+            b |= 0x08;
         }
 
         [b]
