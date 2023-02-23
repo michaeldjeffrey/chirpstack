@@ -10,6 +10,7 @@ use super::dl_settings::DLSettings;
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy, Hash)]
 pub enum CID {
+    // LoRaWAN
     ResetInd,
     ResetConf,
     LinkCheckReq,
@@ -47,6 +48,21 @@ pub enum CID {
     BeaconFreqAns,
     DeviceModeInd,
     DeviceModeConf,
+    // Relay
+    RelayConfReq,
+    RelayConfAns,
+    EndDeviceConfReq,
+    EndDeviceConfAns,
+    FilterListReq,
+    FilterListAns,
+    UpdateUplinkListReq,
+    UpdateUplinkListAns,
+    CtrlUplinkListReq,
+    CtrlUplinkListAns,
+    ConfigureFwdLimitReq,
+    ConfigureFwdLimitAns,
+    NotifyNewEndDeviceReq,
+    // Raw
     Raw,
 }
 
@@ -59,6 +75,7 @@ impl fmt::Display for CID {
 impl CID {
     pub fn byte(&self) -> u8 {
         match self {
+            // LoRaWAN
             CID::ResetInd | CID::ResetConf => 0x01,
             CID::LinkCheckReq | CID::LinkCheckAns => 0x02,
             CID::LinkADRReq | CID::LinkADRAns => 0x03,
@@ -78,6 +95,15 @@ impl CID {
             CID::PingSlotChannelReq | CID::PingSlotChannelAns => 0x11,
             CID::BeaconFreqReq | CID::BeaconFreqAns => 0x13, // 0x12 is deprecated
             CID::DeviceModeInd | CID::DeviceModeConf => 0x20,
+            // Relay
+            CID::RelayConfReq | CID::RelayConfAns => 0x40,
+            CID::EndDeviceConfReq | CID::EndDeviceConfAns => 0x41,
+            CID::FilterListReq | CID::FilterListAns => 0x42,
+            CID::UpdateUplinkListReq | CID::UpdateUplinkListAns => 0x43,
+            CID::CtrlUplinkListReq | CID::CtrlUplinkListAns => 0x44,
+            CID::ConfigureFwdLimitReq | CID::ConfigureFwdLimitAns => 0x45,
+            CID::NotifyNewEndDeviceReq => 0x46,
+            // Raw
             CID::Raw => 0xff,
         }
     }
@@ -85,6 +111,7 @@ impl CID {
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub enum MACCommand {
+    // LoRaWAN
     ResetInd(ResetIndPayload),
     ResetConf(ResetConfPayload),
     LinkCheckReq,
@@ -122,12 +149,17 @@ pub enum MACCommand {
     BeaconFreqAns(BeaconFreqAnsPayload),
     DeviceModeInd(DeviceModeIndPayload),
     DeviceModeConf(DeviceModeConfPayload),
+    // Relay
+    RelayConfReq(RelayConfReqPayload),
+    RelayConfAns(RelayConfAnsPayload),
+    // Raw
     Raw(Vec<u8>),
 }
 
 impl MACCommand {
     pub fn cid(&self) -> CID {
         match self {
+            // LoRaWAN
             MACCommand::ResetInd(_) => CID::ResetInd,
             MACCommand::ResetConf(_) => CID::ResetConf,
             MACCommand::LinkCheckReq => CID::LinkCheckReq,
@@ -165,6 +197,10 @@ impl MACCommand {
             MACCommand::BeaconFreqAns(_) => CID::BeaconFreqAns, // 0x12 is deprecated
             MACCommand::DeviceModeInd(_) => CID::DeviceModeInd,
             MACCommand::DeviceModeConf(_) => CID::DeviceModeConf,
+            // Relay
+            MACCommand::RelayConfReq(_) => CID::RelayConfReq,
+            MACCommand::RelayConfAns(_) => CID::RelayConfAns,
+            // Raw
             MACCommand::Raw(_) => CID::Raw,
         }
     }
@@ -284,6 +320,7 @@ impl MACCommandSet {
 
         for mac in &self.0 {
             match mac {
+                // LoRaWAN
                 MACCommand::ResetInd(pl) => {
                     out.push(0x01);
                     out.extend_from_slice(&pl.to_bytes());
@@ -424,6 +461,16 @@ impl MACCommandSet {
                     out.push(0x20);
                     out.extend_from_slice(&pl.to_bytes());
                 }
+                // Relay
+                MACCommand::RelayConfReq(pl) => {
+                    out.push(0x40);
+                    out.extend_from_slice(&pl.to_bytes()?);
+                }
+                MACCommand::RelayConfAns(pl) => {
+                    out.push(0x40);
+                    out.extend_from_slice(&pl.to_bytes());
+                }
+                // Raw
                 MACCommand::Raw(v) => out.extend_from_slice(v),
             };
         }
@@ -454,6 +501,7 @@ impl MACCommandSet {
 
                     match uplink {
                         true => match b[cid_index] {
+                            // LoRaWAN
                             0x01 => {
                                 index += ResetIndPayload::SIZE;
                                 commands.push(MACCommand::ResetInd(ResetIndPayload::from_slice(
@@ -584,12 +632,25 @@ impl MACCommandSet {
                                     )?)?,
                                 ));
                             }
+                            // Relay
+                            0x40 => {
+                                index += RelayConfReqPayload::SIZE;
+                                commands.push(MACCommand::RelayConfReq(
+                                    RelayConfReqPayload::from_slice(try_slice(
+                                        b,
+                                        pl_index,
+                                        index + 1,
+                                    )?)?,
+                                ));
+                            }
+                            // Raw
                             _ => {
                                 index += b[index..].len() - 1;
                                 commands.push(MACCommand::Raw(b[index..].to_vec()));
                             }
                         },
                         false => match b[index] {
+                            // LoRaWAN
                             0x01 => {
                                 index += ResetConfPayload::SIZE;
                                 commands.push(MACCommand::ResetConf(ResetConfPayload::from_slice(
@@ -758,6 +819,18 @@ impl MACCommandSet {
                                     )?)?,
                                 ));
                             }
+                            // Relay
+                            0x40 => {
+                                index += RelayConfAnsPayload::SIZE;
+                                commands.push(MACCommand::RelayConfAns(
+                                    RelayConfAnsPayload::from_slice(try_slice(
+                                        b,
+                                        pl_index,
+                                        index + 1,
+                                    )?)?,
+                                ));
+                            }
+                            // Raw
                             _ => {
                                 index += b[index..].len() - 1;
                                 commands.push(MACCommand::Raw(b[index..].to_vec()));
@@ -1811,6 +1884,178 @@ impl DeviceModeConfPayload {
 
     pub fn to_bytes(&self) -> [u8; Self::SIZE] {
         [self.class.to_u8()]
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct ChannelSettingsRelay {
+    pub start_stop: u8,
+    pub cad_periodicity: u8,
+    pub default_ch_idx: u8,
+    pub second_ch_idx: u8,
+    pub second_ch_dr: u8,
+    pub second_ch_ack_offset: u8,
+}
+
+impl ChannelSettingsRelay {
+    const SIZE: usize = 2;
+
+    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+        if self.start_stop > 1 {
+            return Err(anyhow!("max value of start_stop is 1"));
+        }
+        if self.cad_periodicity > 7 {
+            return Err(anyhow!("max value of cad_periodicity is 8"));
+        }
+        if self.default_ch_idx > 1 {
+            return Err(anyhow!("max value of default_ch_idx is 1"));
+        }
+        if self.second_ch_idx > 1 {
+            return Err(anyhow!("max value of second_ch_idx is 1"));
+        }
+        if self.second_ch_dr > 15 {
+            return Err(anyhow!("max value of second_ch_dr is 15"));
+        }
+        if self.second_ch_ack_offset > 7 {
+            return Err(anyhow!("max value of second_ch_ack_offset is 7"));
+        }
+
+        Ok([
+            self.second_ch_ack_offset | (self.second_ch_dr << 3) | (self.second_ch_idx << 7),
+            (self.second_ch_idx >> 1)
+                | (self.default_ch_idx << 1)
+                | (self.cad_periodicity << 2)
+                | (self.start_stop << 5),
+        ])
+    }
+
+    pub fn from_slice(b: &[u8]) -> Result<Self> {
+        if b.len() != Self::SIZE {
+            return Err(anyhow!("ChannelSettingsRelay expects 2 bytes"));
+        }
+
+        Ok(ChannelSettingsRelay {
+            second_ch_ack_offset: b[0] & 0x07,
+            second_ch_dr: (b[0] & 0x78) >> 3,
+            second_ch_idx: (b[0] & 0x80) >> 7 | (b[1] & 0x01) << 1,
+            default_ch_idx: (b[1] & 0x02) >> 1,
+            cad_periodicity: (b[1] & 0x1c) >> 2,
+            start_stop: (b[1] & 0x20) >> 5,
+        })
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct RelayConfReqPayload {
+    pub channel_settings_relay: ChannelSettingsRelay,
+    pub second_ch_freq: u32,
+}
+
+impl RelayConfReqPayload {
+    const SIZE: usize = 5;
+
+    pub fn from_slice(b: &[u8]) -> Result<Self> {
+        if b.len() != Self::SIZE {
+            return Err(anyhow!("RelayConfReqPayload expects 5 bytes"));
+        }
+
+        Ok(RelayConfReqPayload {
+            channel_settings_relay: ChannelSettingsRelay::from_slice(&b[3..5])?,
+            second_ch_freq: {
+                let mut freq_b: [u8; 4] = [0; 4];
+                freq_b[0..3].copy_from_slice(&b[0..3]);
+                let freq = u32::from_le_bytes(freq_b);
+
+                if freq >= 12000000 {
+                    // 2.4GHz frequency
+                    freq * 200
+                } else {
+                    freq * 100
+                }
+            },
+        })
+    }
+
+    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+        let mut freq = self.second_ch_freq;
+
+        // Support LoRaWAN 2.4GHz, in which case the stepping is 200Hz:
+        // See Frequency Encoding in MAC Commands
+        // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/physical-layer-proposal-2.4ghz/
+        if freq >= 2400000000 {
+            freq /= 2;
+        }
+
+        if freq / 100 >= (1 << 24) {
+            return Err(anyhow!("max freq value is 2^24 - 1"));
+        }
+        if freq % 100 != 0 {
+            return Err(anyhow!("freq must be multiple of 100"));
+        }
+
+        let mut b: [u8; Self::SIZE] = [0; Self::SIZE];
+        b[0..3].copy_from_slice(&(freq / 100).to_le_bytes());
+        b[3..5].copy_from_slice(&self.channel_settings_relay.to_bytes()?);
+        Ok(b)
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct RelayConfAnsPayload {
+    pub second_ch_freq_ack: bool,
+    pub second_ch_ack_offset_ack: bool,
+    pub second_ch_dr_ack: bool,
+    pub second_ch_idx_ack: bool,
+    pub default_ch_idx_ack: bool,
+    pub cad_periodicity_ack: bool,
+}
+
+impl RelayConfAnsPayload {
+    const SIZE: usize = 1;
+
+    pub fn from_slice(b: &[u8]) -> Result<Self> {
+        if b.len() != Self::SIZE {
+            return Err(anyhow!("RelayConfAnsPayload expects 1 byte"));
+        }
+
+        Ok(RelayConfAnsPayload {
+            second_ch_freq_ack: b[0] & 0x01 != 0,
+            second_ch_ack_offset_ack: b[0] & 0x02 != 0,
+            second_ch_dr_ack: b[0] & 0x04 != 0,
+            second_ch_idx_ack: b[0] & 0x08 != 0,
+            default_ch_idx_ack: b[0] & 0x10 != 0,
+            cad_periodicity_ack: b[0] & 0x20 != 0,
+        })
+    }
+
+    pub fn to_bytes(&self) -> [u8; Self::SIZE] {
+        let mut b: u8 = 0;
+
+        if self.second_ch_freq_ack {
+            b |= 0x01;
+        }
+
+        if self.second_ch_ack_offset_ack {
+            b |= 0x02;
+        }
+
+        if self.second_ch_dr_ack {
+            b |= 0x04;
+        }
+
+        if self.second_ch_idx_ack {
+            b |= 0x08;
+        }
+
+        if self.default_ch_idx_ack {
+            b |= 0x10;
+        }
+
+        if self.cad_periodicity_ack {
+            b |= 0x20;
+        }
+
+        [b]
     }
 }
 
