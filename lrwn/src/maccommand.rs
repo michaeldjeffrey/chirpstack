@@ -9,7 +9,7 @@ use serde::Serialize;
 use super::cflist::ChMask;
 use super::dl_settings::DLSettings;
 
-pub trait Payload<Struct = Self> {
+pub trait PayloadCodec<Struct = Self> {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Struct>;
     fn encode(&self) -> Result<Vec<u8>>;
 }
@@ -718,7 +718,7 @@ pub struct ResetIndPayload {
     pub dev_lorawan_version: Version,
 }
 
-impl Payload for ResetIndPayload {
+impl PayloadCodec for ResetIndPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -738,7 +738,7 @@ pub struct ResetConfPayload {
     pub serv_lorawan_version: Version,
 }
 
-impl Payload for ResetConfPayload {
+impl PayloadCodec for ResetConfPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -759,7 +759,7 @@ pub struct LinkCheckAnsPayload {
     pub gw_cnt: u8,
 }
 
-impl Payload for LinkCheckAnsPayload {
+impl PayloadCodec for LinkCheckAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 2];
         cur.read_exact(&mut b)?;
@@ -783,7 +783,7 @@ pub struct LinkADRReqPayload {
     pub redundancy: Redundancy,
 }
 
-impl Payload for LinkADRReqPayload {
+impl PayloadCodec for LinkADRReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 4];
         cur.read_exact(&mut b)?;
@@ -848,7 +848,7 @@ pub struct LinkADRAnsPayload {
     pub tx_power_ack: bool,
 }
 
-impl Payload for LinkADRAnsPayload {
+impl PayloadCodec for LinkADRAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -882,7 +882,7 @@ pub struct DutyCycleReqPayload {
     pub max_duty_cycle: u8,
 }
 
-impl Payload for DutyCycleReqPayload {
+impl PayloadCodec for DutyCycleReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -907,7 +907,7 @@ pub struct RxParamSetupReqPayload {
     pub dl_settings: DLSettings,
 }
 
-impl Payload for RxParamSetupReqPayload {
+impl PayloadCodec for RxParamSetupReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 4];
         cur.read_exact(&mut b)?;
@@ -915,11 +915,7 @@ impl Payload for RxParamSetupReqPayload {
         // TODO: check for 2.4 GHz frequency compatibility
         Ok(RxParamSetupReqPayload {
             dl_settings: DLSettings::from_le_bytes([b[0]]),
-            frequency: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[1..]);
-                u32::from_le_bytes(freq_b) * 100
-            },
+            frequency: decode_freq(&b[1..])?,
         })
     }
 
@@ -949,7 +945,7 @@ pub struct RxParamSetupAnsPayload {
     pub rx1_dr_offset_ack: bool,
 }
 
-impl Payload for RxParamSetupAnsPayload {
+impl PayloadCodec for RxParamSetupAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -982,7 +978,7 @@ pub struct DevStatusAnsPayload {
     pub margin: i8,
 }
 
-impl Payload for DevStatusAnsPayload {
+impl PayloadCodec for DevStatusAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 2];
         cur.read_exact(&mut b)?;
@@ -1025,7 +1021,7 @@ pub struct NewChannelReqPayload {
     pub max_dr: u8,
 }
 
-impl Payload for NewChannelReqPayload {
+impl PayloadCodec for NewChannelReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 5];
         cur.read_exact(&mut b)?;
@@ -1087,7 +1083,7 @@ pub struct NewChannelAnsPayload {
     pub dr_range_ok: bool,
 }
 
-impl Payload for NewChannelAnsPayload {
+impl PayloadCodec for NewChannelAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1115,7 +1111,7 @@ pub struct RxTimingSetupReqPayload {
     pub delay: u8,
 }
 
-impl Payload for RxTimingSetupReqPayload {
+impl PayloadCodec for RxTimingSetupReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1138,7 +1134,7 @@ pub struct TxParamSetupReqPayload {
     pub max_eirp: u8,
 }
 
-impl Payload for TxParamSetupReqPayload {
+impl PayloadCodec for TxParamSetupReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1185,7 +1181,7 @@ pub struct DlChannelReqPayload {
     pub freq: u32,
 }
 
-impl Payload for DlChannelReqPayload {
+impl PayloadCodec for DlChannelReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 4];
         cur.read_exact(&mut b)?;
@@ -1226,7 +1222,7 @@ pub struct DlChannelAnsPayload {
     pub channel_freq_ok: bool,
 }
 
-impl Payload for DlChannelAnsPayload {
+impl PayloadCodec for DlChannelAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1256,7 +1252,7 @@ pub struct RekeyConfPayload {
     pub serv_lorawan_version: Version,
 }
 
-impl Payload for RekeyConfPayload {
+impl PayloadCodec for RekeyConfPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1276,7 +1272,7 @@ pub struct RekeyIndPayload {
     pub dev_lorawan_version: Version,
 }
 
-impl Payload for RekeyIndPayload {
+impl PayloadCodec for RekeyIndPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1296,7 +1292,7 @@ pub struct ADRParamSetupReqPayload {
     pub adr_param: ADRParam,
 }
 
-impl Payload for ADRParamSetupReqPayload {
+impl PayloadCodec for ADRParamSetupReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1342,7 +1338,7 @@ pub struct DeviceTimeAnsPayload {
     pub time_since_gps_epoch: Duration,
 }
 
-impl Payload for DeviceTimeAnsPayload {
+impl PayloadCodec for DeviceTimeAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 5];
         cur.read_exact(&mut b)?;
@@ -1376,7 +1372,7 @@ pub struct ForceRejoinReqPayload {
     pub dr: u8,
 }
 
-impl Payload for ForceRejoinReqPayload {
+impl PayloadCodec for ForceRejoinReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 2];
         cur.read_exact(&mut b)?;
@@ -1416,7 +1412,7 @@ pub struct RejoinParamSetupReqPayload {
     pub max_count_n: u8,
 }
 
-impl Payload for RejoinParamSetupReqPayload {
+impl PayloadCodec for RejoinParamSetupReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1444,7 +1440,7 @@ pub struct RejoinParamSetupAnsPayload {
     pub time_ok: bool,
 }
 
-impl Payload for RejoinParamSetupAnsPayload {
+impl PayloadCodec for RejoinParamSetupAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1468,7 +1464,7 @@ pub struct PingSlotInfoReqPayload {
     pub periodicity: u8,
 }
 
-impl Payload for PingSlotInfoReqPayload {
+impl PayloadCodec for PingSlotInfoReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1493,7 +1489,7 @@ pub struct PingSlotChannelReqPayload {
     pub dr: u8,
 }
 
-impl Payload for PingSlotChannelReqPayload {
+impl PayloadCodec for PingSlotChannelReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 4];
         cur.read_exact(&mut b)?;
@@ -1533,7 +1529,7 @@ pub struct PingSlotChannelAnsPayload {
     pub channel_freq_ok: bool,
 }
 
-impl Payload for PingSlotChannelAnsPayload {
+impl PayloadCodec for PingSlotChannelAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1561,7 +1557,7 @@ pub struct BeaconFreqReqPayload {
     pub freq: u32,
 }
 
-impl Payload for BeaconFreqReqPayload {
+impl PayloadCodec for BeaconFreqReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 3];
         cur.read_exact(&mut b)?;
@@ -1596,7 +1592,7 @@ pub struct BeaconFreqAnsPayload {
     beacon_freq_ok: bool,
 }
 
-impl Payload for BeaconFreqAnsPayload {
+impl PayloadCodec for BeaconFreqAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1620,7 +1616,7 @@ pub struct DeviceModeIndPayload {
     pub class: DeviceModeClass,
 }
 
-impl Payload for DeviceModeIndPayload {
+impl PayloadCodec for DeviceModeIndPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1640,7 +1636,7 @@ pub struct DeviceModeConfPayload {
     pub class: DeviceModeClass,
 }
 
-impl Payload for DeviceModeConfPayload {
+impl PayloadCodec for DeviceModeConfPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1719,7 +1715,7 @@ pub struct RelayConfReqPayload {
     pub second_ch_freq: u32,
 }
 
-impl Payload for RelayConfReqPayload {
+impl PayloadCodec for RelayConfReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 5];
         cur.read_exact(&mut b)?;
@@ -1748,7 +1744,7 @@ pub struct RelayConfAnsPayload {
     pub cad_periodicity_ack: bool,
 }
 
-impl Payload for RelayConfAnsPayload {
+impl PayloadCodec for RelayConfAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -1900,7 +1896,7 @@ pub struct EndDeviceConfReqPayload {
     pub second_ch_freq: u32,
 }
 
-impl Payload for EndDeviceConfReqPayload {
+impl PayloadCodec for EndDeviceConfReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 6];
         cur.read_exact(&mut b)?;
@@ -1929,7 +1925,7 @@ pub struct EndDeviceConfAnsPayload {
     pub backoff_ack: bool,
 }
 
-impl Payload for EndDeviceConfAnsPayload {
+impl PayloadCodec for EndDeviceConfAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
@@ -2033,7 +2029,7 @@ pub struct FilterListReqPayload {
     pub filter_list_eui: Vec<u8>,
 }
 
-impl Payload for FilterListReqPayload {
+impl PayloadCodec for FilterListReqPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = vec![0; 2];
         cur.read_exact(&mut b)?;
@@ -2065,7 +2061,7 @@ pub struct FilterListAnsPayload {
     pub combined_rules_ack: bool,
 }
 
-impl Payload for FilterListAnsPayload {
+impl PayloadCodec for FilterListAnsPayload {
     fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
         let mut b = [0; 1];
         cur.read_exact(&mut b)?;
