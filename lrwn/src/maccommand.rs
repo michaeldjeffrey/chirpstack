@@ -912,7 +912,6 @@ impl PayloadCodec for RxParamSetupReqPayload {
         let mut b = [0; 4];
         cur.read_exact(&mut b)?;
 
-        // TODO: check for 2.4 GHz frequency compatibility
         Ok(RxParamSetupReqPayload {
             dl_settings: DLSettings::from_le_bytes([b[0]]),
             frequency: decode_freq(&b[1..])?,
@@ -920,20 +919,9 @@ impl PayloadCodec for RxParamSetupReqPayload {
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        // TODO: check for 2.4 GHz frequency compatibility
-        if self.frequency / 100 >= (1 << 24) {
-            return Err(anyhow!("max frequency value is 2^24-1"));
-        }
-        if self.frequency % 100 != 0 {
-            return Err(anyhow!("frequency must be a multiple of 100"));
-        }
-
         let mut b = vec![0; 4];
-
         b[0..1].copy_from_slice(&self.dl_settings.to_le_bytes()?);
-
-        let freq_b = (self.frequency / 100).to_le_bytes();
-        b[1..4].copy_from_slice(&freq_b[0..3]);
+        b[1..4].copy_from_slice(&encode_freq(self.frequency)?);
         Ok(b)
     }
 }
@@ -1028,49 +1016,16 @@ impl PayloadCodec for NewChannelReqPayload {
 
         Ok(NewChannelReqPayload {
             ch_index: b[0],
-            freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[1..4]);
-                let freq = u32::from_le_bytes(freq_b);
-
-                if freq >= 12000000 {
-                    // 2.4GHz frequency
-                    freq * 200
-                } else {
-                    freq * 100
-                }
-            },
+            freq: decode_freq(&b[1..4])?,
             min_dr: b[4] & 0x0f,
             max_dr: (b[4] & 0xf0) >> 4,
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        let mut freq = self.freq;
-
-        // Support LoRaWAN 2.4GHz, in which case the stepping is 200Hz:
-        // See Frequency Encoding in MAC Commands
-        // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/physical-layer-proposal-2.4ghz/
-        if freq >= 2400000000 {
-            freq /= 2;
-        }
-
-        if freq / 100 >= (1 << 24) {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if freq % 100 != 0 {
-            return Err(anyhow!("freq must be multiple of 100"));
-        }
-        if self.min_dr > 15 {
-            return Err(anyhow!("max min_dr value is 15"));
-        }
-        if self.max_dr > 15 {
-            return Err(anyhow!("max max_dr value is 15"));
-        }
-
         let mut b = vec![0; 5];
         b[0] = self.ch_index;
-        b[1..5].copy_from_slice(&(freq / 100).to_le_bytes());
+        b[1..4].copy_from_slice(&encode_freq(self.freq)?);
         b[4] = self.min_dr | (self.max_dr << 4);
 
         Ok(b)
@@ -1186,32 +1141,16 @@ impl PayloadCodec for DlChannelReqPayload {
         let mut b = [0; 4];
         cur.read_exact(&mut b)?;
 
-        // TODO: check for 2.4 GHz frequency compatibility
         Ok(DlChannelReqPayload {
             ch_index: b[0],
-            freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[1..4]);
-                u32::from_le_bytes(freq_b) * 100
-            },
+            freq: decode_freq(&b[1..4])?,
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        // TODO: check for 2.4 GHz frequency compatibility
-        if self.freq / 100 >= 1 << 24 {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if self.freq % 100 != 0 {
-            return Err(anyhow!("freq must be a multiple of 100"));
-        }
-
         let mut b = vec![0; 4];
         b[0] = self.ch_index;
-
-        let freq_b = (self.freq / 100).to_le_bytes();
-        b[1..4].copy_from_slice(&freq_b[0..3]);
-
+        b[1..4].copy_from_slice(&encode_freq(self.freq)?);
         Ok(b)
     }
 }
@@ -1494,32 +1433,17 @@ impl PayloadCodec for PingSlotChannelReqPayload {
         let mut b = [0; 4];
         cur.read_exact(&mut b)?;
 
-        // TODO: check 2.4 GHz frequency compatibility
         Ok(PingSlotChannelReqPayload {
-            freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[0..3]);
-                u32::from_le_bytes(freq_b) * 100
-            },
+            freq: decode_freq(&b[0..3])?,
             dr: b[3] & 0x0f,
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        if self.freq / 100 >= 1 << 24 {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if self.freq % 100 != 0 {
-            return Err(anyhow!("freq must be a multiple of 100"));
-        }
-        if self.dr > 15 {
-            return Err(anyhow!("max dr value is 15"));
-        }
-
-        let mut b = (self.freq / 100).to_le_bytes();
+        let mut b = vec![0; 4];
+        b[0..3].copy_from_slice(&encode_freq(self.freq)?);
         b[3] = self.dr;
-
-        Ok(b.to_vec())
+        Ok(b)
     }
 }
 
@@ -1562,28 +1486,13 @@ impl PayloadCodec for BeaconFreqReqPayload {
         let mut b = [0; 3];
         cur.read_exact(&mut b)?;
 
-        // TODO: check for 2.4GHz frequency compatibility
         Ok(BeaconFreqReqPayload {
-            freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b);
-                u32::from_le_bytes(freq_b) * 100
-            },
+            freq: decode_freq(&b)?,
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        if self.freq / 100 >= 1 << 24 {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if self.freq % 100 != 0 {
-            return Err(anyhow!("freq must be a multiple of 100"));
-        }
-
-        let freq_b = (self.freq / 100).to_le_bytes();
-        let mut b = vec![0; 3];
-        b[0..3].copy_from_slice(&freq_b[0..3]);
-        Ok(b)
+        Ok(encode_freq(self.freq)?.to_vec())
     }
 }
 
