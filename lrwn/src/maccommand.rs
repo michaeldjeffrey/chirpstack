@@ -216,6 +216,7 @@ pub enum MACCommand {
     FilterListReq(FilterListReqPayload),
     FilterListAns(FilterListAnsPayload),
     UpdateUplinkListReq(UpdateUplinkListReqPayload),
+    UpdateUplinkListAns,
     // Raw
     Raw(Vec<u8>),
 }
@@ -269,6 +270,7 @@ impl MACCommand {
             MACCommand::FilterListReq(_) => CID::FilterListReq,
             MACCommand::FilterListAns(_) => CID::FilterListAns,
             MACCommand::UpdateUplinkListReq(_) => CID::UpdateUplinkListReq,
+            MACCommand::UpdateUplinkListAns => CID::UpdateUplinkListAns,
             // Raw
             MACCommand::Raw(_) => CID::Raw,
         }
@@ -559,6 +561,7 @@ impl MACCommandSet {
                     out.push(mac.cid().to_u8());
                     out.extend_from_slice(&pl.encode()?);
                 }
+                MACCommand::UpdateUplinkListAns => out.push(mac.cid().to_u8()),
                 // Raw
                 MACCommand::Raw(v) => out.extend_from_slice(v),
             };
