@@ -217,6 +217,8 @@ pub enum MACCommand {
     FilterListAns(FilterListAnsPayload),
     UpdateUplinkListReq(UpdateUplinkListReqPayload),
     UpdateUplinkListAns,
+    CtrlUplinkListReq(CtrlUplinkListReqPayload),
+    CtrlUplinkListAns(CtrlUplinkListAnsPayload),
     // Raw
     Raw(Vec<u8>),
 }
@@ -271,6 +273,8 @@ impl MACCommand {
             MACCommand::FilterListAns(_) => CID::FilterListAns,
             MACCommand::UpdateUplinkListReq(_) => CID::UpdateUplinkListReq,
             MACCommand::UpdateUplinkListAns => CID::UpdateUplinkListAns,
+            MACCommand::CtrlUplinkListReq(_) => CID::CtrlUplinkListReq,
+            MACCommand::CtrlUplinkListAns(_) => CID::CtrlUplinkListAns,
             // Raw
             MACCommand::Raw(_) => CID::Raw,
         }
@@ -562,6 +566,14 @@ impl MACCommandSet {
                     out.extend_from_slice(&pl.encode()?);
                 }
                 MACCommand::UpdateUplinkListAns => out.push(mac.cid().to_u8()),
+                MACCommand::CtrlUplinkListReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::CtrlUplinkListAns(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
                 // Raw
                 MACCommand::Raw(v) => out.extend_from_slice(v),
             };
@@ -711,6 +723,12 @@ impl MACCommandSet {
                         )),
                         CID::UpdateUplinkListReq => commands.push(MACCommand::UpdateUplinkListReq(
                             UpdateUplinkListReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::CtrlUplinkListReq => commands.push(MACCommand::CtrlUplinkListReq(
+                            CtrlUplinkListReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::CtrlUplinkListAns => commands.push(MACCommand::CtrlUplinkListAns(
+                            CtrlUplinkListAnsPayload::decode(&mut cur)?,
                         )),
                         _ => todo!(),
                     }
@@ -2101,6 +2119,83 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
         b[2..6].copy_from_slice(&self.dev_addr.to_le_bytes());
         b[6..10].copy_from_slice(&self.w_fcnt.to_le_bytes());
         b[10..26].copy_from_slice(&self.root_wor_s_key.to_le_bytes());
+        Ok(b)
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct CtrlUplinkActionPL {
+    pub uplink_list_idx: u8,
+    pub ctrl_uplink_action: u8,
+}
+
+impl CtrlUplinkActionPL {
+    pub fn to_u8(&self) -> Result<u8> {
+        if self.uplink_list_idx > 15 {
+            return Err(anyhow!("max uplink_list_idx value is 15"));
+        }
+        if self.ctrl_uplink_action > 1 {
+            return Err(anyhow!("max ctrl_uplink_action is 1"));
+        }
+
+        Ok(self.uplink_list_idx | (self.ctrl_uplink_action << 4))
+    }
+
+    pub fn from_u8(v: u8) -> Self {
+        CtrlUplinkActionPL {
+            uplink_list_idx: v & 0x0f,
+            ctrl_uplink_action: (v & 0x10) >> 4,
+        }
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct CtrlUplinkListReqPayload {
+    pub ctrl_uplink_action_pl: CtrlUplinkActionPL,
+}
+
+impl PayloadCodec for CtrlUplinkListReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
+
+        Ok(CtrlUplinkListReqPayload {
+            ctrl_uplink_action_pl: CtrlUplinkActionPL::from_u8(b[0]),
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        Ok(vec![self.ctrl_uplink_action_pl.to_u8()?])
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct CtrlUplinkListAnsPayload {
+    pub uplink_list_idx_ack: bool,
+    pub w_fcnt: u32,
+}
+
+impl PayloadCodec for CtrlUplinkListAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 5];
+        cur.read_exact(&mut b)?;
+
+        Ok(CtrlUplinkListAnsPayload {
+            uplink_list_idx_ack: b[0] & 0x01 > 0,
+            w_fcnt: u32::from_le_bytes({
+                let mut bb = [0; 4];
+                bb.copy_from_slice(&b[1..5]);
+                bb
+            }),
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 5];
+        if self.uplink_list_idx_ack {
+            b[0] |= 0x01;
+        }
+        b[1..5].copy_from_slice(&self.w_fcnt.to_le_bytes());
         Ok(b)
     }
 }
