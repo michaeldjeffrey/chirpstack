@@ -1580,9 +1580,7 @@ pub struct ChannelSettingsRelay {
 }
 
 impl ChannelSettingsRelay {
-    const SIZE: usize = 2;
-
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    pub fn to_le_bytes(&self) -> Result<[u8; 2]> {
         if self.start_stop > 1 {
             return Err(anyhow!("max value of start_stop is 1"));
         }
@@ -1602,28 +1600,29 @@ impl ChannelSettingsRelay {
             return Err(anyhow!("max value of second_ch_ack_offset is 7"));
         }
 
-        Ok([
+        let mut b = [
             self.second_ch_ack_offset | (self.second_ch_dr << 3) | (self.second_ch_idx << 7),
             (self.second_ch_idx >> 1)
                 | (self.default_ch_idx << 1)
                 | (self.cad_periodicity << 2)
                 | (self.start_stop << 5),
-        ])
+        ];
+        b.reverse();
+        Ok(b)
     }
 
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("ChannelSettingsRelay expects 2 bytes"));
-        }
+    pub fn from_le_bytes(b: [u8; 2]) -> Self {
+        let mut b = b;
+        b.reverse();
 
-        Ok(ChannelSettingsRelay {
+        ChannelSettingsRelay {
             second_ch_ack_offset: b[0] & 0x07,
             second_ch_dr: (b[0] & 0x78) >> 3,
             second_ch_idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x01) << 1),
             default_ch_idx: (b[1] & 0x02) >> 1,
             cad_periodicity: (b[1] & 0x1c) >> 2,
             start_stop: (b[1] & 0x20) >> 5,
-        })
+        }
     }
 }
 
@@ -1639,14 +1638,14 @@ impl PayloadCodec for RelayConfReqPayload {
         cur.read_exact(&mut b)?;
 
         Ok(RelayConfReqPayload {
-            channel_settings_relay: ChannelSettingsRelay::from_slice(&b[0..2])?,
+            channel_settings_relay: ChannelSettingsRelay::from_le_bytes([b[0], b[1]]),
             second_ch_freq: decode_freq(&b[2..5])?,
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
         let mut b = vec![0; 5];
-        b[0..2].copy_from_slice(&self.channel_settings_relay.to_bytes()?);
+        b[0..2].copy_from_slice(&self.channel_settings_relay.to_le_bytes()?);
         b[2..5].copy_from_slice(&encode_freq(self.second_ch_freq)?);
         Ok(b)
     }
@@ -1771,22 +1770,19 @@ pub struct ChannelSettingsED {
 }
 
 impl ChannelSettingsED {
-    const SIZE: usize = 2;
+    pub fn from_le_bytes(b: [u8; 2]) -> Self {
+        let mut b = b;
+        b.reverse();
 
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != Self::SIZE {
-            return Err(anyhow!("ChannelSettingsED expects 2 bytes"));
-        }
-
-        Ok(ChannelSettingsED {
+        ChannelSettingsED {
             second_ch_ack_offset: b[0] & 0x07,
             second_ch_dr: (b[0] & 0x78) >> 3,
             second_ch_idx: (b[0] & 0x80) >> 7 | (b[1] & 0x01) << 1,
             backoff: (b[1] & 0x7e) >> 1,
-        })
+        }
     }
 
-    pub fn to_bytes(&self) -> Result<[u8; Self::SIZE]> {
+    pub fn to_le_bytes(&self) -> Result<[u8; 2]> {
         if self.second_ch_ack_offset > 7 {
             return Err(anyhow!("max value of second_ch_ack_offset is 7"));
         }
@@ -1800,10 +1796,13 @@ impl ChannelSettingsED {
             return Err(anyhow!("max value of backoff is 63"));
         }
 
-        Ok([
+        let mut b = [
             self.second_ch_ack_offset | (self.second_ch_dr << 3) | (self.second_ch_idx << 7),
             (self.second_ch_idx >> 1) | (self.backoff << 1),
-        ])
+        ];
+        b.reverse();
+
+        Ok(b)
     }
 }
 
@@ -1821,7 +1820,7 @@ impl PayloadCodec for EndDeviceConfReqPayload {
 
         Ok(EndDeviceConfReqPayload {
             activation_relay_mode: ActivationRelayMode::from_u8(b[0])?,
-            channel_settings_ed: ChannelSettingsED::from_slice(&b[1..3])?,
+            channel_settings_ed: ChannelSettingsED::from_le_bytes([b[1], b[2]]),
             second_ch_freq: decode_freq(&b[3..6])?,
         })
     }
@@ -1829,7 +1828,7 @@ impl PayloadCodec for EndDeviceConfReqPayload {
     fn encode(&self) -> Result<Vec<u8>> {
         let mut b = vec![0; 6];
         b[0] = self.activation_relay_mode.to_u8()?;
-        b[1..3].copy_from_slice(&self.channel_settings_ed.to_bytes()?);
+        b[1..3].copy_from_slice(&self.channel_settings_ed.to_le_bytes()?);
         b[3..6].copy_from_slice(&encode_freq(self.second_ch_freq)?);
         Ok(b)
     }
@@ -1912,7 +1911,7 @@ pub struct FilterListParam {
 }
 
 impl FilterListParam {
-    pub fn to_bytes(&self) -> Result<[u8; 2]> {
+    pub fn to_le_bytes(&self) -> Result<[u8; 2]> {
         if self.filter_list_len > 31 {
             return Err(anyhow!("max value of filter_list_len is 31"));
         }
@@ -1920,18 +1919,20 @@ impl FilterListParam {
             return Err(anyhow!("max value of filter_list_idx is 15"));
         }
 
-        Ok([
+        let mut b = [
             self.filter_list_len
                 | (self.filter_list_action.to_u8() << 5)
                 | (self.filter_list_idx << 7),
             (self.filter_list_idx >> 1),
-        ])
+        ];
+        b.reverse();
+
+        Ok(b)
     }
 
-    pub fn from_slice(b: &[u8]) -> Result<Self> {
-        if b.len() != 2 {
-            return Err(anyhow!("FilterListParam expects 2 bytes"));
-        }
+    pub fn from_le_bytes(b: [u8; 2]) -> Result<Self> {
+        let mut b = b;
+        b.reverse();
 
         Ok(FilterListParam {
             filter_list_len: b[0] & 0x17,
@@ -1952,7 +1953,7 @@ impl PayloadCodec for FilterListReqPayload {
         let mut b = vec![0; 2];
         cur.read_exact(&mut b)?;
 
-        let flp = FilterListParam::from_slice(&b)?;
+        let flp = FilterListParam::from_le_bytes([b[0], b[1]])?;
         let mut b = vec![0; flp.filter_list_len as usize];
         cur.read_exact(&mut b)?;
 
@@ -1966,7 +1967,7 @@ impl PayloadCodec for FilterListReqPayload {
         let mut flp = self.filter_list_param.clone();
         flp.filter_list_len = self.filter_list_eui.len() as u8;
 
-        let mut b = flp.to_bytes()?.to_vec();
+        let mut b = flp.to_le_bytes()?.to_vec();
         b.extend_from_slice(&self.filter_list_eui);
         Ok(b)
     }
