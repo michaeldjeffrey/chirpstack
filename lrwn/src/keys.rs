@@ -74,7 +74,7 @@ fn get_s_key(
     join_nonce: u32,
     dev_nonce: u16,
 ) -> Result<AES128Key> {
-    let key_bytes = nwk_key.to_bytes();
+    let key_bytes = nwk_key.to_be_bytes();
     let key = GenericArray::from_slice(&key_bytes);
     let cipher = Aes128::new(key);
 
@@ -98,7 +98,7 @@ fn get_s_key(
 }
 
 fn get_js_key(typ: u8, dev_eui: &EUI64, nwk_key: &AES128Key) -> Result<AES128Key> {
-    let key_bytes = nwk_key.to_bytes();
+    let key_bytes = nwk_key.to_be_bytes();
     let key = GenericArray::from_slice(&key_bytes);
     let cipher = Aes128::new(key);
 
@@ -117,14 +117,14 @@ pub mod test {
     use super::*;
 
     fn nwk_key() -> AES128Key {
-        AES128Key::from_bytes([
+        AES128Key::from_be_bytes([
             0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
             0x07, 0x08,
         ])
     }
 
     fn app_key() -> AES128Key {
-        AES128Key::from_bytes([
+        AES128Key::from_be_bytes([
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x00, 0x00,
         ])
@@ -169,14 +169,14 @@ pub mod test {
         .unwrap();
 
         assert_eq!(
-            AES128Key::from_bytes([
+            AES128Key::from_be_bytes([
                 223, 83, 195, 95, 48, 52, 204, 206, 208, 255, 53, 76, 112, 222, 4, 223,
             ]),
             nwk_s_key
         );
 
         assert_eq!(
-            AES128Key::from_bytes([
+            AES128Key::from_be_bytes([
                 146, 123, 156, 145, 17, 131, 207, 254, 76, 178, 255, 75, 117, 84, 95, 109
             ]),
             app_s_key
@@ -226,28 +226,28 @@ pub mod test {
         .unwrap();
 
         assert_eq!(
-            AES128Key::from_bytes([
+            AES128Key::from_be_bytes([
                 1, 98, 18, 21, 209, 202, 8, 254, 191, 12, 96, 44, 194, 173, 144, 250
             ]),
             app_s_key,
         );
 
         assert_eq!(
-            AES128Key::from_bytes([
+            AES128Key::from_be_bytes([
                 83, 127, 138, 174, 137, 108, 121, 224, 21, 209, 2, 208, 98, 134, 53, 78
             ]),
             f_nwk_s_int_key,
         );
 
         assert_eq!(
-            AES128Key::from_bytes([
+            AES128Key::from_be_bytes([
                 88, 148, 152, 153, 48, 146, 207, 219, 95, 210, 224, 42, 199, 81, 11, 241
             ]),
             s_nwk_s_int_key,
         );
 
         assert_eq!(
-            AES128Key::from_bytes([
+            AES128Key::from_be_bytes([
                 152, 152, 40, 60, 79, 102, 235, 108, 111, 213, 22, 88, 130, 4, 108, 64
             ]),
             nwk_s_enc_key,
