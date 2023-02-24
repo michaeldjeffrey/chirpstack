@@ -213,6 +213,8 @@ pub enum MACCommand {
     RelayConfAns(RelayConfAnsPayload),
     EndDeviceConfReq(EndDeviceConfReqPayload),
     EndDeviceConfAns(EndDeviceConfAnsPayload),
+    FilterListReq(FilterListReqPayload),
+    FilterListAns(FilterListAnsPayload),
     // Raw
     Raw(Vec<u8>),
 }
@@ -263,6 +265,8 @@ impl MACCommand {
             MACCommand::RelayConfAns(_) => CID::RelayConfAns,
             MACCommand::EndDeviceConfReq(_) => CID::EndDeviceConfReq,
             MACCommand::EndDeviceConfAns(_) => CID::EndDeviceConfAns,
+            MACCommand::FilterListReq(_) => CID::FilterListReq,
+            MACCommand::FilterListAns(_) => CID::FilterListAns,
             // Raw
             MACCommand::Raw(_) => CID::Raw,
         }
@@ -541,6 +545,14 @@ impl MACCommandSet {
                     out.push(mac.cid().to_u8());
                     out.extend_from_slice(&pl.encode()?);
                 }
+                MACCommand::FilterListReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::FilterListAns(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
                 // Raw
                 MACCommand::Raw(v) => out.extend_from_slice(v),
             };
@@ -681,6 +693,12 @@ impl MACCommandSet {
                         )),
                         CID::EndDeviceConfAns => commands.push(MACCommand::EndDeviceConfAns(
                             EndDeviceConfAnsPayload::decode(&mut cur)?,
+                        )),
+                        CID::FilterListReq => commands.push(MACCommand::FilterListReq(
+                            FilterListReqPayload::decode(&mut cur)?,
+                        )),
+                        CID::FilterListAns => commands.push(MACCommand::FilterListAns(
+                            FilterListAnsPayload::decode(&mut cur)?,
                         )),
                         _ => todo!(),
                     }
@@ -1687,7 +1705,7 @@ impl ChannelSettingsRelay {
         Ok(ChannelSettingsRelay {
             second_ch_ack_offset: b[0] & 0x07,
             second_ch_dr: (b[0] & 0x78) >> 3,
-            second_ch_idx: (b[0] & 0x80) >> 7 | (b[1] & 0x01) << 1,
+            second_ch_idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x01) << 1),
             default_ch_idx: (b[1] & 0x02) >> 1,
             cad_periodicity: (b[1] & 0x1c) >> 2,
             start_stop: (b[1] & 0x20) >> 5,
@@ -1992,6 +2010,138 @@ impl Payload for EndDeviceConfAnsPayload {
         }
         if self.backoff_ack {
             b |= 0x08;
+        }
+
+        Ok(vec![b])
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+pub enum FilterListAction {
+    NoRule,
+    Forward,
+    Filter,
+}
+
+impl FilterListAction {
+    pub fn to_u8(&self) -> u8 {
+        match self {
+            FilterListAction::NoRule => 0x00,
+            FilterListAction::Forward => 0x01,
+            FilterListAction::Filter => 0x02,
+        }
+    }
+
+    pub fn from_u8(v: u8) -> Result<Self> {
+        Ok(match v {
+            0x00 => FilterListAction::NoRule,
+            0x01 => FilterListAction::Forward,
+            0x02 => FilterListAction::Filter,
+            _ => {
+                return Err(anyhow!("invalid FilterListAction: {}", v));
+            }
+        })
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct FilterListParam {
+    pub filter_list_idx: u8,
+    pub filter_list_action: FilterListAction,
+    filter_list_len: u8,
+}
+
+impl FilterListParam {
+    pub fn to_bytes(&self) -> Result<[u8; 2]> {
+        if self.filter_list_len > 31 {
+            return Err(anyhow!("max value of filter_list_len is 31"));
+        }
+        if self.filter_list_idx > 15 {
+            return Err(anyhow!("max value of filter_list_idx is 15"));
+        }
+
+        Ok([
+            self.filter_list_len
+                | (self.filter_list_action.to_u8() << 5)
+                | (self.filter_list_idx << 7),
+            (self.filter_list_idx >> 1),
+        ])
+    }
+
+    pub fn from_slice(b: &[u8]) -> Result<Self> {
+        if b.len() != 2 {
+            return Err(anyhow!("FilterListParam expects 2 bytes"));
+        }
+
+        Ok(FilterListParam {
+            filter_list_len: b[0] & 0x17,
+            filter_list_action: FilterListAction::from_u8((b[0] & 0x60) >> 5)?,
+            filter_list_idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x07) << 1),
+        })
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct FilterListReqPayload {
+    pub filter_list_param: FilterListParam,
+    pub filter_list_eui: Vec<u8>,
+}
+
+impl Payload for FilterListReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = vec![0; 2];
+        cur.read_exact(&mut b)?;
+
+        let flp = FilterListParam::from_slice(&b)?;
+        let mut b = vec![0; flp.filter_list_len as usize];
+        cur.read_exact(&mut b)?;
+
+        Ok(FilterListReqPayload {
+            filter_list_param: flp,
+            filter_list_eui: b,
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut flp = self.filter_list_param.clone();
+        flp.filter_list_len = self.filter_list_eui.len() as u8;
+
+        let mut b = flp.to_bytes()?.to_vec();
+        b.extend_from_slice(&self.filter_list_eui);
+        Ok(b)
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct FilterListAnsPayload {
+    pub filter_list_action_ack: bool,
+    pub filter_list_len_ack: bool,
+    pub combined_rules_ack: bool,
+}
+
+impl Payload for FilterListAnsPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 1];
+        cur.read_exact(&mut b)?;
+
+        Ok(FilterListAnsPayload {
+            filter_list_action_ack: b[0] & 0x01 != 0,
+            filter_list_len_ack: b[0] & 0x02 != 0,
+            combined_rules_ack: b[0] & 0x04 != 0,
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b: u8 = 0;
+
+        if self.filter_list_action_ack {
+            b |= 0x01;
+        }
+        if self.filter_list_len_ack {
+            b |= 0x02;
+        }
+        if self.combined_rules_ack {
+            b |= 0x04;
         }
 
         Ok(vec![b])
