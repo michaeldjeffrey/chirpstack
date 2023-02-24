@@ -1725,42 +1725,15 @@ impl Payload for RelayConfReqPayload {
         cur.read_exact(&mut b)?;
 
         Ok(RelayConfReqPayload {
-            channel_settings_relay: ChannelSettingsRelay::from_slice(&b[3..5])?,
-            second_ch_freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[0..3]);
-                let freq = u32::from_le_bytes(freq_b);
-
-                if freq >= 12000000 {
-                    // 2.4GHz frequency
-                    freq * 200
-                } else {
-                    freq * 100
-                }
-            },
+            channel_settings_relay: ChannelSettingsRelay::from_slice(&b[0..2])?,
+            second_ch_freq: decode_freq(&b[2..5])?,
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        let mut freq = self.second_ch_freq;
-
-        // Support LoRaWAN 2.4GHz, in which case the stepping is 200Hz:
-        // See Frequency Encoding in MAC Commands
-        // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/physical-layer-proposal-2.4ghz/
-        if freq >= 2400000000 {
-            freq /= 2;
-        }
-
-        if freq / 100 >= (1 << 24) {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if freq % 100 != 0 {
-            return Err(anyhow!("freq must be multiple of 100"));
-        }
-
         let mut b = vec![0; 5];
-        b[0..3].copy_from_slice(&(freq / 100).to_le_bytes());
-        b[3..5].copy_from_slice(&self.channel_settings_relay.to_bytes()?);
+        b[0..2].copy_from_slice(&self.channel_settings_relay.to_bytes()?);
+        b[2..5].copy_from_slice(&encode_freq(self.second_ch_freq)?);
         Ok(b)
     }
 }
@@ -1933,44 +1906,17 @@ impl Payload for EndDeviceConfReqPayload {
         cur.read_exact(&mut b)?;
 
         Ok(EndDeviceConfReqPayload {
-            second_ch_freq: {
-                let mut freq_b: [u8; 4] = [0; 4];
-                freq_b[0..3].copy_from_slice(&b[0..3]);
-                let freq = u32::from_le_bytes(freq_b);
-
-                if freq >= 12000000 {
-                    // 2.4GHz frequency
-                    freq * 200
-                } else {
-                    freq * 100
-                }
-            },
-            channel_settings_ed: ChannelSettingsED::from_slice(&b[3..5])?,
-            activation_relay_mode: ActivationRelayMode::from_u8(b[5])?,
+            activation_relay_mode: ActivationRelayMode::from_u8(b[0])?,
+            channel_settings_ed: ChannelSettingsED::from_slice(&b[1..3])?,
+            second_ch_freq: decode_freq(&b[3..6])?,
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        let mut freq = self.second_ch_freq;
-
-        // Support LoRaWAN 2.4GHz, in which case the stepping is 200Hz:
-        // See Frequency Encoding in MAC Commands
-        // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/physical-layer-proposal-2.4ghz/
-        if freq >= 2400000000 {
-            freq /= 2;
-        }
-
-        if freq / 100 >= (1 << 24) {
-            return Err(anyhow!("max freq value is 2^24 - 1"));
-        }
-        if freq % 100 != 0 {
-            return Err(anyhow!("freq must be multiple of 100"));
-        }
-
         let mut b = vec![0; 6];
-        b[0..3].copy_from_slice(&(freq / 100).to_le_bytes());
-        b[3..5].copy_from_slice(&self.channel_settings_ed.to_bytes()?);
-        b[5] = self.activation_relay_mode.to_u8()?;
+        b[0] = self.activation_relay_mode.to_u8()?;
+        b[1..3].copy_from_slice(&self.channel_settings_ed.to_bytes()?);
+        b[3..6].copy_from_slice(&encode_freq(self.second_ch_freq)?);
         Ok(b)
     }
 }
@@ -2146,6 +2092,45 @@ impl Payload for FilterListAnsPayload {
 
         Ok(vec![b])
     }
+}
+
+fn encode_freq(freq: u32) -> Result<[u8; 3]> {
+    let mut freq = freq;
+    // Support LoRaWAN 2.4GHz, in which case the stepping is 200Hz:
+    // See Frequency Encoding in MAC Commands
+    // https://lora-developers.semtech.com/documentation/tech-papers-and-guides/physical-layer-proposal-2.4ghz/
+    if freq >= 2400000000 {
+        freq /= 2;
+    }
+
+    if freq / 100 >= (1 << 24) {
+        return Err(anyhow!("max freq value is 2^24 - 1"));
+    }
+    if freq % 100 != 0 {
+        return Err(anyhow!("freq must be multiple of 100"));
+    }
+
+    let mut b = [0; 3];
+    b[0..3].copy_from_slice(&(freq / 100).to_le_bytes()[0..3]);
+    Ok(b)
+}
+
+fn decode_freq(b: &[u8]) -> Result<u32> {
+    if b.len() != 3 {
+        return Err(anyhow!("3 bytes expected for frequency"));
+    }
+    let mut freq_b: [u8; 4] = [0; 4];
+    freq_b[0..3].copy_from_slice(&b[0..3]);
+    let mut freq = u32::from_le_bytes(freq_b);
+
+    if freq >= 12000000 {
+        // 2.4GHz frequency
+        freq *= 200
+    } else {
+        freq *= 100
+    }
+
+    Ok(freq)
 }
 
 #[cfg(test)]
