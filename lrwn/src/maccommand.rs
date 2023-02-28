@@ -135,6 +135,13 @@ impl CID {
                 0x11 => CID::PingSlotChannelAns,
                 0x13 => CID::BeaconFreqAns,
                 0x20 => CID::DeviceModeInd,
+                0x40 => CID::RelayConfAns,
+                0x41 => CID::EndDeviceConfAns,
+                0x42 => CID::FilterListAns,
+                0x43 => CID::UpdateUplinkListAns,
+                0x44 => CID::CtrlUplinkListAns,
+                0x45 => CID::ConfigureFwdLimitAns,
+                0x46 => CID::NotifyNewEndDeviceReq,
                 _ => {
                     return Err(anyhow!("Invalid CID: {}", v));
                 }
@@ -160,6 +167,12 @@ impl CID {
                 0x11 => CID::PingSlotChannelReq,
                 0x13 => CID::BeaconFreqReq,
                 0x20 => CID::DeviceModeConf,
+                0x40 => CID::RelayConfReq,
+                0x41 => CID::EndDeviceConfReq,
+                0x42 => CID::FilterListReq,
+                0x43 => CID::UpdateUplinkListReq,
+                0x44 => CID::CtrlUplinkListReq,
+                0x45 => CID::ConfigureFwdLimitReq,
                 _ => {
                     return Err(anyhow!("Invalid CID: {}", v));
                 }
@@ -219,6 +232,9 @@ pub enum MACCommand {
     UpdateUplinkListAns,
     CtrlUplinkListReq(CtrlUplinkListReqPayload),
     CtrlUplinkListAns(CtrlUplinkListAnsPayload),
+    ConfigureFwdLimitReq(ConfigureFwdLimitReqPayload),
+    ConfigureFwdLimitAns,
+    NotifyNewEndDeviceReq(NotifyNewEndDeviceReqPayload),
     // Raw
     Raw(Vec<u8>),
 }
@@ -275,6 +291,9 @@ impl MACCommand {
             MACCommand::UpdateUplinkListAns => CID::UpdateUplinkListAns,
             MACCommand::CtrlUplinkListReq(_) => CID::CtrlUplinkListReq,
             MACCommand::CtrlUplinkListAns(_) => CID::CtrlUplinkListAns,
+            MACCommand::ConfigureFwdLimitReq(_) => CID::ConfigureFwdLimitReq,
+            MACCommand::ConfigureFwdLimitAns => CID::ConfigureFwdLimitAns,
+            MACCommand::NotifyNewEndDeviceReq(_) => CID::NotifyNewEndDeviceReq,
             // Raw
             MACCommand::Raw(_) => CID::Raw,
         }
@@ -574,6 +593,15 @@ impl MACCommandSet {
                     out.push(mac.cid().to_u8());
                     out.extend_from_slice(&pl.encode()?);
                 }
+                MACCommand::ConfigureFwdLimitReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
+                MACCommand::ConfigureFwdLimitAns => out.push(mac.cid().to_u8()),
+                MACCommand::NotifyNewEndDeviceReq(pl) => {
+                    out.push(mac.cid().to_u8());
+                    out.extend_from_slice(&pl.encode()?);
+                }
                 // Raw
                 MACCommand::Raw(v) => out.extend_from_slice(v),
             };
@@ -724,13 +752,27 @@ impl MACCommandSet {
                         CID::UpdateUplinkListReq => commands.push(MACCommand::UpdateUplinkListReq(
                             UpdateUplinkListReqPayload::decode(&mut cur)?,
                         )),
+                        CID::UpdateUplinkListAns => commands.push(MACCommand::UpdateUplinkListAns),
                         CID::CtrlUplinkListReq => commands.push(MACCommand::CtrlUplinkListReq(
                             CtrlUplinkListReqPayload::decode(&mut cur)?,
                         )),
                         CID::CtrlUplinkListAns => commands.push(MACCommand::CtrlUplinkListAns(
                             CtrlUplinkListAnsPayload::decode(&mut cur)?,
                         )),
-                        _ => todo!(),
+                        CID::ConfigureFwdLimitReq => {
+                            commands.push(MACCommand::ConfigureFwdLimitReq(
+                                ConfigureFwdLimitReqPayload::decode(&mut cur)?,
+                            ))
+                        }
+                        CID::ConfigureFwdLimitAns => {
+                            commands.push(MACCommand::ConfigureFwdLimitAns)
+                        }
+                        CID::NotifyNewEndDeviceReq => {
+                            commands.push(MACCommand::NotifyNewEndDeviceReq(
+                                NotifyNewEndDeviceReqPayload::decode(&mut cur)?,
+                            ))
+                        }
+                        CID::Raw => {}
                     }
                 }
 
@@ -2179,6 +2221,185 @@ impl PayloadCodec for CtrlUplinkListAnsPayload {
             b[0] |= 0x01;
         }
         b[1..5].copy_from_slice(&self.w_fcnt.to_le_bytes());
+        Ok(b)
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct FwdLimitReloadRatePL {
+    pub overall_reload_rate: u8,
+    pub global_uplink_reload_rate: u8,
+    pub notify_reload_rate: u8,
+    pub join_req_reload_rate: u8,
+    pub reset_limit_counter: u8,
+}
+
+impl FwdLimitReloadRatePL {
+    pub fn from_bytes(b: [u8; 4]) -> Self {
+        FwdLimitReloadRatePL {
+            overall_reload_rate: b[0] & 0x7f,
+            global_uplink_reload_rate: (b[0] >> 7) | ((b[1] & 0x3f) << 1),
+            notify_reload_rate: (b[1] >> 6) | ((b[2] & 0x1f) << 2),
+            join_req_reload_rate: (b[2] >> 5) | ((b[3] & 0x0f) << 3),
+            reset_limit_counter: (b[3] & 0x30) >> 4,
+        }
+    }
+
+    pub fn to_bytes(&self) -> Result<[u8; 4]> {
+        if self.reset_limit_counter > 3 {
+            return Err(anyhow!("max reset_limit_counter is 3"));
+        }
+        if self.join_req_reload_rate > 127 {
+            return Err(anyhow!("max join_req_reload_rate is 127"));
+        }
+        if self.notify_reload_rate > 127 {
+            return Err(anyhow!("max notify_reload_rate is 127"));
+        }
+        if self.global_uplink_reload_rate > 127 {
+            return Err(anyhow!("max global_uplink_reload_rate is 127"));
+        }
+        if self.overall_reload_rate > 127 {
+            return Err(anyhow!("max overall_reload_rate is 127"));
+        }
+
+        Ok([
+            self.overall_reload_rate | (self.global_uplink_reload_rate << 7),
+            (self.global_uplink_reload_rate >> 1) | (self.notify_reload_rate << 6),
+            (self.notify_reload_rate >> 2) | (self.join_req_reload_rate << 5),
+            (self.join_req_reload_rate >> 3) | (self.reset_limit_counter << 4),
+        ])
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct FwdLimitLoadCapacityPL {
+    pub overal_limit_size: u8,
+    pub global_uplink_limit_size: u8,
+    pub notify_limit_size: u8,
+    pub join_req_limit_size: u8,
+}
+
+impl FwdLimitLoadCapacityPL {
+    pub fn from_u8(v: u8) -> Self {
+        FwdLimitLoadCapacityPL {
+            overal_limit_size: v & 0x03,
+            global_uplink_limit_size: (v & 0x0c) >> 2,
+            notify_limit_size: (v & 0x30) >> 4,
+            join_req_limit_size: (v & 0xc0) >> 6,
+        }
+    }
+
+    pub fn to_u8(&self) -> Result<u8> {
+        if self.overal_limit_size > 3 {
+            return Err(anyhow!("max overal_limit_size is 3"));
+        }
+        if self.global_uplink_limit_size > 3 {
+            return Err(anyhow!("max global_uplink_limit_size is 3"));
+        }
+        if self.notify_limit_size > 3 {
+            return Err(anyhow!("max notify_limit_size is 3"));
+        }
+        if self.join_req_limit_size > 3 {
+            return Err(anyhow!("max join_req_limit_size is 3"));
+        }
+
+        Ok(self.overal_limit_size
+            | (self.global_uplink_limit_size << 2)
+            | (self.notify_limit_size << 4)
+            | (self.join_req_limit_size << 6))
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct ConfigureFwdLimitReqPayload {
+    pub fwd_limit_reload_rate: FwdLimitReloadRatePL,
+    pub fwd_limit_load_capacity: FwdLimitLoadCapacityPL,
+}
+
+impl PayloadCodec for ConfigureFwdLimitReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 5];
+        cur.read_exact(&mut b)?;
+
+        Ok(ConfigureFwdLimitReqPayload {
+            fwd_limit_reload_rate: FwdLimitReloadRatePL::from_bytes({
+                let mut bb = [0; 4];
+                bb.copy_from_slice(&b[0..4]);
+                bb
+            }),
+            fwd_limit_load_capacity: FwdLimitLoadCapacityPL::from_u8(b[4]),
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 5];
+        b[0..4].copy_from_slice(&self.fwd_limit_reload_rate.to_bytes()?);
+        b[4] = self.fwd_limit_load_capacity.to_u8()?;
+        Ok(b)
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct PowerLevel {
+    wor_snr: isize,
+    wor_rssi: isize,
+}
+
+impl PowerLevel {
+    pub fn from_bytes(b: [u8; 2]) -> Self {
+        PowerLevel {
+            wor_snr: (b[0] & 0x1f) as isize - 20,
+            wor_rssi: -1 * ((b[0] >> 5) | ((b[1] & 0x0f) << 3)) as isize - 15,
+        }
+    }
+
+    pub fn to_bytes(&self) -> [u8; 2] {
+        let mut wor_snr = self.wor_snr;
+        let mut wor_rssi = self.wor_rssi;
+
+        // Set to closest possible value.
+        if wor_snr < -20 {
+            wor_snr = -20;
+        }
+        if wor_snr > 11 {
+            wor_snr = 11;
+        }
+        if wor_rssi > -15 {
+            wor_rssi = -15;
+        }
+        if wor_rssi < -142 {
+            wor_rssi = -142;
+        }
+
+        // Encode values
+        let wor_snr = (wor_snr + 20) as u8;
+        let wor_rssi = ((wor_rssi as isize + 15) * -1) as u8;
+
+        [wor_snr | wor_rssi << 5, wor_rssi >> 3]
+    }
+}
+
+#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+pub struct NotifyNewEndDeviceReqPayload {
+    pub dev_addr: crate::DevAddr,
+    pub power_level: PowerLevel,
+}
+
+impl PayloadCodec for NotifyNewEndDeviceReqPayload {
+    fn decode(cur: &mut Cursor<Vec<u8>>) -> Result<Self> {
+        let mut b = [0; 6];
+        cur.read_exact(&mut b)?;
+
+        Ok(NotifyNewEndDeviceReqPayload {
+            dev_addr: crate::DevAddr::from_le_bytes([b[0], b[1], b[2], b[3]]),
+            power_level: PowerLevel::from_bytes([b[4], b[5]]),
+        })
+    }
+
+    fn encode(&self) -> Result<Vec<u8>> {
+        let mut b = vec![0; 6];
+        b[0..4].copy_from_slice(&self.dev_addr.to_le_bytes());
+        b[4..6].copy_from_slice(&self.power_level.to_bytes());
         Ok(b)
     }
 }
