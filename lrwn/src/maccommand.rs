@@ -2916,6 +2916,64 @@ mod test {
                 }),
                 bytes: vec![0x20, 0x02],
             },
+            MacTest {
+                uplink: false,
+                command: MACCommand::RelayConfReq(RelayConfReqPayload {
+                    channel_settings_relay: ChannelSettingsRelay {
+                        start_stop: 1,
+                        cad_periodicity: 3,
+                        default_ch_idx: 0,
+                        second_ch_idx: 1,
+                        second_ch_dr: 4,
+                        second_ch_ack_offset: 5,
+                    },
+                    second_ch_freq: 868100000,
+                }),
+                bytes: vec![64, 165, 44, 40, 118, 132],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::RelayConfAns(RelayConfAnsPayload {
+                    second_ch_freq_ack: true,
+                    second_ch_ack_offset_ack: true,
+                    second_ch_dr_ack: true,
+                    second_ch_idx_ack: true,
+                    default_ch_idx_ack: true,
+                    cad_periodicity_ack: true,
+                }),
+                bytes: vec![64, 63],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::RelayConfAns(RelayConfAnsPayload {
+                    second_ch_freq_ack: true,
+                    second_ch_ack_offset_ack: false,
+                    second_ch_dr_ack: true,
+                    second_ch_idx_ack: false,
+                    default_ch_idx_ack: true,
+                    cad_periodicity_ack: false,
+                }),
+                bytes: vec![64, 21],
+            },
+            /*
+            MacTest {
+                uplink: false,
+                command: MACCommand::EndDeviceConfReq(EndDeviceConfReqPayload {
+                    second_ch_freq: 868100000,
+                    channel_settings_ed: ChannelSettingsED {
+                        second_ch_ack_offset: 5,
+                        second_ch_dr: 4,
+                        second_ch_idx: 1,
+                        backoff: 63,
+                    },
+                    activation_relay_mode: ActivationRelayMode {
+                        relay_mode_activation: RelayModeActivation::Dynamic,
+                        smart_enable_level: 3,
+                    },
+                }),
+                bytes: vec![65],
+            },
+            */
         ];
 
         for tst in tests {
