@@ -2447,578 +2447,489 @@ fn decode_freq(b: &[u8]) -> Result<u32> {
 mod test {
     use super::*;
 
-    struct MACTest {
+    struct MacTest {
         uplink: bool,
-        maccommand_set: MACCommandSet,
+        command: MACCommand,
         bytes: Vec<u8>,
     }
 
     #[test]
-    fn test_maccommand_set() {
+    fn test_command() {
         let tests = vec![
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ResetInd(ResetIndPayload {
+                command: MACCommand::ResetInd(ResetIndPayload {
                     dev_lorawan_version: Version::LoRaWAN1_1,
-                })]),
+                }),
                 bytes: vec![0x01, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ResetConf(ResetConfPayload {
+                command: MACCommand::ResetConf(ResetConfPayload {
                     serv_lorawan_version: Version::LoRaWAN1_1,
-                })]),
+                }),
                 bytes: vec![0x01, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkCheckReq]),
+                command: MACCommand::LinkCheckReq,
                 bytes: vec![0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkCheckAns(
-                    LinkCheckAnsPayload {
-                        margin: 10,
-                        gw_cnt: 15,
-                    },
-                )]),
+                command: MACCommand::LinkCheckAns(LinkCheckAnsPayload {
+                    margin: 10,
+                    gw_cnt: 15,
+                }),
                 bytes: vec![0x02, 0x0a, 0x0f],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRReq(
-                    LinkADRReqPayload {
-                        dr: 1,
-                        tx_power: 2,
-                        ch_mask: ChMask::new({
-                            let mut mask: [bool; 16] = [false; 16];
-                            mask[2] = true;
-                            mask
-                        }),
-                        redundancy: Redundancy {
-                            ch_mask_cntl: 4,
-                            nb_rep: 5,
-                        },
+                command: MACCommand::LinkADRReq(LinkADRReqPayload {
+                    dr: 1,
+                    tx_power: 2,
+                    ch_mask: ChMask::new({
+                        let mut mask: [bool; 16] = [false; 16];
+                        mask[2] = true;
+                        mask
+                    }),
+                    redundancy: Redundancy {
+                        ch_mask_cntl: 4,
+                        nb_rep: 5,
                     },
-                )]),
+                }),
                 bytes: vec![0x03, 0x12, 0x04, 0x00, 0x45],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRAns(
-                    LinkADRAnsPayload {
-                        ch_mask_ack: true,
-                        dr_ack: false,
-                        tx_power_ack: false,
-                    },
-                )]),
+                command: MACCommand::LinkADRAns(LinkADRAnsPayload {
+                    ch_mask_ack: true,
+                    dr_ack: false,
+                    tx_power_ack: false,
+                }),
                 bytes: vec![0x03, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRAns(
-                    LinkADRAnsPayload {
-                        ch_mask_ack: false,
-                        dr_ack: true,
-                        tx_power_ack: false,
-                    },
-                )]),
+                command: MACCommand::LinkADRAns(LinkADRAnsPayload {
+                    ch_mask_ack: false,
+                    dr_ack: true,
+                    tx_power_ack: false,
+                }),
                 bytes: vec![0x03, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRAns(
-                    LinkADRAnsPayload {
-                        ch_mask_ack: false,
-                        dr_ack: false,
-                        tx_power_ack: true,
-                    },
-                )]),
+                command: MACCommand::LinkADRAns(LinkADRAnsPayload {
+                    ch_mask_ack: false,
+                    dr_ack: false,
+                    tx_power_ack: true,
+                }),
                 bytes: vec![0x03, 0x04],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::LinkADRAns(
-                    LinkADRAnsPayload {
-                        ch_mask_ack: true,
-                        dr_ack: true,
-                        tx_power_ack: true,
-                    },
-                )]),
+                command: MACCommand::LinkADRAns(LinkADRAnsPayload {
+                    ch_mask_ack: true,
+                    dr_ack: true,
+                    tx_power_ack: true,
+                }),
                 bytes: vec![0x03, 0x07],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DutyCycleReq(
-                    DutyCycleReqPayload { max_duty_cycle: 13 },
-                )]),
+                command: MACCommand::DutyCycleReq(DutyCycleReqPayload { max_duty_cycle: 13 }),
                 bytes: vec![0x04, 0x0d],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DutyCycleAns]),
+                command: MACCommand::DutyCycleAns,
                 bytes: vec![0x04],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RxParamSetupReq(
-                    RxParamSetupReqPayload {
-                        frequency: 26265700,
-                        dl_settings: DLSettings {
-                            rx2_dr: 11,
-                            rx1_dr_offset: 3,
-                            opt_neg: false,
-                        },
+                command: MACCommand::RxParamSetupReq(RxParamSetupReqPayload {
+                    frequency: 26265700,
+                    dl_settings: DLSettings {
+                        rx2_dr: 11,
+                        rx1_dr_offset: 3,
+                        opt_neg: false,
                     },
-                )]),
+                }),
                 bytes: vec![0x05, 0x3b, 0x01, 0x02, 0x04],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RxParamSetupAns(
-                    RxParamSetupAnsPayload {
-                        channel_ack: true,
-                        rx2_dr_ack: false,
-                        rx1_dr_offset_ack: true,
-                    },
-                )]),
+                command: MACCommand::RxParamSetupAns(RxParamSetupAnsPayload {
+                    channel_ack: true,
+                    rx2_dr_ack: false,
+                    rx1_dr_offset_ack: true,
+                }),
                 bytes: vec![0x05, 0x05],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusReq]),
+                command: MACCommand::DevStatusReq,
                 bytes: vec![0x06],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusAns(
-                    DevStatusAnsPayload {
-                        battery: 0,
-                        margin: -30,
-                    },
-                )]),
+                command: MACCommand::DevStatusAns(DevStatusAnsPayload {
+                    battery: 0,
+                    margin: -30,
+                }),
                 bytes: vec![0x06, 0x00, 0x22],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusAns(
-                    DevStatusAnsPayload {
-                        battery: 255,
-                        margin: 30,
-                    },
-                )]),
+                command: MACCommand::DevStatusAns(DevStatusAnsPayload {
+                    battery: 255,
+                    margin: 30,
+                }),
                 bytes: vec![0x06, 0xff, 0x1e],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusAns(
-                    DevStatusAnsPayload {
-                        battery: 127,
-                        margin: -1,
-                    },
-                )]),
+                command: MACCommand::DevStatusAns(DevStatusAnsPayload {
+                    battery: 127,
+                    margin: -1,
+                }),
                 bytes: vec![0x06, 0x7f, 0x3f],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DevStatusAns(
-                    DevStatusAnsPayload {
-                        battery: 127,
-                        margin: 0,
-                    },
-                )]),
+                command: MACCommand::DevStatusAns(DevStatusAnsPayload {
+                    battery: 127,
+                    margin: 0,
+                }),
                 bytes: vec![0x06, 0x7f, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelReq(
-                    NewChannelReqPayload {
-                        ch_index: 3,
-                        freq: 26265700,
-                        max_dr: 5,
-                        min_dr: 10,
-                    },
-                )]),
+                command: MACCommand::NewChannelReq(NewChannelReqPayload {
+                    ch_index: 3,
+                    freq: 26265700,
+                    max_dr: 5,
+                    min_dr: 10,
+                }),
                 bytes: vec![0x07, 0x03, 0x01, 0x02, 0x04, 0x5a],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelReq(
-                    NewChannelReqPayload {
-                        ch_index: 3,
-                        freq: 2410_000_000,
-                        max_dr: 5,
-                        min_dr: 0,
-                    },
-                )]),
+                command: MACCommand::NewChannelReq(NewChannelReqPayload {
+                    ch_index: 3,
+                    freq: 2410_000_000,
+                    max_dr: 5,
+                    min_dr: 0,
+                }),
                 bytes: vec![7, 3, 80, 222, 183, 80],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelAns(
-                    NewChannelAnsPayload {
-                        channel_freq_ok: false,
-                        dr_range_ok: false,
-                    },
-                )]),
+                command: MACCommand::NewChannelAns(NewChannelAnsPayload {
+                    channel_freq_ok: false,
+                    dr_range_ok: false,
+                }),
                 bytes: vec![0x07, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelAns(
-                    NewChannelAnsPayload {
-                        channel_freq_ok: true,
-                        dr_range_ok: false,
-                    },
-                )]),
+                command: MACCommand::NewChannelAns(NewChannelAnsPayload {
+                    channel_freq_ok: true,
+                    dr_range_ok: false,
+                }),
                 bytes: vec![0x07, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelAns(
-                    NewChannelAnsPayload {
-                        channel_freq_ok: false,
-                        dr_range_ok: true,
-                    },
-                )]),
+                command: MACCommand::NewChannelAns(NewChannelAnsPayload {
+                    channel_freq_ok: false,
+                    dr_range_ok: true,
+                }),
                 bytes: vec![0x07, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::NewChannelAns(
-                    NewChannelAnsPayload {
-                        channel_freq_ok: true,
-                        dr_range_ok: true,
-                    },
-                )]),
+                command: MACCommand::NewChannelAns(NewChannelAnsPayload {
+                    channel_freq_ok: true,
+                    dr_range_ok: true,
+                }),
                 bytes: vec![0x07, 0x03],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RxTimingSetupReq(
-                    RxTimingSetupReqPayload { delay: 15 },
-                )]),
+                command: MACCommand::RxTimingSetupReq(RxTimingSetupReqPayload { delay: 15 }),
                 bytes: vec![0x08, 0x0f],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RxTimingSetupAns]),
+                command: MACCommand::RxTimingSetupAns,
                 bytes: vec![0x08],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::TxParamSetupReq(
-                    TxParamSetupReqPayload {
-                        uplink_dwell_time: DwellTime::NoLimit,
-                        downlink_dwell_time: DwellTime::NoLimit,
-                        max_eirp: 15,
-                    },
-                )]),
+                command: MACCommand::TxParamSetupReq(TxParamSetupReqPayload {
+                    uplink_dwell_time: DwellTime::NoLimit,
+                    downlink_dwell_time: DwellTime::NoLimit,
+                    max_eirp: 15,
+                }),
                 bytes: vec![0x09, 0x0f],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::TxParamSetupReq(
-                    TxParamSetupReqPayload {
-                        uplink_dwell_time: DwellTime::Limit400ms,
-                        downlink_dwell_time: DwellTime::NoLimit,
-                        max_eirp: 15,
-                    },
-                )]),
+                command: MACCommand::TxParamSetupReq(TxParamSetupReqPayload {
+                    uplink_dwell_time: DwellTime::Limit400ms,
+                    downlink_dwell_time: DwellTime::NoLimit,
+                    max_eirp: 15,
+                }),
                 bytes: vec![0x09, 0x1f],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::TxParamSetupReq(
-                    TxParamSetupReqPayload {
-                        uplink_dwell_time: DwellTime::NoLimit,
-                        downlink_dwell_time: DwellTime::Limit400ms,
-                        max_eirp: 15,
-                    },
-                )]),
+                command: MACCommand::TxParamSetupReq(TxParamSetupReqPayload {
+                    uplink_dwell_time: DwellTime::NoLimit,
+                    downlink_dwell_time: DwellTime::Limit400ms,
+                    max_eirp: 15,
+                }),
                 bytes: vec![0x09, 0x2f],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::TxParamSetupAns]),
+                command: MACCommand::TxParamSetupAns,
                 bytes: vec![0x09],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelReq(
-                    DlChannelReqPayload {
-                        ch_index: 0,
-                        freq: 868100000,
-                    },
-                )]),
+                command: MACCommand::DlChannelReq(DlChannelReqPayload {
+                    ch_index: 0,
+                    freq: 868100000,
+                }),
                 bytes: vec![0x0a, 0x00, 0x28, 0x76, 0x84],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelReq(
-                    DlChannelReqPayload {
-                        ch_index: 1,
-                        freq: 868200000,
-                    },
-                )]),
+                command: MACCommand::DlChannelReq(DlChannelReqPayload {
+                    ch_index: 1,
+                    freq: 868200000,
+                }),
                 bytes: vec![0x0a, 0x01, 0x10, 0x7a, 0x84],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelAns(
-                    DlChannelAnsPayload {
-                        uplink_freq_exists: false,
-                        channel_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::DlChannelAns(DlChannelAnsPayload {
+                    uplink_freq_exists: false,
+                    channel_freq_ok: false,
+                }),
                 bytes: vec![0x0a, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelAns(
-                    DlChannelAnsPayload {
-                        uplink_freq_exists: false,
-                        channel_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::DlChannelAns(DlChannelAnsPayload {
+                    uplink_freq_exists: false,
+                    channel_freq_ok: true,
+                }),
                 bytes: vec![0x0a, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelAns(
-                    DlChannelAnsPayload {
-                        uplink_freq_exists: true,
-                        channel_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::DlChannelAns(DlChannelAnsPayload {
+                    uplink_freq_exists: true,
+                    channel_freq_ok: false,
+                }),
                 bytes: vec![0x0a, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DlChannelAns(
-                    DlChannelAnsPayload {
-                        uplink_freq_exists: true,
-                        channel_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::DlChannelAns(DlChannelAnsPayload {
+                    uplink_freq_exists: true,
+                    channel_freq_ok: true,
+                }),
                 bytes: vec![0x0a, 0x03],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RekeyConf(RekeyConfPayload {
+                command: MACCommand::RekeyConf(RekeyConfPayload {
                     serv_lorawan_version: Version::LoRaWAN1_1,
-                })]),
+                }),
                 bytes: vec![0x0b, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RekeyInd(RekeyIndPayload {
+                command: MACCommand::RekeyInd(RekeyIndPayload {
                     dev_lorawan_version: Version::LoRaWAN1_1,
-                })]),
+                }),
                 bytes: vec![0x0b, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ADRParamSetupReq(
-                    ADRParamSetupReqPayload {
-                        adr_param: ADRParam {
-                            limit_exp: 10,
-                            delay_exp: 15,
-                        },
+                command: MACCommand::ADRParamSetupReq(ADRParamSetupReqPayload {
+                    adr_param: ADRParam {
+                        limit_exp: 10,
+                        delay_exp: 15,
                     },
-                )]),
+                }),
                 bytes: vec![0x0c, 0xaf],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ADRParamSetupAns]),
+                command: MACCommand::ADRParamSetupAns,
                 bytes: vec![0x0c],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceTimeReq]),
+                command: MACCommand::DeviceTimeReq,
                 bytes: vec![0x0d],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceTimeAns(
-                    DeviceTimeAnsPayload {
-                        time_since_gps_epoch: Duration::from_secs(1),
-                    },
-                )]),
+                command: MACCommand::DeviceTimeAns(DeviceTimeAnsPayload {
+                    time_since_gps_epoch: Duration::from_secs(1),
+                }),
                 bytes: vec![0x0d, 0x01, 0x00, 0x00, 0x00, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceTimeAns(
-                    DeviceTimeAnsPayload {
-                        time_since_gps_epoch: Duration::new(1, 2 * 3906250),
-                    },
-                )]),
+                command: MACCommand::DeviceTimeAns(DeviceTimeAnsPayload {
+                    time_since_gps_epoch: Duration::new(1, 2 * 3906250),
+                }),
                 bytes: vec![0x0d, 0x01, 0x00, 0x00, 0x00, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::ForceRejoinReq(
-                    ForceRejoinReqPayload {
-                        period: 3,
-                        max_retries: 4,
-                        rejoin_type: 2,
-                        dr: 5,
-                    },
-                )]),
+                command: MACCommand::ForceRejoinReq(ForceRejoinReqPayload {
+                    period: 3,
+                    max_retries: 4,
+                    rejoin_type: 2,
+                    dr: 5,
+                }),
                 bytes: vec![0x0e, 0x25, 0x1c],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RejoinParamSetupReq(
-                    RejoinParamSetupReqPayload {
-                        max_time_n: 14,
-                        max_count_n: 15,
-                    },
-                )]),
+                command: MACCommand::RejoinParamSetupReq(RejoinParamSetupReqPayload {
+                    max_time_n: 14,
+                    max_count_n: 15,
+                }),
                 bytes: vec![0x0f, 0xef],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::RejoinParamSetupAns(
-                    RejoinParamSetupAnsPayload { time_ok: true },
-                )]),
+                command: MACCommand::RejoinParamSetupAns(RejoinParamSetupAnsPayload {
+                    time_ok: true,
+                }),
                 bytes: vec![0x0f, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotInfoReq(
-                    PingSlotInfoReqPayload { periodicity: 3 },
-                )]),
+                command: MACCommand::PingSlotInfoReq(PingSlotInfoReqPayload { periodicity: 3 }),
                 bytes: vec![0x10, 0x03],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotInfoAns]),
+                command: MACCommand::PingSlotInfoAns,
                 bytes: vec![0x10],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelReq(
-                    PingSlotChannelReqPayload {
-                        freq: 868100000,
-                        dr: 5,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelReq(PingSlotChannelReqPayload {
+                    freq: 868100000,
+                    dr: 5,
+                }),
                 bytes: vec![0x11, 0x28, 0x76, 0x84, 0x05],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelAns(
-                    PingSlotChannelAnsPayload {
-                        dr_ok: false,
-                        channel_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelAns(PingSlotChannelAnsPayload {
+                    dr_ok: false,
+                    channel_freq_ok: false,
+                }),
                 bytes: vec![0x011, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelAns(
-                    PingSlotChannelAnsPayload {
-                        dr_ok: false,
-                        channel_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelAns(PingSlotChannelAnsPayload {
+                    dr_ok: false,
+                    channel_freq_ok: true,
+                }),
                 bytes: vec![0x011, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelAns(
-                    PingSlotChannelAnsPayload {
-                        dr_ok: true,
-                        channel_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelAns(PingSlotChannelAnsPayload {
+                    dr_ok: true,
+                    channel_freq_ok: false,
+                }),
                 bytes: vec![0x011, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::PingSlotChannelAns(
-                    PingSlotChannelAnsPayload {
-                        dr_ok: true,
-                        channel_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::PingSlotChannelAns(PingSlotChannelAnsPayload {
+                    dr_ok: true,
+                    channel_freq_ok: true,
+                }),
                 bytes: vec![0x11, 0x03],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::BeaconFreqReq(
-                    BeaconFreqReqPayload { freq: 868100000 },
-                )]),
+                command: MACCommand::BeaconFreqReq(BeaconFreqReqPayload { freq: 868100000 }),
                 bytes: vec![0x13, 0x28, 0x76, 0x84],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::BeaconFreqAns(
-                    BeaconFreqAnsPayload {
-                        beacon_freq_ok: false,
-                    },
-                )]),
+                command: MACCommand::BeaconFreqAns(BeaconFreqAnsPayload {
+                    beacon_freq_ok: false,
+                }),
                 bytes: vec![0x13, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::BeaconFreqAns(
-                    BeaconFreqAnsPayload {
-                        beacon_freq_ok: true,
-                    },
-                )]),
+                command: MACCommand::BeaconFreqAns(BeaconFreqAnsPayload {
+                    beacon_freq_ok: true,
+                }),
                 bytes: vec![0x13, 0x01],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceModeInd(
-                    DeviceModeIndPayload {
-                        class: DeviceModeClass::ClassA,
-                    },
-                )]),
+                command: MACCommand::DeviceModeInd(DeviceModeIndPayload {
+                    class: DeviceModeClass::ClassA,
+                }),
                 bytes: vec![0x20, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: true,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceModeInd(
-                    DeviceModeIndPayload {
-                        class: DeviceModeClass::ClassC,
-                    },
-                )]),
+                command: MACCommand::DeviceModeInd(DeviceModeIndPayload {
+                    class: DeviceModeClass::ClassC,
+                }),
                 bytes: vec![0x20, 0x02],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceModeConf(
-                    DeviceModeConfPayload {
-                        class: DeviceModeClass::ClassA,
-                    },
-                )]),
+                command: MACCommand::DeviceModeConf(DeviceModeConfPayload {
+                    class: DeviceModeClass::ClassA,
+                }),
                 bytes: vec![0x20, 0x00],
             },
-            MACTest {
+            MacTest {
                 uplink: false,
-                maccommand_set: MACCommandSet::new(vec![MACCommand::DeviceModeConf(
-                    DeviceModeConfPayload {
-                        class: DeviceModeClass::ClassC,
-                    },
-                )]),
+                command: MACCommand::DeviceModeConf(DeviceModeConfPayload {
+                    class: DeviceModeClass::ClassC,
+                }),
                 bytes: vec![0x20, 0x02],
             },
         ];
 
         for tst in tests {
-            assert_eq!(tst.bytes, tst.maccommand_set.to_vec().unwrap());
+            assert_eq!(
+                tst.bytes,
+                MACCommandSet::new(vec![tst.command.clone()])
+                    .to_vec()
+                    .unwrap()
+            );
 
-            let mut maccommand_set = MACCommandSet::from_slice(&tst.bytes);
-            maccommand_set.decode_from_raw(tst.uplink).unwrap();
+            let mut command = MACCommandSet::from_slice(&tst.bytes);
+            command.decode_from_raw(tst.uplink).unwrap();
 
-            assert_eq!(tst.maccommand_set, maccommand_set);
+            assert_eq!(MACCommandSet::new(vec![tst.command.clone()]), command);
         }
     }
 }
