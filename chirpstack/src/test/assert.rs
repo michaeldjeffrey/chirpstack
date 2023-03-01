@@ -101,7 +101,7 @@ pub fn mac_command_error_count(dev_eui: EUI64, cid: lrwn::CID, count: u32) -> Va
             assert_eq!(
                 count,
                 ds.mac_command_error_count
-                    .get(&(cid.byte() as u32))
+                    .get(&(cid.to_u8() as u32))
                     .cloned()
                     .unwrap_or(0)
             )

@@ -614,10 +614,10 @@ pub mod test {
             Test {
                 name: "invalid nwk_s_key".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
-                f_nwk_s_int_key: AES128Key::from_bytes([
+                f_nwk_s_int_key: AES128Key::from_be_bytes([
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
                 ]),
-                s_nwk_s_int_key: AES128Key::from_bytes([
+                s_nwk_s_int_key: AES128Key::from_be_bytes([
                     1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
                 ]),
                 f_cnt: device_sessions[0].f_cnt_up,
@@ -627,11 +627,11 @@ pub mod test {
             Test {
                 name: "matching pending rejoin device-session".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x04, 0x03, 0x02, 0x01]),
-                f_nwk_s_int_key: AES128Key::from_bytes([
+                f_nwk_s_int_key: AES128Key::from_be_bytes([
                     0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
                     0x04, 0x04, 0x04,
                 ]),
-                s_nwk_s_int_key: AES128Key::from_bytes([
+                s_nwk_s_int_key: AES128Key::from_be_bytes([
                     0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
                     0x04, 0x04, 0x04,
                 ]),
@@ -645,11 +645,11 @@ pub mod test {
             Test {
                 name: "frame-counter rollover (16lsb)".to_string(),
                 dev_addr: DevAddr::from_be_bytes([0x01, 0x02, 0x03, 0x04]),
-                f_nwk_s_int_key: AES128Key::from_bytes([
+                f_nwk_s_int_key: AES128Key::from_be_bytes([
                     0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
                     0x05, 0x05, 0x05,
                 ]),
-                s_nwk_s_int_key: AES128Key::from_bytes([
+                s_nwk_s_int_key: AES128Key::from_be_bytes([
                     0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05,
                     0x05, 0x05, 0x05,
                 ]),

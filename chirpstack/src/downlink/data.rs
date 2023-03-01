@@ -1438,7 +1438,7 @@ fn filter_mac_commands(
             // Check if it doesn't exceed the max error error count.
             if device_session
                 .mac_command_error_count
-                .get(&(mac_command.cid().byte() as u32))
+                .get(&(mac_command.cid().to_u8() as u32))
                 .cloned()
                 .unwrap_or_default()
                 > 1
@@ -1488,7 +1488,7 @@ mod test {
             // One LinkADRReq, no errors.
             Test {
                 device_session: internal::DeviceSession {
-                    mac_command_error_count: [(lrwn::CID::LinkADRReq.byte() as u32, 0)]
+                    mac_command_error_count: [(lrwn::CID::LinkADRReq.to_u8() as u32, 0)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -1520,7 +1520,7 @@ mod test {
             // One LinkADRReq, 0 errors (HashMap contains the CID, but count = 0).
             Test {
                 device_session: internal::DeviceSession {
-                    mac_command_error_count: [(lrwn::CID::LinkADRReq.byte() as u32, 0)]
+                    mac_command_error_count: [(lrwn::CID::LinkADRReq.to_u8() as u32, 0)]
                         .iter()
                         .cloned()
                         .collect(),
@@ -1552,7 +1552,7 @@ mod test {
             // One LinkADRReq, exceeding error count.
             Test {
                 device_session: internal::DeviceSession {
-                    mac_command_error_count: [(lrwn::CID::LinkADRReq.byte() as u32, 2)]
+                    mac_command_error_count: [(lrwn::CID::LinkADRReq.to_u8() as u32, 2)]
                         .iter()
                         .cloned()
                         .collect(),
