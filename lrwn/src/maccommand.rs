@@ -2104,8 +2104,8 @@ impl UplinkLimitPL {
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct UpdateUplinkListReqPayload {
-    pub uplink_list_idx_pl: UplinkListIdxPL,
-    pub uplink_limit_pl: UplinkLimitPL,
+    pub uplink_list_idx: UplinkListIdxPL,
+    pub uplink_limit: UplinkLimitPL,
     pub dev_addr: crate::DevAddr,
     pub w_fcnt: u32,
     pub root_wor_s_key: crate::AES128Key,
@@ -2117,8 +2117,8 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
         cur.read_exact(&mut b)?;
 
         return Ok(UpdateUplinkListReqPayload {
-            uplink_list_idx_pl: UplinkListIdxPL::from_u8(b[0]),
-            uplink_limit_pl: UplinkLimitPL::from_u8(b[1]),
+            uplink_list_idx: UplinkListIdxPL::from_u8(b[0]),
+            uplink_limit: UplinkLimitPL::from_u8(b[1]),
             dev_addr: crate::DevAddr::from_le_bytes({
                 let mut bb = [0; 4];
                 bb.copy_from_slice(&b[2..6]);
@@ -2131,7 +2131,7 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
             }),
             root_wor_s_key: crate::AES128Key::from_le_bytes({
                 let mut bb = [0; 16];
-                bb.copy_from_slice(&b[10..16]);
+                bb.copy_from_slice(&b[10..26]);
                 bb
             }),
         });
@@ -2139,8 +2139,8 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
 
     fn encode(&self) -> Result<Vec<u8>> {
         let mut b = vec![0; 26];
-        b[0] = self.uplink_list_idx_pl.to_u8()?;
-        b[1] = self.uplink_limit_pl.to_u8()?;
+        b[0] = self.uplink_list_idx.to_u8()?;
+        b[1] = self.uplink_limit.to_u8()?;
         b[2..6].copy_from_slice(&self.dev_addr.to_le_bytes());
         b[6..10].copy_from_slice(&self.w_fcnt.to_le_bytes());
         b[10..26].copy_from_slice(&self.root_wor_s_key.to_le_bytes());
@@ -2176,7 +2176,7 @@ impl CtrlUplinkActionPL {
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct CtrlUplinkListReqPayload {
-    pub ctrl_uplink_action_pl: CtrlUplinkActionPL,
+    pub ctrl_uplink_action: CtrlUplinkActionPL,
 }
 
 impl PayloadCodec for CtrlUplinkListReqPayload {
@@ -2185,12 +2185,12 @@ impl PayloadCodec for CtrlUplinkListReqPayload {
         cur.read_exact(&mut b)?;
 
         Ok(CtrlUplinkListReqPayload {
-            ctrl_uplink_action_pl: CtrlUplinkActionPL::from_u8(b[0]),
+            ctrl_uplink_action: CtrlUplinkActionPL::from_u8(b[0]),
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        Ok(vec![self.ctrl_uplink_action_pl.to_u8()?])
+        Ok(vec![self.ctrl_uplink_action.to_u8()?])
     }
 }
 
@@ -2955,7 +2955,6 @@ mod test {
                 }),
                 bytes: vec![64, 21],
             },
-            /*
             MacTest {
                 uplink: false,
                 command: MACCommand::EndDeviceConfReq(EndDeviceConfReqPayload {
@@ -2971,9 +2970,116 @@ mod test {
                         smart_enable_level: 3,
                     },
                 }),
-                bytes: vec![65],
+                bytes: vec![65, 11, 165, 126, 40, 118, 132],
             },
-            */
+            MacTest {
+                uplink: true,
+                command: MACCommand::EndDeviceConfAns(EndDeviceConfAnsPayload {
+                    second_ch_freq_ack: true,
+                    second_ch_dr_ack: false,
+                    second_ch_idx_ack: true,
+                    backoff_ack: true,
+                }),
+                bytes: vec![65, 13],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::FilterListReq(FilterListReqPayload {
+                    filter_list_param: FilterListParam {
+                        filter_list_idx: 3,
+                        filter_list_action: FilterListAction::Forward,
+                        filter_list_len: 16,
+                    },
+                    filter_list_eui: vec![1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
+                }),
+                bytes: vec![66, 176, 1, 1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::FilterListAns(FilterListAnsPayload {
+                    filter_list_action_ack: false,
+                    filter_list_len_ack: true,
+                    combined_rules_ack: false,
+                }),
+                bytes: vec![66, 2],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::UpdateUplinkListReq(UpdateUplinkListReqPayload {
+                    uplink_list_idx: UplinkListIdxPL { uplink_list_idx: 3 },
+                    uplink_limit: UplinkLimitPL {
+                        uplink_limit_reload_rate: 60,
+                        uplink_limit_bucket_size: 2,
+                    },
+                    dev_addr: crate::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                    w_fcnt: 128,
+                    root_wor_s_key: crate::AES128Key::from_be_bytes([
+                        1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
+                    ]),
+                }),
+                bytes: vec![
+                    67, 3, 188, 4, 3, 2, 1, 128, 0, 0, 0, 8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3,
+                    2, 1,
+                ],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::UpdateUplinkListAns,
+                bytes: vec![67],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::CtrlUplinkListReq(CtrlUplinkListReqPayload {
+                    ctrl_uplink_action: CtrlUplinkActionPL {
+                        uplink_list_idx: 3,
+                        ctrl_uplink_action: 1,
+                    },
+                }),
+                bytes: vec![68, 19],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::CtrlUplinkListAns(CtrlUplinkListAnsPayload {
+                    uplink_list_idx_ack: true,
+                    w_fcnt: 128,
+                }),
+                bytes: vec![68, 1, 128, 0, 0, 0],
+            },
+            MacTest {
+                uplink: false,
+                command: MACCommand::ConfigureFwdLimitReq(ConfigureFwdLimitReqPayload {
+                    fwd_limit_reload_rate: FwdLimitReloadRatePL {
+                        overall_reload_rate: 100,
+                        global_uplink_reload_rate: 90,
+                        notify_reload_rate: 80,
+                        join_req_reload_rate: 70,
+                        reset_limit_counter: 3,
+                    },
+                    fwd_limit_load_capacity: FwdLimitLoadCapacityPL {
+                        overal_limit_size: 2,
+                        global_uplink_limit_size: 2,
+                        notify_limit_size: 1,
+                        join_req_limit_size: 3,
+                    },
+                }),
+                bytes: vec![69, 100, 45, 212, 56, 218],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::ConfigureFwdLimitAns,
+                bytes: vec![69],
+            },
+            MacTest {
+                uplink: true,
+                command: MACCommand::NotifyNewEndDeviceReq(NotifyNewEndDeviceReqPayload {
+                    dev_addr: crate::DevAddr::from_be_bytes([1, 2, 3, 4]),
+                    power_level: PowerLevel {
+                        wor_snr: -10,
+                        wor_rssi: -120,
+                    },
+                }),
+                bytes: vec![70, 4, 3, 2, 1, 42, 13],
+            },
         ];
 
         for tst in tests {
