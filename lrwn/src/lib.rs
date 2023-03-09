@@ -17,6 +17,7 @@ pub use self::mhdr::*;
 pub use self::netid::*;
 pub use self::payload::*;
 pub use self::phy_payload::*;
+pub use self::relay::*;
 
 mod aes128;
 mod cflist;
@@ -25,6 +26,7 @@ mod dl_settings;
 mod error;
 mod eui64;
 mod fhdr;
+mod helpers;
 pub mod keys;
 mod maccommand;
 mod mhdr;
@@ -32,6 +34,7 @@ mod netid;
 mod payload;
 mod phy_payload;
 pub mod region;
+mod relay;
 
 lazy_static! {
     static ref EIRP_INDEX: Vec<f32> = vec![
