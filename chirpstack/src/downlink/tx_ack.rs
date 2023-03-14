@@ -417,7 +417,8 @@ impl TxAck {
                     "".to_string()
                 }
             },
-            plaintext_mac_commands: false,
+            plaintext_f_opts: false,
+            plaintext_frm_payload: false,
         };
 
         // Log for gateway (with potentially encrypted mac-commands).
@@ -440,10 +441,12 @@ impl TxAck {
             }
         }
 
+        let mut plaintext_frm_payload = false;
         if let Payload::MACPayload(pl) = &phy.payload {
-            // f_port must be either None or 0
-            if pl.f_port.unwrap_or(0) == 0 {
+            // f_port must be either 0 or 226 (Relay).
+            if vec![0, lrwn::LA_FPORT_RELAY].contains(&pl.f_port.unwrap_or(0)) {
                 phy.decrypt_frm_payload(&nwk_s_enc_key)?;
+                plaintext_frm_payload = true;
             }
         }
 
@@ -461,7 +464,8 @@ impl TxAck {
             m_type: dfl.m_type,
             dev_addr: dfl.dev_addr.clone(),
             dev_eui: dfl.dev_eui.clone(),
-            plaintext_mac_commands: true,
+            plaintext_f_opts: true,
+            plaintext_frm_payload,
         };
 
         // Log for device.

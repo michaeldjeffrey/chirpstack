@@ -470,7 +470,8 @@ impl Data {
             f_port = pl.f_port.unwrap_or(0);
         }
 
-        if f_port == 0 {
+        // Mac-commands (f_port=0) or Relay payload (f_port=226).
+        if f_port == 0 || f_port == lrwn::LA_FPORT_RELAY {
             let nwk_s_enc_key = AES128Key::from_slice(&ds.nwk_s_enc_key)?;
             self.uplink_frame_set
                 .phy_payload
@@ -490,7 +491,8 @@ impl Data {
         trace!("Logging uplink frame-set");
         let mut ufl: api::UplinkFrameLog = (&self.uplink_frame_set).try_into()?;
         ufl.dev_eui = self.device.as_ref().unwrap().dev_eui.to_string();
-        ufl.plaintext_mac_commands = true;
+        ufl.plaintext_f_opts = true;
+        ufl.plaintext_frm_payload = true;
         framelog::log_uplink_for_device(&ufl).await?;
         Ok(())
     }

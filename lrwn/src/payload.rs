@@ -202,8 +202,12 @@ impl Serialize for FRMPayload {
         match self {
             FRMPayload::Raw(v) => serializer.serialize_str(&hex::encode(v)),
             FRMPayload::MACCommandSet(v) => v.serialize(serializer),
-            FRMPayload::ForwardUplinkReq(v) => v.serialize(serializer),
-            FRMPayload::ForwardDownlinkReq(v) => v.serialize(serializer),
+            FRMPayload::ForwardUplinkReq(v) => {
+                serializer.serialize_newtype_variant("FRMPayload", 2, "ForwardUplinkReq", v)
+            }
+            FRMPayload::ForwardDownlinkReq(v) => {
+                serializer.serialize_newtype_variant("FRMPayload", 3, "ForwardDownlinkReq", v)
+            }
         }
     }
 }
