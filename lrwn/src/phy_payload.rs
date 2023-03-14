@@ -9,7 +9,7 @@ use crate::devaddr::DevAddr;
 use crate::eui64::EUI64;
 use crate::maccommand::{MACCommand, MACCommandSet};
 use crate::mhdr::{MType, MHDR};
-use crate::payload::{FRMPayload, JoinAcceptPayload, JoinType, Payload};
+use crate::payload::{FRMPayload, JoinAcceptPayload, JoinType, MACPayload, Payload};
 use crate::relay::{ForwardDownlinkReq, ForwardUplinkReq};
 use crate::LA_FPORT_RELAY;
 
@@ -824,20 +824,27 @@ impl PhyPayload {
         Ok(())
     }
 
-    /// Decode frm_payload to mac-commands.
-    pub fn decode_frm_payload_to_mac_commands(&mut self) -> Result<()> {
+    /// Decode frm_payload payload.
+    ///
+    /// This will decode as follow based on f_port:
+    /// 0:   MACCommandSet
+    /// 226: ForwardDownlinkReq / ForwardDownlinkReq
+    ///
+    /// For other f_port values, it will not try to decode the payload.
+    /// Note that this requires a decrypted frm_payload.
+    pub fn decode_frm_payload(&mut self) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {
             let uplink = is_uplink(self.mhdr.m_type);
-            if pl.f_port.unwrap_or(0) == 0 {
-                let b = match &pl.frm_payload {
-                    Some(FRMPayload::Raw(v)) => v.clone(),
-                    _ => vec![],
-                };
+            let f_port = pl.f_port.unwrap_or(0);
+            let b = match &pl.frm_payload {
+                Some(FRMPayload::Raw(v)) => v.clone(),
+                _ => {
+                    // Nothing to do.
+                    return Ok(());
+                }
+            };
 
-                let mut macs = MACCommandSet::new(vec![MACCommand::Raw(b)]);
-                macs.decode_from_raw(uplink)?;
-                pl.frm_payload = Some(FRMPayload::MACCommandSet(macs));
-            }
+            return decode_frm_payload(pl, uplink, f_port, b);
         }
 
         Ok(())
@@ -863,6 +870,8 @@ impl PhyPayload {
     }
 
     /// Decrypt the frm_payload with the given key.
+    ///
+    /// This will automatically call decode_frm_payload.
     pub fn decrypt_frm_payload(&mut self, key: &AES128Key) -> Result<()> {
         if let Payload::MACPayload(pl) = &mut self.payload {
             // nothing to do
@@ -874,25 +883,7 @@ impl PhyPayload {
             let data = pl.frm_payload.as_ref().unwrap().to_vec()?;
             let data = encrypt_frm_payload(key, uplink, &pl.fhdr.devaddr, pl.fhdr.f_cnt, &data)?;
 
-            if let Some(f_port) = pl.f_port {
-                if f_port == 0 {
-                    let mut macs = MACCommandSet::new(vec![MACCommand::Raw(data)]);
-                    macs.decode_from_raw(uplink)?;
-                    pl.frm_payload = Some(FRMPayload::MACCommandSet(macs));
-                } else if f_port == LA_FPORT_RELAY && uplink {
-                    pl.frm_payload = Some(FRMPayload::ForwardUplinkReq(
-                        ForwardUplinkReq::from_slice(&data)?,
-                    ));
-                } else if f_port == LA_FPORT_RELAY && !uplink {
-                    pl.frm_payload = Some(FRMPayload::ForwardDownlinkReq(
-                        ForwardDownlinkReq::from_slice(&data)?,
-                    ));
-                } else {
-                    pl.frm_payload = Some(FRMPayload::Raw(data));
-                }
-            }
-
-            return Ok(());
+            return decode_frm_payload(pl, uplink, pl.f_port.unwrap_or(0), data);
         }
 
         Err(anyhow!("payload must be of type MACPayload"))
@@ -1196,6 +1187,26 @@ fn is_uplink(m_type: MType) -> bool {
         MType::JoinAccept | MType::UnconfirmedDataDown | MType::ConfirmedDataDown => false,
         MType::Proprietary => false,
     }
+}
+
+fn decode_frm_payload(pl: &mut MACPayload, uplink: bool, f_port: u8, b: Vec<u8>) -> Result<()> {
+    if f_port == 0 {
+        let mut macs = MACCommandSet::new(vec![MACCommand::Raw(b)]);
+        macs.decode_from_raw(uplink)?;
+        pl.frm_payload = Some(FRMPayload::MACCommandSet(macs));
+    } else if f_port == LA_FPORT_RELAY && uplink {
+        pl.frm_payload = Some(FRMPayload::ForwardUplinkReq(ForwardUplinkReq::from_slice(
+            &b,
+        )?));
+    } else if f_port == LA_FPORT_RELAY && !uplink {
+        pl.frm_payload = Some(FRMPayload::ForwardDownlinkReq(
+            ForwardDownlinkReq::from_slice(&b)?,
+        ));
+    } else {
+        pl.frm_payload = Some(FRMPayload::Raw(b));
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
