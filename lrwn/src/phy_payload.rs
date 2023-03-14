@@ -11,6 +11,7 @@ use crate::maccommand::{MACCommand, MACCommandSet};
 use crate::mhdr::{MType, MHDR};
 use crate::payload::{FRMPayload, JoinAcceptPayload, JoinType, Payload};
 use crate::relay::{ForwardDownlinkReq, ForwardUplinkReq};
+use crate::LA_FPORT_RELAY;
 
 #[derive(PartialEq, Eq, Clone, Copy, Serialize)]
 pub enum MACVersion {
@@ -878,11 +879,11 @@ impl PhyPayload {
                     let mut macs = MACCommandSet::new(vec![MACCommand::Raw(data)]);
                     macs.decode_from_raw(uplink)?;
                     pl.frm_payload = Some(FRMPayload::MACCommandSet(macs));
-                } else if f_port == 226 && uplink {
+                } else if f_port == LA_FPORT_RELAY && uplink {
                     pl.frm_payload = Some(FRMPayload::ForwardUplinkReq(
                         ForwardUplinkReq::from_slice(&data)?,
                     ));
-                } else if f_port == 226 && !uplink {
+                } else if f_port == LA_FPORT_RELAY && !uplink {
                     pl.frm_payload = Some(FRMPayload::ForwardDownlinkReq(
                         ForwardDownlinkReq::from_slice(&data)?,
                     ));

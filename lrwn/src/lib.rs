@@ -36,6 +36,8 @@ mod phy_payload;
 pub mod region;
 mod relay;
 
+pub const LA_FPORT_RELAY: u8 = 226;
+
 lazy_static! {
     static ref EIRP_INDEX: Vec<f32> = vec![
         8.0,  // 0
