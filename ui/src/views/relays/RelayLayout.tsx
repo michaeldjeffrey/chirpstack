@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Route, Switch, RouteComponentProps, Link } from "react-router-dom";
 
-import { Space, Breadcrumb, Card, Button, PageHeader, Menu } from "antd";
+import { Space, Breadcrumb, Card, PageHeader, Menu } from "antd";
 
 import { Application } from "@chirpstack/chirpstack-api-grpc-web/api/application_pb";
 import { Tenant } from "@chirpstack/chirpstack-api-grpc-web/api/tenant_pb";

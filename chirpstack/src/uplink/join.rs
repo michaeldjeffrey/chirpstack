@@ -101,6 +101,7 @@ impl JoinRequest {
         }
         ctx.abort_on_device_is_disabled()?;
         ctx.abort_on_otaa_is_disabled()?;
+        ctx.abort_on_relay_only_comm()?;
         ctx.get_random_dev_addr()?;
         if ctx.js_client.is_some() {
             // Using join-server
@@ -274,6 +275,14 @@ impl JoinRequest {
     fn abort_on_otaa_is_disabled(&self) -> Result<()> {
         if !self.device_profile.as_ref().unwrap().supports_otaa {
             return Err(anyhow!("OTAA is disabled in device-profile"));
+        }
+        Ok(())
+    }
+
+    fn abort_on_relay_only_comm(&self) -> Result<()> {
+        // In case the relay context is not set and ed_relay_only is set, abort.
+        if !self.relay_context.is_some() && self.device_profile.as_ref().unwrap().ed_relay_only {
+            return Err(anyhow!("Only communication through relay is allowed"));
         }
         Ok(())
     }
