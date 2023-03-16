@@ -8,7 +8,7 @@ use tracing::{debug, error, info, span, trace, warn, Instrument, Level};
 use super::error::Error;
 use super::{
     data_fns, filter_rx_info_by_region_config_id, filter_rx_info_by_tenant_id, helpers,
-    UplinkFrameSet,
+    RelayContext, UplinkFrameSet,
 };
 use crate::api::helpers::ToProto;
 use crate::backend::roaming;
@@ -23,6 +23,7 @@ use lrwn::{AES128Key, EUI64};
 
 pub struct Data {
     uplink_frame_set: UplinkFrameSet,
+    relay_context: Option<RelayContext>,
 
     reset: bool,
     retransmission: bool,
@@ -58,6 +59,7 @@ impl Data {
     async fn _handle(ufs: UplinkFrameSet) -> Result<()> {
         let mut ctx = Data {
             uplink_frame_set: ufs,
+            relay_context: None,
             f_cnt_up_full: 0,
             reset: false,
             retransmission: false,
@@ -1043,7 +1045,22 @@ impl Data {
             if let Some(lrwn::FRMPayload::ForwardUplinkReq(pl)) = &pl.frm_payload {
                 match pl.payload.mhdr.m_type {
                     lrwn::MType::JoinRequest => {
-                        super::join::JoinRequest::handle(
+                        super::join::JoinRequest::handle_relayed(
+                            super::RelayContext {
+                                req: pl.clone(),
+                                device: self.device.as_ref().unwrap().clone(),
+                                device_profile: self.device_profile.as_ref().unwrap().clone(),
+                                device_session: self.device_session.as_ref().unwrap().clone(),
+                                must_ack: self.uplink_frame_set.phy_payload.mhdr.m_type
+                                    == lrwn::MType::ConfirmedDataUp,
+                            },
+                            self.uplink_frame_set.clone(),
+                        )
+                        .await
+                    }
+                    /*
+                    lrwn::MType::UnconfirmedDataUp | lrwn::MType::ConfirmedDataUp => {
+                        Data::handle(
                             self.uplink_frame_set.clone(),
                             Some(super::RelayContext {
                                 req: pl.clone(),
@@ -1056,6 +1073,7 @@ impl Data {
                         )
                         .await
                     }
+                    */
                     _ => {
                         return Err(anyhow!(
                             "Handling ForwardUplinkReq for MType {} supported",

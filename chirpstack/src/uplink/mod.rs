@@ -312,7 +312,7 @@ pub async fn handle_uplink(deduplication_id: Uuid, uplink: gw::UplinkFrameSet) -
         .context("log_uplink_for_gateways error")?;
 
     match uplink.phy_payload.mhdr.m_type {
-        MType::JoinRequest => join::JoinRequest::handle(uplink, None).await,
+        MType::JoinRequest => join::JoinRequest::handle(uplink).await,
         MType::UnconfirmedDataUp | MType::ConfirmedDataUp => data::Data::handle(uplink).await,
         _ => {
             return Err(anyhow!(
