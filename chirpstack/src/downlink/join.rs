@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::{Context, Result};
 use rand::Rng;
@@ -8,14 +9,16 @@ use tracing::{span, trace, Instrument, Level};
 use lrwn::{PhyPayload, EUI64};
 
 use super::helpers;
+use crate::api::helpers::FromProto;
 use crate::gateway::backend::send_downlink;
 use crate::storage::{device, downlink_frame, tenant};
-use crate::uplink::UplinkFrameSet;
+use crate::uplink::{RelayContext, UplinkFrameSet};
 use crate::{config, region};
 use chirpstack_api::{gw, internal};
 
 pub struct JoinAccept<'a> {
     uplink_frame_set: &'a UplinkFrameSet,
+    relay_ctx: &'a Option<RelayContext>,
     tenant: &'a tenant::Tenant,
     device: &'a device::Device,
     device_session: &'a internal::DeviceSession,
@@ -35,10 +38,11 @@ impl JoinAccept<'_> {
         device: &device::Device,
         device_session: &internal::DeviceSession,
         join_accept: &PhyPayload,
+        relay_ctx: &Option<RelayContext>,
     ) -> Result<()> {
         let span = span!(Level::TRACE, "join_accept", downlink_id = %ufs.uplink_set_id);
 
-        let fut = JoinAccept::_handle(ufs, tenant, device, device_session, join_accept);
+        let fut = JoinAccept::_handle(ufs, tenant, device, device_session, join_accept, relay_ctx);
         fut.instrument(span).await
     }
 
@@ -48,9 +52,11 @@ impl JoinAccept<'_> {
         device: &device::Device,
         device_session: &internal::DeviceSession,
         join_accept: &PhyPayload,
+        relay_ctx: &Option<RelayContext>,
     ) -> Result<()> {
         let mut ctx = JoinAccept {
             uplink_frame_set: ufs,
+            relay_ctx,
             tenant,
             device,
             device_session,
@@ -69,9 +75,20 @@ impl JoinAccept<'_> {
         ctx.set_device_gateway_rx_info()?;
         ctx.select_downlink_gateway()?;
         ctx.set_tx_info()?;
-        ctx.set_downlink_frame()?;
+
+        if ctx._is_relay() {
+            ctx.set_forward_downlink_req_frame()?;
+        } else {
+            ctx.set_downlink_frame()?;
+        }
+
         ctx.send_join_accept_response().await?;
-        ctx.save_downlink_frame().await?;
+
+        if ctx._is_relay() {
+            ctx.save_forward_downlink_req_frame().await?;
+        } else {
+            ctx.save_downlink_frame().await?;
+        }
 
         Ok(())
     }
@@ -163,10 +180,17 @@ impl JoinAccept<'_> {
             ..Default::default()
         };
 
+        // Get RX1 DR offset in case of Relay.
+        let rx1_dr_offset = if let Some(relay_ctx) = self.relay_ctx.as_ref() {
+            relay_ctx.device_session.rx1_dr_offset as usize
+        } else {
+            0
+        };
+
         // get RX1 DR.
         let rx1_dr_index = self
             .region_conf
-            .get_rx1_data_rate_index(self.uplink_frame_set.dr, 0)?;
+            .get_rx1_data_rate_index(self.uplink_frame_set.dr, rx1_dr_offset)?;
         let rx1_dr = self.region_conf.get_data_rate(rx1_dr_index)?;
 
         // set DR to tx_info.
@@ -184,14 +208,29 @@ impl JoinAccept<'_> {
             tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
         }
 
-        // set timestamp
-        tx_info.timing = Some(gw::Timing {
-            parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
-                delay: Some(pbjson_types::Duration::from(
-                    self.region_conf.get_defaults().join_accept_delay1,
-                )),
-            })),
-        });
+        // Set timestamp.
+        if let Some(relay_ctx) = self.relay_ctx.as_ref() {
+            // In case of Relay
+            let delay = if relay_ctx.device_session.rx1_delay > 0 {
+                Duration::from_secs(relay_ctx.device_session.rx1_delay as u64)
+            } else {
+                self.region_conf.get_defaults().rx1_delay
+            };
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                    delay: Some(pbjson_types::Duration::from(delay)),
+                })),
+            });
+        } else {
+            // Normal OTAA
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                    delay: Some(pbjson_types::Duration::from(
+                        self.region_conf.get_defaults().join_accept_delay1,
+                    )),
+                })),
+            });
+        }
 
         // set downlink item
         self.downlink_frame
@@ -208,16 +247,27 @@ impl JoinAccept<'_> {
         trace!("Setting tx-info for RX2");
         let gw_down = self.downlink_gateway.as_ref().unwrap();
 
+        // Get frequency.
+        let frequency = if let Some(relay_ctx) = self.relay_ctx.as_ref() {
+            relay_ctx.device_session.rx2_frequency
+        } else {
+            self.region_conf.get_defaults().rx2_frequency
+        };
+
         let mut tx_info = chirpstack_api::gw::DownlinkTxInfo {
             board: gw_down.board,
             antenna: gw_down.antenna,
-            frequency: self.region_conf.get_defaults().rx2_frequency,
             context: gw_down.context.clone(),
+            frequency,
             ..Default::default()
         };
 
         // get RX2 DR
-        let rx2_dr_index = self.region_conf.get_defaults().rx2_dr;
+        let rx2_dr_index = if let Some(relay_ctx) = self.relay_ctx.as_ref() {
+            relay_ctx.device_session.rx2_dr as u8
+        } else {
+            self.region_conf.get_defaults().rx2_dr
+        };
         let rx2_dr = self.region_conf.get_data_rate(rx2_dr_index)?;
 
         // set DR to tx_info
@@ -230,14 +280,27 @@ impl JoinAccept<'_> {
             tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
         }
 
-        // set timestamp
-        tx_info.timing = Some(gw::Timing {
-            parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
-                delay: Some(pbjson_types::Duration::from(
-                    self.region_conf.get_defaults().join_accept_delay2,
-                )),
-            })),
-        });
+        // Set timestamp.
+        if let Some(relay_ctx) = self.relay_ctx.as_ref() {
+            let delay = if relay_ctx.device_session.rx1_delay > 0 {
+                Duration::from_secs(relay_ctx.device_session.rx1_delay as u64 + 1)
+            } else {
+                self.region_conf.get_defaults().rx2_delay
+            };
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                    delay: Some(pbjson_types::Duration::from(delay)),
+                })),
+            });
+        } else {
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                    delay: Some(pbjson_types::Duration::from(
+                        self.region_conf.get_defaults().join_accept_delay2,
+                    )),
+                })),
+            });
+        }
 
         // set downlink item
         self.downlink_frame
@@ -251,9 +314,72 @@ impl JoinAccept<'_> {
     }
 
     fn set_downlink_frame(&mut self) -> Result<()> {
+        trace!("Setting downlink frame");
+
         let phy_b = self.join_accept.to_vec()?;
         for i in &mut self.downlink_frame.items {
             i.phy_payload = phy_b.clone();
+        }
+
+        Ok(())
+    }
+
+    fn set_forward_downlink_req_frame(&mut self) -> Result<()> {
+        trace!("Setting ForwardDownlinkReq frame");
+
+        let relay_ctx = self.relay_ctx.as_ref().unwrap();
+
+        let mut relay_phy = lrwn::PhyPayload {
+            mhdr: lrwn::MHDR {
+                m_type: lrwn::MType::UnconfirmedDataDown,
+                major: lrwn::Major::LoRaWANR1,
+            },
+            payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                fhdr: lrwn::FHDR {
+                    devaddr: lrwn::DevAddr::from_slice(&relay_ctx.device_session.dev_addr)?,
+                    f_cnt: if relay_ctx
+                        .device_session
+                        .mac_version()
+                        .to_string()
+                        .starts_with("1.0")
+                    {
+                        relay_ctx.device_session.n_f_cnt_down
+                    } else {
+                        relay_ctx.device_session.a_f_cnt_down
+                    },
+                    f_ctrl: lrwn::FCtrl {
+                        adr: !self.network_conf.adr_disabled,
+                        ack: relay_ctx.must_ack,
+                        ..Default::default()
+                    },
+                    f_opts: lrwn::MACCommandSet::new(vec![]),
+                },
+                f_port: Some(lrwn::LA_FPORT_RELAY),
+                frm_payload: Some(lrwn::FRMPayload::ForwardDownlinkReq(
+                    lrwn::ForwardDownlinkReq {
+                        payload: Box::new(self.join_accept.clone()),
+                    },
+                )),
+            }),
+            mic: None,
+        };
+
+        relay_phy.encrypt_frm_payload(&lrwn::AES128Key::from_slice(
+            &relay_ctx.device_session.nwk_s_enc_key,
+        )?)?;
+
+        // Set MIC.
+        // If this is an ACK, then FCntUp has already been incremented by one. If
+        // this is not an ACK, then DownlinkDataMIC will zero out ConfFCnt.
+        relay_phy.set_downlink_data_mic(
+            relay_ctx.device_session.mac_version().from_proto(),
+            relay_ctx.device_session.f_cnt_up - 1,
+            &lrwn::AES128Key::from_slice(&relay_ctx.device_session.s_nwk_s_int_key)?,
+        )?;
+
+        let relay_phy_b = relay_phy.to_vec()?;
+        for i in &mut self.downlink_frame.items {
+            i.phy_payload = relay_phy_b.clone();
         }
 
         Ok(())
@@ -271,6 +397,8 @@ impl JoinAccept<'_> {
     }
 
     async fn save_downlink_frame(&self) -> Result<()> {
+        trace!("Saving downlink frame");
+
         let df = chirpstack_api::internal::DownlinkFrame {
             dev_eui: self.device.dev_eui.to_be_bytes().to_vec(),
             downlink_id: self.downlink_frame.downlink_id,
@@ -284,5 +412,24 @@ impl JoinAccept<'_> {
             .context("Saving downlink-frame error")?;
 
         Ok(())
+    }
+
+    async fn save_forward_downlink_req_frame(&self) -> Result<()> {
+        trace!("Saving ForwardDownlinkReq frame");
+
+        let relay_ctx = self.relay_ctx.as_ref().unwrap();
+
+        let df = chirpstack_api::internal::DownlinkFrame {
+            dev_eui: relay_ctx.device.dev_eui.to_be_bytes().to_vec(),
+            downlink_frame: Some(self.downlink_frame.clone()),
+            ..Default::default()
+        };
+
+        downlink_frame::save(&df).await?;
+        Ok(())
+    }
+
+    fn _is_relay(&self) -> bool {
+        return self.relay_ctx.is_some();
     }
 }

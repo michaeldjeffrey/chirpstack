@@ -13,7 +13,8 @@ use lrwn::{
 use super::error::Error;
 use super::join_fns;
 use super::{
-    filter_rx_info_by_region_config_id, filter_rx_info_by_tenant_id, helpers, UplinkFrameSet,
+    filter_rx_info_by_region_config_id, filter_rx_info_by_tenant_id, helpers, RelayContext,
+    UplinkFrameSet,
 };
 use crate::api::backend::get_async_receiver;
 use crate::api::helpers::ToProto;
@@ -30,6 +31,7 @@ use chirpstack_api::{api, common, integration as integration_pb, internal, meta}
 
 pub struct JoinRequest {
     uplink_frame_set: UplinkFrameSet,
+    relay_context: Option<RelayContext>,
 
     js_client: Option<Arc<backend::Client>>,
     join_request: Option<JoinRequestPayload>,
@@ -49,10 +51,10 @@ pub struct JoinRequest {
 }
 
 impl JoinRequest {
-    pub async fn handle(ufs: UplinkFrameSet) {
+    pub async fn handle(ufs: UplinkFrameSet, relay_ctx: Option<RelayContext>) {
         let span = span!(Level::INFO, "join_request");
 
-        if let Err(e) = JoinRequest::_handle(ufs).instrument(span).await {
+        if let Err(e) = JoinRequest::_handle(ufs, relay_ctx).instrument(span).await {
             match e.downcast_ref::<Error>() {
                 Some(Error::Abort) => {
                     // nothing to do
@@ -64,9 +66,10 @@ impl JoinRequest {
         }
     }
 
-    async fn _handle(ufs: UplinkFrameSet) -> Result<()> {
+    async fn _handle(ufs: UplinkFrameSet, relay_ctx: Option<RelayContext>) -> Result<()> {
         let mut ctx = JoinRequest {
             uplink_frame_set: ufs,
+            relay_context: relay_ctx,
             js_client: None,
             join_request: None,
             device: None,
@@ -91,9 +94,11 @@ impl JoinRequest {
         ctx.get_tenant().await?;
         ctx.get_device_profile().await?;
         ctx.set_device_info()?;
-        ctx.filter_rx_info_by_tenant()?;
-        ctx.filter_rx_info_by_region_config_id()?;
-        ctx.log_uplink_frame_set().await?;
+        if !ctx._is_relay() {
+            ctx.filter_rx_info_by_tenant()?;
+            ctx.filter_rx_info_by_region_config_id()?;
+            ctx.log_uplink_frame_set().await?;
+        }
         ctx.abort_on_device_is_disabled()?;
         ctx.abort_on_otaa_is_disabled()?;
         ctx.get_random_dev_addr()?;
@@ -107,7 +112,9 @@ impl JoinRequest {
             ctx.construct_join_accept_and_set_keys()?;
             ctx.save_device_keys().await?;
         }
-        ctx.log_uplink_meta().await?;
+        if !ctx._is_relay() {
+            ctx.log_uplink_meta().await?;
+        }
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
@@ -119,12 +126,27 @@ impl JoinRequest {
 
     fn get_join_request_payload(&mut self) -> Result<()> {
         trace!("Getting JoinRequestPayload");
-        self.join_request = Some(match self.uplink_frame_set.phy_payload.payload {
-            Payload::JoinRequest(pl) => pl,
-            _ => {
-                return Err(anyhow!("PhyPayload does not contain JoinRequest payload"));
-            }
-        });
+
+        // If this is a relayed payload, then we must take the JoinRequest from the
+        // ForwardUplinkReq payload.
+        if let Some(relay_ctx) = &self.relay_context {
+            self.join_request = Some(match relay_ctx.req.payload.payload {
+                Payload::JoinRequest(pl) => pl,
+                _ => {
+                    return Err(anyhow!(
+                        "Relay PhyPayload does not contain JoinRequest payload"
+                    ));
+                }
+            });
+        } else {
+            self.join_request = Some(match self.uplink_frame_set.phy_payload.payload {
+                Payload::JoinRequest(pl) => pl,
+                _ => {
+                    return Err(anyhow!("PhyPayload does not contain JoinRequest payload"));
+                }
+            });
+        }
+
         Ok(())
     }
 
@@ -316,7 +338,16 @@ impl JoinRequest {
 
     async fn validate_mic(&self) -> Result<()> {
         let device_keys = self.device_keys.as_ref().unwrap();
-        if self
+
+        if let Some(relay_ctx) = self.relay_context.as_ref() {
+            if relay_ctx
+                .req
+                .payload
+                .validate_join_request_mic(&device_keys.nwk_key)?
+            {
+                return Ok(());
+            }
+        } else if self
             .uplink_frame_set
             .phy_payload
             .validate_join_request_mic(&device_keys.nwk_key)?
@@ -734,6 +765,7 @@ impl JoinRequest {
             self.device.as_ref().unwrap(),
             self.device_session.as_ref().unwrap(),
             self.join_accept.as_ref().unwrap(),
+            &self.relay_context,
         )
         .await?;
         Ok(())
@@ -757,5 +789,9 @@ impl JoinRequest {
 
         integration::join_event(app.id, &dev.variables, &pl).await;
         Ok(())
+    }
+
+    fn _is_relay(&self) -> bool {
+        self.relay_context.is_some()
     }
 }

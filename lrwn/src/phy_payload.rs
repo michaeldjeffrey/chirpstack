@@ -13,7 +13,7 @@ use crate::payload::{FRMPayload, JoinAcceptPayload, JoinType, MACPayload, Payloa
 use crate::relay::{ForwardDownlinkReq, ForwardUplinkReq};
 use crate::LA_FPORT_RELAY;
 
-#[derive(PartialEq, Eq, Clone, Copy, Serialize)]
+#[derive(PartialEq, Eq, Clone, Copy, Serialize, Debug)]
 pub enum MACVersion {
     LoRaWAN1_0,
     LoRaWAN1_1,

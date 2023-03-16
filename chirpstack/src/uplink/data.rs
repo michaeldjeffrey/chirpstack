@@ -111,7 +111,12 @@ impl Data {
         ctx.save_device_session().await?;
         ctx.handle_uplink_ack().await?;
         ctx.save_metrics().await?;
-        ctx.start_downlink_data_flow().await?;
+
+        if ctx._is_relay() {
+            ctx.handle_forward_uplink_req().await?;
+        } else {
+            ctx.start_downlink_data_flow().await?;
+        }
 
         Ok(())
     }
@@ -1031,7 +1036,52 @@ impl Data {
         Ok(())
     }
 
+    async fn handle_forward_uplink_req(&self) -> Result<()> {
+        trace!("Handling ForwardUplinkReq");
+
+        if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload {
+            if let Some(lrwn::FRMPayload::ForwardUplinkReq(pl)) = &pl.frm_payload {
+                match pl.payload.mhdr.m_type {
+                    lrwn::MType::JoinRequest => {
+                        super::join::JoinRequest::handle(
+                            self.uplink_frame_set.clone(),
+                            Some(super::RelayContext {
+                                req: pl.clone(),
+                                device: self.device.as_ref().unwrap().clone(),
+                                device_profile: self.device_profile.as_ref().unwrap().clone(),
+                                device_session: self.device_session.as_ref().unwrap().clone(),
+                                must_ack: self.uplink_frame_set.phy_payload.mhdr.m_type
+                                    == lrwn::MType::ConfirmedDataUp,
+                            }),
+                        )
+                        .await
+                    }
+                    _ => {
+                        return Err(anyhow!(
+                            "Handling ForwardUplinkReq for MType {} supported",
+                            pl.payload.mhdr.m_type
+                        ));
+                    }
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     fn _is_roaming(&self) -> bool {
         self.uplink_frame_set.roaming_meta_data.is_some()
+    }
+
+    fn _is_relay(&self) -> bool {
+        let dp = self.device_profile.as_ref().unwrap();
+
+        if let lrwn::Payload::MACPayload(pl) = &self.uplink_frame_set.phy_payload.payload {
+            if dp.is_relay && pl.f_port.unwrap_or(0) == lrwn::LA_FPORT_RELAY {
+                return true;
+            }
+        }
+
+        false
     }
 }

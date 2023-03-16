@@ -83,7 +83,7 @@ impl TxAck {
                 ctx.delete_multicast_group_queue_item().await?;
             }
         } else {
-            if ctx.is_application_payload() {
+            if ctx.is_application_payload() && !ctx.is_relay_payload() {
                 ctx.get_device().await?;
                 ctx.get_device_profile().await?;
                 ctx.get_application().await?;
@@ -102,6 +102,12 @@ impl TxAck {
                 ctx.increment_a_f_cnt_down()?;
                 ctx.save_device_session().await?;
                 ctx.send_tx_ack_event().await?;
+            }
+
+            if ctx.is_relay_payload() {
+                ctx.get_device_session().await?;
+                ctx.increment_a_f_cnt_down()?;
+                ctx.save_device_session().await?;
             }
 
             if ctx.is_mac_only_downlink() {
@@ -540,6 +546,15 @@ impl TxAck {
 
         if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.as_ref().unwrap().payload {
             if pl.f_port.unwrap_or(0) != 0 {
+                return true;
+            }
+        }
+        false
+    }
+
+    fn is_relay_payload(&self) -> bool {
+        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload.as_ref().unwrap().payload {
+            if pl.f_port.unwrap_or(0) == lrwn::LA_FPORT_RELAY {
                 return true;
             }
         }

@@ -10,6 +10,7 @@ mod class_c_test;
 mod multicast_test;
 mod otaa_pr_test;
 mod otaa_test;
+mod relay_otaa_test;
 
 static TRACING_INIT: Once = Once::new();
 
