@@ -45,7 +45,7 @@ class DeleteDeviceProfileRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class DeviceProfile(_message.Message):
-    __slots__ = ["abp_rx1_delay", "abp_rx1_dr_offset", "abp_rx2_dr", "abp_rx2_freq", "adr_algorithm_id", "auto_detect_measurements", "class_b_ping_slot_dr", "class_b_ping_slot_freq", "class_b_ping_slot_nb_k", "class_b_timeout", "class_c_timeout", "description", "device_status_req_interval", "flush_queue_on_activate", "id", "is_relay", "mac_version", "measurements", "name", "payload_codec_runtime", "payload_codec_script", "reg_params_revision", "region", "region_config_id", "supports_class_b", "supports_class_c", "supports_otaa", "tags", "tenant_id", "uplink_interval"]
+    __slots__ = ["abp_rx1_delay", "abp_rx1_dr_offset", "abp_rx2_dr", "abp_rx2_freq", "adr_algorithm_id", "auto_detect_measurements", "class_b_ping_slot_dr", "class_b_ping_slot_freq", "class_b_ping_slot_nb_k", "class_b_timeout", "class_c_timeout", "description", "device_status_req_interval", "ed_relay_only", "flush_queue_on_activate", "id", "is_relay", "mac_version", "measurements", "name", "payload_codec_runtime", "payload_codec_script", "reg_params_revision", "region", "region_config_id", "supports_class_b", "supports_class_c", "supports_otaa", "tags", "tenant_id", "uplink_interval"]
     class MeasurementsEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -73,6 +73,7 @@ class DeviceProfile(_message.Message):
     CLASS_C_TIMEOUT_FIELD_NUMBER: _ClassVar[int]
     DESCRIPTION_FIELD_NUMBER: _ClassVar[int]
     DEVICE_STATUS_REQ_INTERVAL_FIELD_NUMBER: _ClassVar[int]
+    ED_RELAY_ONLY_FIELD_NUMBER: _ClassVar[int]
     FLUSH_QUEUE_ON_ACTIVATE_FIELD_NUMBER: _ClassVar[int]
     ID_FIELD_NUMBER: _ClassVar[int]
     IS_RELAY_FIELD_NUMBER: _ClassVar[int]
@@ -103,6 +104,7 @@ class DeviceProfile(_message.Message):
     class_c_timeout: int
     description: str
     device_status_req_interval: int
+    ed_relay_only: bool
     flush_queue_on_activate: bool
     id: str
     is_relay: bool
@@ -120,7 +122,7 @@ class DeviceProfile(_message.Message):
     tags: _containers.ScalarMap[str, str]
     tenant_id: str
     uplink_interval: int
-    def __init__(self, id: _Optional[str] = ..., tenant_id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mac_version: _Optional[_Union[_common_pb2.MacVersion, str]] = ..., reg_params_revision: _Optional[_Union[_common_pb2.RegParamsRevision, str]] = ..., adr_algorithm_id: _Optional[str] = ..., payload_codec_runtime: _Optional[_Union[CodecRuntime, str]] = ..., payload_codec_script: _Optional[str] = ..., flush_queue_on_activate: bool = ..., uplink_interval: _Optional[int] = ..., device_status_req_interval: _Optional[int] = ..., supports_otaa: bool = ..., supports_class_b: bool = ..., supports_class_c: bool = ..., class_b_timeout: _Optional[int] = ..., class_b_ping_slot_nb_k: _Optional[int] = ..., class_b_ping_slot_dr: _Optional[int] = ..., class_b_ping_slot_freq: _Optional[int] = ..., class_c_timeout: _Optional[int] = ..., abp_rx1_delay: _Optional[int] = ..., abp_rx1_dr_offset: _Optional[int] = ..., abp_rx2_dr: _Optional[int] = ..., abp_rx2_freq: _Optional[int] = ..., tags: _Optional[_Mapping[str, str]] = ..., measurements: _Optional[_Mapping[str, Measurement]] = ..., auto_detect_measurements: bool = ..., region_config_id: _Optional[str] = ..., is_relay: bool = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., tenant_id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mac_version: _Optional[_Union[_common_pb2.MacVersion, str]] = ..., reg_params_revision: _Optional[_Union[_common_pb2.RegParamsRevision, str]] = ..., adr_algorithm_id: _Optional[str] = ..., payload_codec_runtime: _Optional[_Union[CodecRuntime, str]] = ..., payload_codec_script: _Optional[str] = ..., flush_queue_on_activate: bool = ..., uplink_interval: _Optional[int] = ..., device_status_req_interval: _Optional[int] = ..., supports_otaa: bool = ..., supports_class_b: bool = ..., supports_class_c: bool = ..., class_b_timeout: _Optional[int] = ..., class_b_ping_slot_nb_k: _Optional[int] = ..., class_b_ping_slot_dr: _Optional[int] = ..., class_b_ping_slot_freq: _Optional[int] = ..., class_c_timeout: _Optional[int] = ..., abp_rx1_delay: _Optional[int] = ..., abp_rx1_dr_offset: _Optional[int] = ..., abp_rx2_dr: _Optional[int] = ..., abp_rx2_freq: _Optional[int] = ..., tags: _Optional[_Mapping[str, str]] = ..., measurements: _Optional[_Mapping[str, Measurement]] = ..., auto_detect_measurements: bool = ..., region_config_id: _Optional[str] = ..., is_relay: bool = ..., ed_relay_only: bool = ...) -> None: ...
 
 class DeviceProfileListItem(_message.Message):
     __slots__ = ["created_at", "id", "mac_version", "name", "reg_params_revision", "region", "supports_class_b", "supports_class_c", "supports_otaa", "updated_at"]

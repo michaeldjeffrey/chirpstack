@@ -311,6 +311,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
 
     // relay
     dp.setIsRelay(v.isRelay);
+    dp.setEdRelayOnly(v.edRelayOnly);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -761,7 +762,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
             <Form.Item
               label="Payload codec"
               name="payloadCodecRuntime"
-              tooltip="By defining a payload codec, ChirpStack Application Server can encode and decode the binary device payload for you."
+              tooltip="By defining a payload codec, ChirpStack can encode and decode the binary device payload for you."
             >
               <Select onChange={this.onPayloadCodecRuntimeChange} disabled={this.props.disabled}>
                 <Select.Option value={CodecRuntime.NONE}>None</Select.Option>
@@ -780,9 +781,28 @@ class DeviceProfileForm extends Component<IProps, IState> {
             )}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Relay" key="6">
-            <Form.Item label="Device is a Relay" name="isRelay" valuePropName="checked">
-              <Switch disabled={this.props.disabled} />
-            </Form.Item>
+            <Row gutter={24}>
+              <Col span={8}>
+                <Form.Item
+                  label="Device is a Relay"
+                  name="isRelay"
+                  valuePropName="checked"
+                  tooltip="Enable this if the device(s) under this profile implement the Relay specification (please refer to the TS011 specification for more information)"
+                >
+                  <Switch disabled={this.props.disabled} />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  label="Only use Relay (end-device)"
+                  name="edRelayOnly"
+                  valuePropName="checked"
+                  tooltip="If enabled, device(s) under this profile will only be able to communicate through a Relay device. Uplink messages received directly by ChirpStack will be discarded. Enabling this feature can be helpful for testing the Relay communication."
+                >
+                  <Switch disabled={this.props.disabled} />
+                </Form.Item>
+              </Col>
+            </Row>
           </Tabs.TabPane>
           <Tabs.TabPane tab="Tags" key="7">
             <Form.List name="tagsMap">

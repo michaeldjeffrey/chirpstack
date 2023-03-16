@@ -105,6 +105,7 @@ diesel::table! {
         auto_detect_measurements -> Bool,
         region_config_id -> Nullable<Varchar>,
         is_relay -> Bool,
+        ed_relay_only -> Bool,
     }
 }
 

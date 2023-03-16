@@ -89,6 +89,7 @@ impl DeviceProfileService for DeviceProfile {
             region_config_id: (!req_dp.region_config_id.is_empty())
                 .then(|| req_dp.region_config_id.clone()),
             is_relay: req_dp.is_relay,
+            ed_relay_only: req_dp.ed_relay_only,
             ..Default::default()
         };
 
@@ -166,6 +167,7 @@ impl DeviceProfileService for DeviceProfile {
                 auto_detect_measurements: dp.auto_detect_measurements,
                 region_config_id: dp.region_config_id.clone().unwrap_or_default(),
                 is_relay: dp.is_relay,
+                ed_relay_only: dp.ed_relay_only,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -241,6 +243,7 @@ impl DeviceProfileService for DeviceProfile {
             region_config_id: (!req_dp.region_config_id.is_empty())
                 .then(|| req_dp.region_config_id.clone()),
             is_relay: req_dp.is_relay,
+            ed_relay_only: req_dp.ed_relay_only,
             ..Default::default()
         })
         .await

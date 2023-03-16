@@ -1,8 +1,10 @@
 alter table device_profile
-    add column is_relay boolean not null default false;
+    add column is_relay boolean not null default false,
+    add column ed_relay_only boolean not null default false;
 
 alter table device_profile
-    alter column is_relay drop default;
+    alter column is_relay drop default,
+    alter column ed_relay_only drop default;
 
 create table relay_device (
     relay_dev_eui bytea not null references device on delete cascade,

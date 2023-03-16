@@ -51,6 +51,7 @@ pub struct DeviceProfile {
     pub auto_detect_measurements: bool,
     pub region_config_id: Option<String>,
     pub is_relay: bool,
+    pub ed_relay_only: bool,
 }
 
 impl DeviceProfile {
@@ -99,6 +100,7 @@ impl Default for DeviceProfile {
             auto_detect_measurements: false,
             region_config_id: None,
             is_relay: false,
+            ed_relay_only: false,
         }
     }
 }
@@ -213,6 +215,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::auto_detect_measurements.eq(&dp.auto_detect_measurements),
                     device_profile::region_config_id.eq(&dp.region_config_id),
                     device_profile::is_relay.eq(&dp.is_relay),
+                    device_profile::ed_relay_only.eq(&dp.ed_relay_only),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))

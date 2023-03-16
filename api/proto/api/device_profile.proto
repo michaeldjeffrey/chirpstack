@@ -201,6 +201,12 @@ message DeviceProfile {
     // and is able to relay data from relay capable devices.
     // See for more information the TS011 specification.
     bool is_relay = 30;
+
+    // End-device only accept data through relay.
+    // Only accept data for this device through a relay. This setting is useful
+    // for testing as in case of a test-setup, the end-device is usually within
+    // range of the gateway.
+    bool ed_relay_only = 31;
 }
 
 message Measurement {
