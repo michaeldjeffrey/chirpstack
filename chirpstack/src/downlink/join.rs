@@ -131,6 +131,7 @@ impl JoinAccept<'_> {
         ctx.select_downlink_gateway()?;
         ctx.set_tx_info_relayed()?;
         ctx.set_downlink_frame_relayed()?;
+        ctx.send_join_accept_response().await?;
         ctx.save_downlink_frame_relayed().await?;
 
         Ok(())

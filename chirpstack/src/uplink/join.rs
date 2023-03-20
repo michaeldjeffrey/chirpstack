@@ -133,7 +133,7 @@ impl JoinRequest {
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
-        ctx.start_downlink_join_accept_flow_relayed().await?;
+        ctx.start_downlink_join_accept_flow().await?;
         ctx.send_join_event().await?;
 
         Ok(())
@@ -184,7 +184,7 @@ impl JoinRequest {
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
-        ctx.start_downlink_join_accept_flow().await?;
+        ctx.start_downlink_join_accept_flow_relayed().await?;
         ctx.send_join_event().await?;
 
         Ok(())
