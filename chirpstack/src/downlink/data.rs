@@ -17,7 +17,7 @@ use crate::storage::{
     application, device, device_gateway, device_profile, device_queue, device_session,
     downlink_frame, mac_command, tenant,
 };
-use crate::uplink::UplinkFrameSet;
+use crate::uplink::{RelayContext, UplinkFrameSet};
 use crate::{adr, config, gateway, integration, maccommand, region, sensitivity};
 use chirpstack_api::{gw, integration as integration_pb, internal};
 use lrwn::{DevAddr, NetID};
@@ -28,6 +28,7 @@ struct DownlinkFrameItem {
 }
 
 pub struct Data {
+    relay_context: Option<RelayContext>,
     uplink_frame_set: Option<UplinkFrameSet>,
     tenant: tenant::Tenant,
     application: application::Application,
@@ -80,6 +81,39 @@ impl Data {
         .await
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub async fn handle_response_relayed(
+        relay_ctx: RelayContext,
+        ufs: UplinkFrameSet,
+        dev_gw_rx_info: internal::DeviceGatewayRxInfo,
+        tenant: tenant::Tenant,
+        application: application::Application,
+        device_profile: device_profile::DeviceProfile,
+        device: device::Device,
+        device_session: internal::DeviceSession,
+        must_send: bool,
+        must_ack: bool,
+        mac_commands: Vec<lrwn::MACCommandSet>,
+    ) -> Result<()> {
+        let span = span!(Level::TRACE, "data_down", downlink_id = %ufs.uplink_set_id);
+
+        Data::_handle_response_relayed(
+            relay_ctx,
+            ufs,
+            dev_gw_rx_info,
+            tenant,
+            application,
+            device_profile,
+            device,
+            device_session,
+            must_send,
+            must_ack,
+            mac_commands,
+        )
+        .instrument(span)
+        .await
+    }
+
     pub async fn handle_schedule_next_queue_item(device: device::Device) -> Result<()> {
         let span = span!(Level::TRACE, "schedule", dev_eui = %device.dev_eui);
 
@@ -109,6 +143,7 @@ impl Data {
             .context("Get region config for region")?;
 
         let mut ctx = Data {
+            relay_context: None,
             uplink_frame_set: Some(ufs),
             tenant,
             application,
@@ -155,6 +190,66 @@ impl Data {
         Ok(())
     }
 
+    #[allow(clippy::too_many_arguments)]
+    async fn _handle_response_relayed(
+        relay_ctx: RelayContext,
+        ufs: UplinkFrameSet,
+        dev_gw_rx_info: internal::DeviceGatewayRxInfo,
+        tenant: tenant::Tenant,
+        application: application::Application,
+        device_profile: device_profile::DeviceProfile,
+        device: device::Device,
+        device_session: internal::DeviceSession,
+        must_send: bool,
+        must_ack: bool,
+        mac_commands: Vec<lrwn::MACCommandSet>,
+    ) -> Result<()> {
+        trace!("Downlink relayed response flow");
+
+        let network_conf = config::get_region_network(&device_session.region_config_id)
+            .context("Get network config for region")?;
+        let region_conf = region::get(&device_session.region_config_id)
+            .context("Get region config for region")?;
+
+        let mut ctx = Data {
+            relay_context: Some(relay_ctx),
+            uplink_frame_set: Some(ufs),
+            tenant,
+            application,
+            device_profile,
+            device,
+            device_session,
+            network_conf,
+            region_conf,
+            must_send,
+            must_ack,
+            mac_commands,
+            device_gateway_rx_info: Some(dev_gw_rx_info),
+            downlink_gateway: None,
+            downlink_frame: gw::DownlinkFrame {
+                downlink_id: rand::thread_rng().gen(),
+                ..Default::default()
+            },
+            downlink_frame_items: Vec::new(),
+            immediately: false,
+            device_queue_item: None,
+            more_device_queue_items: false,
+        };
+
+        ctx.select_downlink_gateway()?;
+        ctx.set_tx_info_relayed()?;
+        ctx.get_next_device_queue_item().await?;
+        ctx.set_mac_commands().await?;
+        if ctx._something_to_send() {
+            ctx.set_phy_payloads()?;
+            ctx.wrap_phy_payloads_in_forward_downlink_req()?;
+            ctx.save_device_session().await?;
+            ctx.send_downlink_frame().await?;
+        }
+
+        unimplemented!()
+    }
+
     async fn _handle_schedule_next_queue_item(dev: device::Device) -> Result<()> {
         trace!("Handle schedule next-queue item flow");
 
@@ -167,6 +262,7 @@ impl Data {
         let dev_gw = device_gateway::get_rx_info(&dev.dev_eui).await?;
 
         let mut ctx = Data {
+            relay_context: None,
             uplink_frame_set: None,
             tenant: ten,
             application: app,
@@ -208,6 +304,8 @@ impl Data {
             ctx.update_device_queue_item().await?;
             ctx.save_downlink_frame().await?;
             ctx.send_downlink_frame().await?;
+            ctx.update_device_queue_item().await?;
+            ctx.save_downlink_frame_relayed().await?;
         }
 
         Ok(())
@@ -241,16 +339,44 @@ impl Data {
             self.set_tx_info_for_rx2()?;
 
             // RX1
-            self._set_tx_info_for_rx1()?;
+            self.set_tx_info_for_rx1()?;
         } else {
             // RX1
             if [0, 1].contains(&self.network_conf.rx_window) {
-                self._set_tx_info_for_rx1()?;
+                self.set_tx_info_for_rx1()?;
             }
 
             // RX2
             if [0, 2].contains(&self.network_conf.rx_window) {
                 self.set_tx_info_for_rx2()?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn set_tx_info_relayed(&mut self) -> Result<()> {
+        let mut prefer_rx2_over_rx1 = self._prefer_rx2_dr()?;
+        if self.network_conf.rx2_prefer_on_link_budget {
+            prefer_rx2_over_rx1 = prefer_rx2_over_rx1 || self._prefer_rx2_link_budget()?;
+        }
+
+        // RX2 is prefered and the RX window is set to automatic.
+        if prefer_rx2_over_rx1 && self.network_conf.rx_window == 0 {
+            // RX2
+            self.set_tx_info_for_rx2_relayed()?;
+
+            // RX1
+            self.set_tx_info_for_rx1_relayed()?;
+        } else {
+            // RX1
+            if [0, 1].contains(&self.network_conf.rx_window) {
+                self.set_tx_info_for_rx1_relayed()?;
+            }
+
+            // RX2
+            if [0, 2].contains(&self.network_conf.rx_window) {
+                self.set_tx_info_for_rx2_relayed()?;
             }
         }
 
@@ -590,6 +716,63 @@ impl Data {
         Ok(())
     }
 
+    fn wrap_phy_payloads_in_forward_downlink_req(&mut self) -> Result<()> {
+        trace!("Wrap PhyPayloads in ForwardDownlinkReq");
+
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        for item in self.downlink_frame.items.iter_mut() {
+            let mut relay_phy = lrwn::PhyPayload {
+                mhdr: lrwn::MHDR {
+                    m_type: lrwn::MType::UnconfirmedDataDown,
+                    major: lrwn::Major::LoRaWANR1,
+                },
+                payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
+                    fhdr: lrwn::FHDR {
+                        devaddr: lrwn::DevAddr::from_slice(&relay_ctx.device_session.dev_addr)?,
+                        f_cnt: if relay_ctx
+                            .device_session
+                            .mac_version()
+                            .to_string()
+                            .starts_with("1.0")
+                        {
+                            relay_ctx.device_session.n_f_cnt_down
+                        } else {
+                            relay_ctx.device_session.a_f_cnt_down
+                        },
+                        f_ctrl: lrwn::FCtrl {
+                            adr: !self.network_conf.adr_disabled,
+                            ack: relay_ctx.must_ack,
+                            ..Default::default()
+                        },
+                        f_opts: lrwn::MACCommandSet::new(vec![]),
+                    },
+                    f_port: Some(lrwn::LA_FPORT_RELAY),
+                    frm_payload: Some(lrwn::FRMPayload::Raw(item.phy_payload.clone())),
+                }),
+                mic: None,
+            };
+
+            relay_phy.encrypt_frm_payload(&lrwn::AES128Key::from_slice(
+                &relay_ctx.device_session.nwk_s_enc_key,
+            )?)?;
+
+            // Set MIC.
+            // If this is an ACK, then FCntUp has already been incremented by one. If
+            // this is not an ACK, then DownlinkDataMIC will zero out ConfFCnt.
+            relay_phy.set_downlink_data_mic(
+                relay_ctx.device_session.mac_version().from_proto(),
+                relay_ctx.device_session.f_cnt_up - 1,
+                &lrwn::AES128Key::from_slice(&relay_ctx.device_session.s_nwk_s_int_key)?,
+            )?;
+
+            let relay_phy_b = relay_phy.to_vec()?;
+            item.phy_payload = relay_phy_b;
+        }
+
+        Ok(())
+    }
+
     async fn update_device_queue_item(&mut self) -> Result<()> {
         trace!("Updating device queue-item");
         if let Some(qi) = &mut self.device_queue_item {
@@ -640,6 +823,33 @@ impl Data {
         })
         .await
         .context("Save downlink frame")?;
+
+        Ok(())
+    }
+
+    async fn save_downlink_frame_relayed(&self) -> Result<()> {
+        trace!("Saving ForwardDownlinkReq frame");
+
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        downlink_frame::save(&internal::DownlinkFrame {
+            downlink_id: self.downlink_frame.downlink_id,
+            dev_eui: relay_ctx.device.dev_eui.to_vec(),
+            device_queue_item_id: match &self.device_queue_item {
+                Some(qi) => qi.id.as_bytes().to_vec(),
+                None => vec![],
+            },
+            encrypted_fopts: relay_ctx
+                .device_session
+                .mac_version()
+                .to_string()
+                .starts_with("1.1"),
+            nwk_s_enc_key: relay_ctx.device_session.nwk_s_enc_key.clone(),
+            downlink_frame: Some(self.downlink_frame.clone()),
+            n_f_cnt_down: relay_ctx.device_session.n_f_cnt_down,
+            ..Default::default()
+        })
+        .await?;
 
         Ok(())
     }
@@ -1128,7 +1338,7 @@ impl Data {
         Ok(())
     }
 
-    fn _set_tx_info_for_rx1(&mut self) -> Result<()> {
+    fn set_tx_info_for_rx1(&mut self) -> Result<()> {
         trace!("Setting tx-info for RX1");
 
         let gw_down = self.downlink_gateway.as_ref().unwrap();
@@ -1179,6 +1389,90 @@ impl Data {
             self.device_profile.reg_params_revision,
             rx1_dr_index,
         )?;
+
+        self.downlink_frame_items.push(DownlinkFrameItem {
+            downlink_frame_item: gw::DownlinkFrameItem {
+                tx_info: Some(tx_info),
+                ..Default::default()
+            },
+            remaining_payload_size: max_pl_size.n,
+        });
+
+        Ok(())
+    }
+
+    fn set_tx_info_for_rx1_relayed(&mut self) -> Result<()> {
+        trace!("Setting tx-info for relayed RX1");
+
+        let gw_down = self.downlink_gateway.as_ref().unwrap();
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        let mut tx_info = gw::DownlinkTxInfo {
+            board: gw_down.board,
+            antenna: gw_down.antenna,
+            context: gw_down.context.clone(),
+            ..Default::default()
+        };
+
+        // get RX1 DR.
+        let rx1_dr_index_relay = self.region_conf.get_rx1_data_rate_index(
+            self.uplink_frame_set.as_ref().unwrap().dr,
+            relay_ctx.device_session.rx1_dr_offset as usize,
+        )?;
+        let rx1_dr_relay = self.region_conf.get_data_rate(rx1_dr_index_relay)?;
+
+        // set DR to tx_info.
+        helpers::set_tx_info_data_rate(&mut tx_info, &rx1_dr_relay)?;
+
+        // set frequency
+        tx_info.frequency = self.region_conf.get_rx1_frequency_for_uplink_frequency(
+            self.uplink_frame_set.as_ref().unwrap().tx_info.frequency,
+        )?;
+
+        // set tx power
+        if self.network_conf.downlink_tx_power != -1 {
+            tx_info.power = self.network_conf.downlink_tx_power;
+        } else {
+            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+        }
+
+        // set timestamp
+        let delay = if relay_ctx.device_session.rx1_delay > 0 {
+            Duration::from_secs(relay_ctx.device_session.rx1_delay as u64)
+        } else {
+            self.region_conf.get_defaults().rx1_delay
+        };
+        tx_info.timing = Some(gw::Timing {
+            parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                delay: Some(pbjson_types::Duration::from(delay)),
+            })),
+        });
+
+        // get remaining payload size (relay)
+        let max_pl_size_relay = self.region_conf.get_max_payload_size(
+            relay_ctx.device_session.mac_version().from_proto(),
+            relay_ctx.device_profile.reg_params_revision,
+            rx1_dr_index_relay,
+        )?;
+
+        // Get remaining payload size (end-device)
+        let rx1_dr_index_ed = self.region_conf.get_rx1_data_rate_index(
+            relay_ctx.req.metadata.dr,
+            self.device_session.rx1_dr_offset as usize,
+        )?;
+        let max_pl_size_ed = self.region_conf.get_max_payload_size(
+            self.device_session.mac_version().from_proto(),
+            self.device_profile.reg_params_revision,
+            rx1_dr_index_ed,
+        )?;
+
+        // Take the smallest payload size to make sure it can be sent using the relay downlink DR
+        // and the end-device downlink DR (repeated by the relay).
+        let max_pl_size = if max_pl_size_relay.n < max_pl_size_ed.n {
+            max_pl_size_relay
+        } else {
+            max_pl_size_ed
+        };
 
         self.downlink_frame_items.push(DownlinkFrameItem {
             downlink_frame_item: gw::DownlinkFrameItem {
@@ -1245,6 +1539,89 @@ impl Data {
             self.device_profile.reg_params_revision,
             self.device_session.rx2_dr as u8,
         )?;
+
+        self.downlink_frame_items.push(DownlinkFrameItem {
+            downlink_frame_item: gw::DownlinkFrameItem {
+                tx_info: Some(tx_info),
+                ..Default::default()
+            },
+            remaining_payload_size: max_pl_size.n,
+        });
+
+        Ok(())
+    }
+
+    fn set_tx_info_for_rx2_relayed(&mut self) -> Result<()> {
+        trace!("Setting tx-info for relayed RX2");
+
+        let gw_down = self.downlink_gateway.as_ref().unwrap();
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        let mut tx_info = gw::DownlinkTxInfo {
+            board: gw_down.board,
+            antenna: gw_down.antenna,
+            frequency: relay_ctx.device_session.rx2_frequency,
+            context: gw_down.context.clone(),
+            ..Default::default()
+        };
+
+        // Set DR to tx-info.
+        let rx2_dr_relay = self
+            .region_conf
+            .get_data_rate(relay_ctx.device_session.rx2_dr as u8)?;
+        helpers::set_tx_info_data_rate(&mut tx_info, &rx2_dr_relay)?;
+
+        // set tx power
+        if self.network_conf.downlink_tx_power != -1 {
+            tx_info.power = self.network_conf.downlink_tx_power;
+        } else {
+            tx_info.power = self.region_conf.get_downlink_tx_power(tx_info.frequency) as i32;
+        }
+
+        // set timestamp
+        if !self.immediately {
+            let delay = if relay_ctx.device_session.rx1_delay > 0 {
+                Duration::from_secs(relay_ctx.device_session.rx1_delay as u64 + 1)
+            } else {
+                self.region_conf.get_defaults().rx2_delay
+            };
+
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Delay(gw::DelayTimingInfo {
+                    delay: Some(pbjson_types::Duration::from(delay)),
+                })),
+            });
+        }
+
+        if self.immediately {
+            tx_info.timing = Some(gw::Timing {
+                parameters: Some(gw::timing::Parameters::Immediately(
+                    gw::ImmediatelyTimingInfo {},
+                )),
+            });
+        }
+
+        // get remaining payload size (relay).
+        let max_pl_size_relay = self.region_conf.get_max_payload_size(
+            relay_ctx.device_session.mac_version().from_proto(),
+            relay_ctx.device_profile.reg_params_revision,
+            relay_ctx.device_session.rx2_dr as u8,
+        )?;
+
+        // get remaining payload size (end-device).
+        let max_pl_size_ed = self.region_conf.get_max_payload_size(
+            self.device_session.mac_version().from_proto(),
+            self.device_profile.reg_params_revision,
+            self.device_session.rx2_dr as u8,
+        )?;
+
+        // Take the smallest payload size to make sure it can be sent using the relay downlink DR
+        // and the end-device downlink DR (repeated by the relay).
+        let max_pl_size = if max_pl_size_relay.n < max_pl_size_ed.n {
+            max_pl_size_relay
+        } else {
+            max_pl_size_ed
+        };
 
         self.downlink_frame_items.push(DownlinkFrameItem {
             downlink_frame_item: gw::DownlinkFrameItem {
