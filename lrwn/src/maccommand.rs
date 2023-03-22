@@ -2057,27 +2057,6 @@ impl PayloadCodec for FilterListAnsPayload {
 }
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
-pub struct UplinkListIdxPL {
-    pub uplink_list_idx: u8,
-}
-
-impl UplinkListIdxPL {
-    pub fn from_u8(v: u8) -> Self {
-        UplinkListIdxPL {
-            uplink_list_idx: v & 0x0f,
-        }
-    }
-
-    pub fn to_u8(&self) -> Result<u8> {
-        if self.uplink_list_idx > 15 {
-            return Err(anyhow!("max uplink_list_idx value is 15"));
-        }
-
-        return Ok(self.uplink_list_idx);
-    }
-}
-
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct UplinkLimitPL {
     pub uplink_limit_reload_rate: u8,
     pub uplink_limit_bucket_size: u8,
@@ -2105,7 +2084,7 @@ impl UplinkLimitPL {
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct UpdateUplinkListReqPayload {
-    pub uplink_list_idx: UplinkListIdxPL,
+    pub uplink_list_idx: u8,
     pub uplink_limit: UplinkLimitPL,
     pub dev_addr: crate::DevAddr,
     pub w_fcnt: u32,
@@ -2118,7 +2097,7 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
         cur.read_exact(&mut b)?;
 
         return Ok(UpdateUplinkListReqPayload {
-            uplink_list_idx: UplinkListIdxPL::from_u8(b[0]),
+            uplink_list_idx: b[0] & 0x0f,
             uplink_limit: UplinkLimitPL::from_u8(b[1]),
             dev_addr: crate::DevAddr::from_le_bytes({
                 let mut bb = [0; 4];
@@ -2139,8 +2118,12 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
+        if self.uplink_list_idx > 15 {
+            return Err(anyhow!("max uplink_list_idx value is 15"));
+        }
+
         let mut b = vec![0; 26];
-        b[0] = self.uplink_list_idx.to_u8()?;
+        b[0] = self.uplink_list_idx;
         b[1] = self.uplink_limit.to_u8()?;
         b[2..6].copy_from_slice(&self.dev_addr.to_le_bytes());
         b[6..10].copy_from_slice(&self.w_fcnt.to_le_bytes());
@@ -2968,7 +2951,7 @@ mod test {
             MacTest {
                 uplink: false,
                 command: MACCommand::UpdateUplinkListReq(UpdateUplinkListReqPayload {
-                    uplink_list_idx: UplinkListIdxPL { uplink_list_idx: 3 },
+                    uplink_list_idx: 3,
                     uplink_limit: UplinkLimitPL {
                         uplink_limit_reload_rate: 60,
                         uplink_limit_bucket_size: 2,
