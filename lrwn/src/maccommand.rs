@@ -2058,27 +2058,27 @@ impl PayloadCodec for FilterListAnsPayload {
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct UplinkLimitPL {
-    pub uplink_limit_reload_rate: u8,
-    pub uplink_limit_bucket_size: u8,
+    pub reload_rate: u8,
+    pub bucket_size: u8,
 }
 
 impl UplinkLimitPL {
     pub fn from_u8(v: u8) -> Self {
         UplinkLimitPL {
-            uplink_limit_reload_rate: v & 0x3f,
-            uplink_limit_bucket_size: (v & 0xc0) >> 6,
+            reload_rate: v & 0x3f,
+            bucket_size: (v & 0xc0) >> 6,
         }
     }
 
     pub fn to_u8(&self) -> Result<u8> {
-        if self.uplink_limit_reload_rate > 63 {
-            return Err(anyhow!("max uplink_limit_reload_rate value is 63"));
+        if self.reload_rate > 63 {
+            return Err(anyhow!("max reload_rate value is 63"));
         }
-        if self.uplink_limit_bucket_size > 3 {
-            return Err(anyhow!("max uplink_limit_bucket_size value is 3"));
+        if self.bucket_size > 3 {
+            return Err(anyhow!("max bucket_size value is 3"));
         }
 
-        Ok(self.uplink_limit_reload_rate | (self.uplink_limit_bucket_size << 6))
+        Ok(self.reload_rate | (self.bucket_size << 6))
     }
 }
 
@@ -2953,8 +2953,8 @@ mod test {
                 command: MACCommand::UpdateUplinkListReq(UpdateUplinkListReqPayload {
                     uplink_list_idx: 3,
                     uplink_limit: UplinkLimitPL {
-                        uplink_limit_reload_rate: 60,
-                        uplink_limit_bucket_size: 2,
+                        reload_rate: 60,
+                        bucket_size: 2,
                     },
                     dev_addr: crate::DevAddr::from_be_bytes([1, 2, 3, 4]),
                     w_fcnt: 128,

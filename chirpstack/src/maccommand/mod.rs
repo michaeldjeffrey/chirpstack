@@ -23,6 +23,7 @@ pub mod reset;
 pub mod rx_param_setup;
 pub mod rx_timing_setup;
 pub mod tx_param_setup;
+pub mod update_uplink_list;
 
 // This returns the mac-commands which must be sent back to the device as response and a bool
 // indicating if a downlink must be sent. For some mac-commands, no mac-command answer is required,

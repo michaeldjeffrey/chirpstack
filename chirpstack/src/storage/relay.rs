@@ -6,7 +6,7 @@ use tokio::task;
 use tracing::info;
 use uuid::Uuid;
 
-use lrwn::EUI64;
+use lrwn::{DevAddr, EUI64};
 
 use super::schema::{device, device_profile, relay_device};
 use super::{device::Device, error::Error, get_db_conn};
@@ -32,6 +32,7 @@ pub struct DeviceFilters {
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct DeviceListItem {
     pub dev_eui: EUI64,
+    pub dev_addr: Option<DevAddr>,
     pub created_at: DateTime<Utc>,
     pub name: String,
 }
@@ -119,6 +120,7 @@ pub async fn list_devices(
                 .inner_join(device::table.on(relay_device::dsl::dev_eui.eq(device::dsl::dev_eui)))
                 .select((
                     relay_device::dev_eui,
+                    device::dev_addr,
                     relay_device::created_at,
                     device::name,
                 ))

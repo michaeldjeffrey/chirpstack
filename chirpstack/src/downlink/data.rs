@@ -5,7 +5,7 @@ use std::time::Duration;
 use anyhow::{Context, Result};
 use chrono::{DateTime, Utc};
 use rand::Rng;
-use tracing::{span, trace, warn, Instrument, Level};
+use tracing::{error, span, trace, warn, Instrument, Level};
 
 use crate::api::backend::get_async_receiver;
 use crate::api::helpers::FromProto;
@@ -15,12 +15,12 @@ use crate::gpstime::{ToDateTime, ToGpsTime};
 use crate::storage;
 use crate::storage::{
     application, device, device_gateway, device_profile, device_queue, device_session,
-    downlink_frame, mac_command, tenant,
+    downlink_frame, mac_command, relay, tenant,
 };
 use crate::uplink::{RelayContext, UplinkFrameSet};
 use crate::{adr, config, gateway, integration, maccommand, region, sensitivity};
 use chirpstack_api::{gw, integration as integration_pb, internal};
-use lrwn::{DevAddr, NetID};
+use lrwn::{keys, AES128Key, DevAddr, NetID};
 
 struct DownlinkFrameItem {
     downlink_frame_item: gw::DownlinkFrameItem,
@@ -515,6 +515,10 @@ impl Data {
         self._set_ping_slot_parameters().await?;
         self._set_rx_parameters().await?;
         self._set_tx_parameters().await?;
+
+        if self.device_profile.is_relay {
+            self._update_uplink_list().await?;
+        }
 
         self.mac_commands = filter_mac_commands(&self.device_session, &self.mac_commands);
 
@@ -1338,6 +1342,149 @@ impl Data {
         Ok(())
     }
 
+    async fn _update_uplink_list(&mut self) -> Result<()> {
+        trace!("Updating Relay uplink list");
+
+        // Get the current relay state.
+        let mut relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        // Get devices that must be configured on the relay.
+        let relay_devices = relay::list_devices(
+            16,
+            0,
+            &relay::DeviceFilters {
+                relay_dev_eui: Some(self.device.dev_eui.clone()),
+            },
+        )
+        .await?;
+
+        // We filter out the devices that are no longer configured on the relay.
+        // This way we can combine the delete + add by just overwriting an old slot.
+        let relay_devices_dev_euis: Vec<Vec<u8>> =
+            relay_devices.iter().map(|d| d.dev_eui.to_vec()).collect();
+        relay.devices = relay
+            .devices
+            .into_iter()
+            .filter(|rd| relay_devices_dev_euis.contains(&rd.dev_eui))
+            .collect();
+
+        // Calculate free slots.
+        // If we need to add a device, we can use the first slot available.
+        // Note that there can be gaps in the indicex if devices have been removed.
+        let used_slots: Vec<u32> = relay.devices.iter().map(|d| d.index).collect();
+        let free_slots: Vec<u32> = (0..16).filter(|x| !used_slots.contains(x)).collect();
+
+        println!("used slots: {:?}", used_slots);
+        println!("free slots: {:?}", free_slots);
+
+        // Iterate over the list of devices under this relay.
+        for device in &relay_devices {
+            // We need a dev_addr for the filter. Ignore devices that do not have a DevAddr (e.g.
+            // they have never been activated).
+            if let Some(dev_addr) = device.dev_addr {
+                let mut found = false;
+
+                for rd in &relay.devices {
+                    if rd.dev_eui == device.dev_eui.to_vec() {
+                        found = true;
+
+                        // The device has a new DevAddr, we must update it (same index).
+                        if rd.dev_addr != dev_addr.to_vec() {
+                            let ds = match device_session::get(&device.dev_eui).await {
+                                Ok(v) => v,
+                                Err(_) => {
+                                    // It is valid that the device is no longer activated.
+                                    continue;
+                                }
+                            };
+                            let root_wor_s_key = keys::get_root_wor_s_key(&AES128Key::from_slice(
+                                &ds.nwk_s_enc_key,
+                            )?)?;
+
+                            let set = lrwn::MACCommandSet::new(vec![
+                                lrwn::MACCommand::UpdateUplinkListReq(
+                                    lrwn::UpdateUplinkListReqPayload {
+                                        uplink_list_idx: rd.index as u8,
+                                        uplink_limit: lrwn::UplinkLimitPL {
+                                            bucket_size: 0,
+                                            reload_rate: 0,
+                                        },
+                                        dev_addr: dev_addr,
+                                        w_fcnt: 0,
+                                        root_wor_s_key: root_wor_s_key,
+                                    },
+                                ),
+                            ]);
+                            mac_command::set_pending(
+                                &self.device.dev_eui,
+                                lrwn::CID::UpdateUplinkListReq,
+                                &set,
+                            )
+                            .await?;
+                            self.mac_commands.push(set);
+
+                            // Return because we can't add multiple sets and if we would combine
+                            // multiple commands as a single set, it might not fit in a single
+                            // downlink.
+                            return Ok(());
+                        }
+                    }
+                }
+
+                // The device was not found in the list. This means we must add it (using the first
+                // aavailable slot).
+                if !found {
+                    if free_slots.is_empty() {
+                        error!(relay_dev_eui = %self.device.dev_eui, "Relay does not have any free UpdateUplinkListReq slots");
+                        continue;
+                    }
+
+                    let ds = match device_session::get(&device.dev_eui).await {
+                        Ok(v) => v,
+                        Err(_) => {
+                            // It is valid that the device is no longer activated.
+                            continue;
+                        }
+                    };
+                    let root_wor_s_key =
+                        keys::get_root_wor_s_key(&AES128Key::from_slice(&ds.nwk_s_enc_key)?)?;
+
+                    let set =
+                        lrwn::MACCommandSet::new(vec![lrwn::MACCommand::UpdateUplinkListReq(
+                            lrwn::UpdateUplinkListReqPayload {
+                                uplink_list_idx: free_slots[0] as u8,
+                                uplink_limit: lrwn::UplinkLimitPL {
+                                    bucket_size: 0,
+                                    reload_rate: 0,
+                                },
+                                dev_addr: dev_addr,
+                                w_fcnt: 0,
+                                root_wor_s_key: root_wor_s_key,
+                            },
+                        )]);
+                    mac_command::set_pending(
+                        &self.device.dev_eui,
+                        lrwn::CID::UpdateUplinkListReq,
+                        &set,
+                    )
+                    .await?;
+                    self.mac_commands.push(set);
+
+                    // Return because we can't add multiple sets and if we would combine
+                    // multiple commands as a single set, it might not fit in a single
+                    // downlink.
+                    return Ok(());
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     fn set_tx_info_for_rx1(&mut self) -> Result<()> {
         trace!("Setting tx-info for RX1");
 
@@ -1851,15 +1998,17 @@ fn filter_mac_commands(
 #[cfg(test)]
 mod test {
     use super::*;
-
-    struct Test {
-        device_session: internal::DeviceSession,
-        mac_commands: Vec<lrwn::MACCommandSet>,
-        expected_mac_commands: Vec<lrwn::MACCommandSet>,
-    }
+    use crate::test;
+    use lrwn::EUI64;
 
     #[test]
     fn test_filter_mac_commands() {
+        struct Test {
+            device_session: internal::DeviceSession,
+            mac_commands: Vec<lrwn::MACCommandSet>,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
         let tests = vec![
             // No mac-commands set.
             Test {
@@ -2029,6 +2178,250 @@ mod test {
         for test in &tests {
             let out = filter_mac_commands(&test.device_session, &test.mac_commands);
             assert_eq!(test.expected_mac_commands, out);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_update_uplink_list() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            relay_devices: Vec<(EUI64, DevAddr)>,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
+        let tests: Vec<Test> = vec![
+            Test {
+                name: "no devices".into(),
+                device_session: internal::DeviceSession {
+                    ..Default::default()
+                },
+                relay_devices: vec![],
+                expected_mac_commands: vec![],
+            },
+            Test {
+                name: "already in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![1, 2, 3, 4],
+                            root_wor_s_key: vec![],
+                        }],
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                    DevAddr::from_be_bytes([1, 2, 3, 4]),
+                )],
+                expected_mac_commands: vec![],
+            },
+            Test {
+                name: "add device".into(),
+                device_session: internal::DeviceSession {
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                    DevAddr::from_be_bytes([1, 2, 3, 4]),
+                )],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
+                        uplink_list_idx: 0,
+                        uplink_limit: lrwn::UplinkLimitPL {
+                            reload_rate: 0,
+                            bucket_size: 0,
+                        },
+                        dev_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
+                        w_fcnt: 0,
+                        root_wor_s_key: AES128Key::from_be_bytes([
+                            0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf, 0x2b,
+                            0xf5, 0x8e, 0x0f, 0xd3,
+                        ]),
+                    }),
+                ])],
+            },
+            Test {
+                name: "update device".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![1, 2, 3, 4],
+                            root_wor_s_key: vec![],
+                        }],
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                    DevAddr::from_be_bytes([2, 2, 3, 4]),
+                )],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
+                        uplink_list_idx: 1,
+                        uplink_limit: lrwn::UplinkLimitPL {
+                            reload_rate: 0,
+                            bucket_size: 0,
+                        },
+                        dev_addr: DevAddr::from_be_bytes([2, 2, 3, 4]),
+                        w_fcnt: 0,
+                        root_wor_s_key: AES128Key::from_be_bytes([
+                            0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf, 0x2b,
+                            0xf5, 0x8e, 0x0f, 0xd3,
+                        ]),
+                    }),
+                ])],
+            },
+            Test {
+                name: "add second device".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![1, 2, 3, 4],
+                            root_wor_s_key: vec![],
+                        }],
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![
+                    (
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                        DevAddr::from_be_bytes([1, 2, 3, 4]),
+                    ),
+                    (
+                        EUI64::from_be_bytes([3, 3, 3, 3, 3, 3, 3, 3]),
+                        DevAddr::from_be_bytes([2, 2, 3, 4]),
+                    ),
+                ],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
+                        uplink_list_idx: 0,
+                        uplink_limit: lrwn::UplinkLimitPL {
+                            reload_rate: 0,
+                            bucket_size: 0,
+                        },
+                        dev_addr: DevAddr::from_be_bytes([2, 2, 3, 4]),
+                        w_fcnt: 0,
+                        root_wor_s_key: AES128Key::from_be_bytes([
+                            0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf, 0x2b,
+                            0xf5, 0x8e, 0x0f, 0xd3,
+                        ]),
+                    }),
+                ])],
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_relay = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-relay".into(),
+            tenant_id: t.id,
+            is_relay: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_ed = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-ed".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let d_relay = device::create(device::Device {
+            dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+            name: "relay".into(),
+            application_id: app.id,
+            device_profile_id: dp_relay.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            // create devices + add to relay
+            for (dev_eui, dev_addr) in &test.relay_devices {
+                let d = device::create(device::Device {
+                    name: dev_eui.to_string(),
+                    dev_eui: *dev_eui,
+                    dev_addr: Some(*dev_addr),
+                    application_id: app.id,
+                    device_profile_id: dp_ed.id,
+                    ..Default::default()
+                })
+                .await
+                .unwrap();
+
+                let _ = device_session::save(&internal::DeviceSession {
+                    dev_addr: dev_addr.to_vec(),
+                    dev_eui: dev_eui.to_vec(),
+                    nwk_s_enc_key: vec![0; 16],
+                    ..Default::default()
+                })
+                .await
+                .unwrap();
+
+                relay::add_device(d_relay.dev_eui, d.dev_eui).await.unwrap();
+            }
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: t.clone(),
+                application: app.clone(),
+                device_profile: dp_relay.clone(),
+                device: d_relay.clone(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._update_uplink_list().await.unwrap();
+
+            // cleanup devices
+            for (dev_eui, _) in &test.relay_devices {
+                device::delete(dev_eui).await.unwrap();
+            }
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
         }
     }
 }

@@ -269,7 +269,7 @@ pub fn reset_db() -> Result<()> {
 #[cfg(test)]
 pub async fn reset_redis() -> Result<()> {
     let mut c = get_redis_conn()?;
-    redis::cmd("FLUSHALL").query(&mut *c)?;
+    redis::cmd("FLUSHDB").query(&mut *c)?;
     Ok(())
 }
 
