@@ -137,6 +137,9 @@ message DeviceSession {
 
     // Region configuration ID.
     string region_config_id = 40;
+
+    // Relay state.
+    Relay relay = 41;
 }
 
 message UplinkAdrHistory {
@@ -154,6 +157,32 @@ message UplinkAdrHistory {
 
     // Number of receiving gateways.
     uint32 gateway_count = 4;
+}
+
+message Relay {
+    // Devices provisioned on the relay.
+    repeated RelayDevice devices = 1;
+}
+
+message RelayDevice {
+    // Index (used for filter and uplink filters).
+    // This must be between 0 - 15.
+    uint32 index = 1;
+
+    // JoinEUI (EUI64).
+    bytes join_eui = 2;
+
+    // DevEUI (EUI64).
+    bytes dev_eui = 3;
+
+    // DevAddr.
+    bytes dev_addr = 4;
+
+    // RootWorSKey.
+    bytes root_wor_s_key = 5;
+
+    // Provisioned.
+    bool provisioned = 6;
 }
 
 message DeviceSessionChannel {

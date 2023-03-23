@@ -180,6 +180,9 @@ message RelayDevice {
 
     // RootWorSKey.
     bytes root_wor_s_key = 5;
+
+    // Provisioned.
+    bool provisioned = 6;
 }
 
 message DeviceSessionChannel {

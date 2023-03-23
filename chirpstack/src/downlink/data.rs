@@ -1378,8 +1378,8 @@ impl Data {
         let used_slots: Vec<u32> = relay.devices.iter().map(|d| d.index).collect();
         let free_slots: Vec<u32> = (0..16).filter(|x| !used_slots.contains(x)).collect();
 
-        println!("used slots: {:?}", used_slots);
-        println!("free slots: {:?}", free_slots);
+        // Update device-session.
+        self.device_session.relay = Some(relay);
 
         // Iterate over the list of devices under this relay.
         for device in &relay_devices {
@@ -1388,12 +1388,13 @@ impl Data {
             if let Some(dev_addr) = device.dev_addr {
                 let mut found = false;
 
-                for rd in &relay.devices {
+                for rd in &mut self.device_session.relay.as_mut().unwrap().devices {
                     if rd.dev_eui == device.dev_eui.to_vec() {
                         found = true;
 
-                        // The device has a new DevAddr, we must update it (same index).
-                        if rd.dev_addr != dev_addr.to_vec() {
+                        // The device has not yet been provisioned, or
+                        // the device has a new DevAddr, we must update it (same index).
+                        if !rd.provisioned || rd.dev_addr != dev_addr.to_vec() {
                             let ds = match device_session::get(&device.dev_eui).await {
                                 Ok(v) => v,
                                 Err(_) => {
@@ -1426,6 +1427,10 @@ impl Data {
                             )
                             .await?;
                             self.mac_commands.push(set);
+
+                            rd.dev_addr = dev_addr.to_vec();
+                            rd.root_wor_s_key = root_wor_s_key.to_vec();
+                            rd.provisioned = false;
 
                             // Return because we can't add multiple sets and if we would combine
                             // multiple commands as a single set, it might not fit in a single
@@ -1473,6 +1478,17 @@ impl Data {
                     )
                     .await?;
                     self.mac_commands.push(set);
+
+                    self.device_session.relay.as_mut().unwrap().devices.push(
+                        internal::RelayDevice {
+                            index: free_slots[0],
+                            join_eui: vec![],
+                            dev_eui: device.dev_eui.to_vec(),
+                            dev_addr: dev_addr.to_vec(),
+                            root_wor_s_key: root_wor_s_key.to_vec(),
+                            provisioned: false,
+                        },
+                    );
 
                     // Return because we can't add multiple sets and if we would combine
                     // multiple commands as a single set, it might not fit in a single
@@ -2188,6 +2204,7 @@ mod test {
             device_session: internal::DeviceSession,
             relay_devices: Vec<(EUI64, DevAddr)>,
             expected_mac_commands: Vec<lrwn::MACCommandSet>,
+            expected_device_session: internal::DeviceSession,
         }
 
         let tests: Vec<Test> = vec![
@@ -2198,6 +2215,9 @@ mod test {
                 },
                 relay_devices: vec![],
                 expected_mac_commands: vec![],
+                expected_device_session: internal::DeviceSession {
+                    ..Default::default()
+                },
             },
             Test {
                 name: "already in sync".into(),
@@ -2209,6 +2229,7 @@ mod test {
                             dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
                             dev_addr: vec![1, 2, 3, 4],
                             root_wor_s_key: vec![],
+                            provisioned: true,
                         }],
                     }),
                     ..Default::default()
@@ -2218,6 +2239,19 @@ mod test {
                     DevAddr::from_be_bytes([1, 2, 3, 4]),
                 )],
                 expected_mac_commands: vec![],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![1, 2, 3, 4],
+                            root_wor_s_key: vec![],
+                            provisioned: true,
+                        }],
+                    }),
+                    ..Default::default()
+                },
             },
             Test {
                 name: "add device".into(),
@@ -2243,6 +2277,22 @@ mod test {
                         ]),
                     }),
                 ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 0,
+                            dev_addr: vec![1, 2, 3, 4],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            join_eui: vec![],
+                            root_wor_s_key: vec![
+                                0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf,
+                                0x2b, 0xf5, 0x8e, 0x0f, 0xd3,
+                            ],
+                            provisioned: false,
+                        }],
+                    }),
+                    ..Default::default()
+                },
             },
             Test {
                 name: "update device".into(),
@@ -2254,6 +2304,7 @@ mod test {
                             dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
                             dev_addr: vec![1, 2, 3, 4],
                             root_wor_s_key: vec![],
+                            provisioned: true,
                         }],
                     }),
                     ..Default::default()
@@ -2277,6 +2328,22 @@ mod test {
                         ]),
                     }),
                 ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            join_eui: vec![],
+                            dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                            dev_addr: vec![2, 2, 3, 4],
+                            root_wor_s_key: vec![
+                                0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf,
+                                0x2b, 0xf5, 0x8e, 0x0f, 0xd3,
+                            ],
+                            provisioned: false,
+                        }],
+                    }),
+                    ..Default::default()
+                },
             },
             Test {
                 name: "add second device".into(),
@@ -2288,6 +2355,7 @@ mod test {
                             dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
                             dev_addr: vec![1, 2, 3, 4],
                             root_wor_s_key: vec![],
+                            provisioned: true,
                         }],
                     }),
                     ..Default::default()
@@ -2317,6 +2385,32 @@ mod test {
                         ]),
                     }),
                 ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![
+                            internal::RelayDevice {
+                                index: 1,
+                                join_eui: vec![],
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                                dev_addr: vec![1, 2, 3, 4],
+                                root_wor_s_key: vec![],
+                                provisioned: true,
+                            },
+                            internal::RelayDevice {
+                                index: 0,
+                                join_eui: vec![],
+                                dev_eui: vec![3, 3, 3, 3, 3, 3, 3, 3],
+                                dev_addr: vec![2, 2, 3, 4],
+                                root_wor_s_key: vec![
+                                    0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb,
+                                    0xbf, 0x2b, 0xf5, 0x8e, 0x0f, 0xd3,
+                                ],
+                                provisioned: false,
+                            },
+                        ],
+                    }),
+                    ..Default::default()
+                },
             },
         ];
 

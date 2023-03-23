@@ -148,6 +148,7 @@ async fn handle(
         lrwn::CID::RxParamSetupAns => rx_param_setup::handle(dev, ds, block, pending_block),
         lrwn::CID::RxTimingSetupAns => rx_timing_setup::handle(dev, ds, block, pending_block),
         lrwn::CID::TxParamSetupAns => tx_param_setup::handle(dev, ds, block, pending_block),
+        lrwn::CID::UpdateUplinkListAns => update_uplink_list::handle(dev, ds, block, pending_block),
         _ => {
             error!(cid = %cid, "Unexpected CID");
             // Return OK, we don't want to break out of the uplink handling.
