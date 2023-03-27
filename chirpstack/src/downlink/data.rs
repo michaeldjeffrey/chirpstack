@@ -518,6 +518,7 @@ impl Data {
 
         if self.device_profile.is_relay {
             self._update_uplink_list().await?;
+            self._update_filter_list().await?;
         }
 
         self.mac_commands = filter_mac_commands(&self.device_session, &self.mac_commands);
@@ -1354,7 +1355,7 @@ impl Data {
 
         // Get devices that must be configured on the relay.
         let relay_devices = relay::list_devices(
-            16,
+            15,
             0,
             &relay::DeviceFilters {
                 relay_dev_eui: Some(self.device.dev_eui.clone()),
@@ -1376,7 +1377,7 @@ impl Data {
         // If we need to add a device, we can use the first slot available.
         // Note that there can be gaps in the indicex if devices have been removed.
         let used_slots: Vec<u32> = relay.devices.iter().map(|d| d.index).collect();
-        let free_slots: Vec<u32> = (0..16).filter(|x| !used_slots.contains(x)).collect();
+        let free_slots: Vec<u32> = (0..15).filter(|x| !used_slots.contains(x)).collect();
 
         // Update device-session.
         self.device_session.relay = Some(relay);
@@ -1441,7 +1442,7 @@ impl Data {
                 }
 
                 // The device was not found in the list. This means we must add it (using the first
-                // aavailable slot).
+                // available slot).
                 if !found {
                     if free_slots.is_empty() {
                         error!(relay_dev_eui = %self.device.dev_eui, "Relay does not have any free UpdateUplinkListReq slots");
@@ -1495,6 +1496,159 @@ impl Data {
                     // downlink.
                     return Ok(());
                 }
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn _update_filter_list(&mut self) -> Result<()> {
+        trace!("Updating Relay filter list");
+
+        // Get the current relay state.
+        let mut relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        // Get devices that must be configured on the relay.
+        let relay_devices = relay::list_devices(
+            15,
+            0,
+            &relay::DeviceFilters {
+                relay_dev_eui: Some(self.device.dev_eui.clone()),
+            },
+        )
+        .await?;
+
+        // We filter out the devices that are no longer configured on the relay.
+        // This way we can combine the delete + add by just overwriting an old slot.
+        // Note that index 0 has a special meaning.
+        let relay_devices_dev_euis: Vec<Vec<u8>> =
+            relay_devices.iter().map(|d| d.dev_eui.to_vec()).collect();
+        relay.filters = relay
+            .filters
+            .into_iter()
+            .filter(|f| f.index == 0 || relay_devices_dev_euis.contains(&f.dev_eui))
+            .collect();
+
+        // Calculate free slots.
+        // Note that the first slot is used as "catch-all" filter.
+        let used_slots: Vec<u32> = relay.filters.iter().map(|f| f.index).collect();
+        let free_slots: Vec<u32> = (1..15).filter(|x| !used_slots.contains(x)).collect();
+
+        // Update device-session.
+        self.device_session.relay = Some(relay);
+
+        // Make sure the first item contains the "catch-all" filter.
+        // This is needed to make sure that only the rest of the filter items are allowed to join
+        // through the Relay.
+        if let Some(relay) = self.device_session.relay.as_mut() {
+            if relay.filters.is_empty() {
+                relay.filters.push(internal::RelayFilter {
+                    index: 0,
+                    action: 2,
+                    provisioned: false,
+                    ..Default::default()
+                });
+            }
+
+            if let Some(filter) = relay.filters.first() {
+                if !filter.provisioned {
+                    let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
+                        lrwn::FilterListReqPayload {
+                            idx: 0,
+                            action: lrwn::FilterListAction::Filter,
+                            eui: vec![],
+                        },
+                    )]);
+                    mac_command::set_pending(&self.device.dev_eui, lrwn::CID::FilterListReq, &set)
+                        .await?;
+                    self.mac_commands.push(set);
+
+                    // Return because we can't add multiple sets and if we would combine
+                    // multiple commands as a single set, it might not fit in a single
+                    // downlink.
+                    return Ok(());
+                }
+            }
+        }
+
+        // Iterate over the list of devices under this relay.
+        for device in &relay_devices {
+            let mut found = false;
+
+            for f in &mut self.device_session.relay.as_mut().unwrap().filters {
+                if f.dev_eui == device.dev_eui.to_vec() {
+                    found = true;
+
+                    // The device has not yet been provisioned, or
+                    // the device has a new JoinEUI, we must update it (same index).
+                    if !f.provisioned || f.join_eui != device.join_eui.to_vec() {
+                        let mut eui = device.join_eui.to_vec();
+                        eui.extend_from_slice(&device.dev_eui.to_vec());
+
+                        let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
+                            lrwn::FilterListReqPayload {
+                                idx: f.index as u8,
+                                action: lrwn::FilterListAction::Forward,
+                                eui: eui,
+                            },
+                        )]);
+                        mac_command::set_pending(
+                            &self.device.dev_eui,
+                            lrwn::CID::FilterListReq,
+                            &set,
+                        )
+                        .await?;
+                        self.mac_commands.push(set);
+
+                        f.join_eui = device.join_eui.to_vec();
+                        f.provisioned = false;
+
+                        // Return because we can't add multiple sets and if we would combine
+                        // multiple commands as a single set, it might not fit in a single
+                        // downlink.
+                        return Ok(());
+                    }
+                }
+            }
+
+            // The device was not found in the list. This means we must add it (using the first
+            // available slot).
+            if !found {
+                if free_slots.is_empty() {
+                    error!(relay_dev_eui = %self.device.dev_eui, "Relay does have have any free FilterListReq slots");
+                    continue;
+                }
+
+                let mut eui = device.join_eui.to_vec();
+                eui.extend_from_slice(&device.dev_eui.to_vec());
+
+                let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
+                    lrwn::FilterListReqPayload {
+                        idx: free_slots[0] as u8,
+                        action: lrwn::FilterListAction::Forward,
+                        eui: eui,
+                    },
+                )]);
+                mac_command::set_pending(&self.device.dev_eui, lrwn::CID::FilterListReq, &set)
+                    .await?;
+                self.mac_commands.push(set);
+
+                self.device_session
+                    .relay
+                    .as_mut()
+                    .unwrap()
+                    .filters
+                    .push(internal::RelayFilter {
+                        index: free_slots[0],
+                        action: 1,
+                        join_eui: device.join_eui.to_vec(),
+                        dev_eui: device.dev_eui.to_vec(),
+                        provisioned: false,
+                    });
             }
         }
 
@@ -2207,7 +2361,7 @@ mod test {
             expected_device_session: internal::DeviceSession,
         }
 
-        let tests: Vec<Test> = vec![
+        let tests = vec![
             Test {
                 name: "no devices".into(),
                 device_session: internal::DeviceSession {
@@ -2231,6 +2385,7 @@ mod test {
                             root_wor_s_key: vec![],
                             provisioned: true,
                         }],
+                        ..Default::default()
                     }),
                     ..Default::default()
                 },
@@ -2249,6 +2404,7 @@ mod test {
                             root_wor_s_key: vec![],
                             provisioned: true,
                         }],
+                        ..Default::default()
                     }),
                     ..Default::default()
                 },
@@ -2290,6 +2446,7 @@ mod test {
                             ],
                             provisioned: false,
                         }],
+                        ..Default::default()
                     }),
                     ..Default::default()
                 },
@@ -2306,6 +2463,7 @@ mod test {
                             root_wor_s_key: vec![],
                             provisioned: true,
                         }],
+                        ..Default::default()
                     }),
                     ..Default::default()
                 },
@@ -2341,6 +2499,7 @@ mod test {
                             ],
                             provisioned: false,
                         }],
+                        ..Default::default()
                     }),
                     ..Default::default()
                 },
@@ -2357,6 +2516,7 @@ mod test {
                             root_wor_s_key: vec![],
                             provisioned: true,
                         }],
+                        ..Default::default()
                     }),
                     ..Default::default()
                 },
@@ -2408,6 +2568,7 @@ mod test {
                                 provisioned: false,
                             },
                         ],
+                        ..Default::default()
                     }),
                     ..Default::default()
                 },
@@ -2516,6 +2677,382 @@ mod test {
             }
 
             assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_update_filter_list() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            relay_devices: Vec<(EUI64, EUI64)>, // DevEUI + JoinEUI
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+            expected_device_session: internal::DeviceSession,
+        }
+
+        let tests = vec![
+            Test {
+                name: "no devices + empty ds".into(),
+                device_session: internal::DeviceSession::default(),
+                relay_devices: vec![],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        idx: 0,
+                        action: lrwn::FilterListAction::Filter,
+                        eui: vec![],
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: false,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "no devices + unprovisioned filter".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: false,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        idx: 0,
+                        action: lrwn::FilterListAction::Filter,
+                        eui: vec![],
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: false,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "no devices + provisioned filter".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: true,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![],
+                expected_mac_commands: vec![],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![internal::RelayFilter {
+                            index: 0,
+                            action: 2,
+                            provisioned: true,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "device in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 0]),
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 1]),
+                )],
+                expected_mac_commands: vec![],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "update device".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![(
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 0]),
+                    EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 3]),
+                )],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        idx: 1,
+                        action: lrwn::FilterListAction::Forward,
+                        eui: vec![2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 0],
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 3],
+                                provisioned: false,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+
+                    ..Default::default()
+                },
+            },
+            Test {
+                name: "add device".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                relay_devices: vec![
+                    (
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 0]),
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 1]),
+                    ),
+                    (
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 2]),
+                        EUI64::from_be_bytes([2, 2, 2, 2, 2, 2, 2, 3]),
+                    ),
+                ],
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
+                        idx: 2,
+                        action: lrwn::FilterListAction::Forward,
+                        eui: vec![2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2],
+                    }),
+                ])],
+                expected_device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        filters: vec![
+                            internal::RelayFilter {
+                                index: 0,
+                                action: 2,
+                                provisioned: true,
+                                ..Default::default()
+                            },
+                            internal::RelayFilter {
+                                index: 1,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 0],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 1],
+                                provisioned: true,
+                            },
+                            internal::RelayFilter {
+                                index: 2,
+                                action: 1,
+                                dev_eui: vec![2, 2, 2, 2, 2, 2, 2, 2],
+                                join_eui: vec![2, 2, 2, 2, 2, 2, 2, 3],
+                                provisioned: false,
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+
+                    ..Default::default()
+                },
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        let t = tenant::create(tenant::Tenant {
+            name: "test-tenant".into(),
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_relay = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-relay".into(),
+            tenant_id: t.id,
+            is_relay: true,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let dp_ed = device_profile::create(device_profile::DeviceProfile {
+            name: "dp-ed".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let app = application::create(application::Application {
+            name: "test-app".into(),
+            tenant_id: t.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        let d_relay = device::create(device::Device {
+            dev_eui: EUI64::from_be_bytes([1, 1, 1, 1, 1, 1, 1, 1]),
+            name: "relay".into(),
+            application_id: app.id,
+            device_profile_id: dp_relay.id,
+            ..Default::default()
+        })
+        .await
+        .unwrap();
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            // create devices + add to relay
+            for (dev_eui, join_eui) in &test.relay_devices {
+                let d = device::create(device::Device {
+                    name: dev_eui.to_string(),
+                    dev_eui: *dev_eui,
+                    join_eui: *join_eui,
+                    application_id: app.id,
+                    device_profile_id: dp_ed.id,
+                    ..Default::default()
+                })
+                .await
+                .unwrap();
+
+                relay::add_device(d_relay.dev_eui, d.dev_eui).await.unwrap();
+            }
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: t.clone(),
+                application: app.clone(),
+                device_profile: dp_relay.clone(),
+                device: d_relay.clone(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._update_filter_list().await.unwrap();
+
+            // cleanup devices
+            for (dev_eui, _) in &test.relay_devices {
+                device::delete(dev_eui).await.unwrap();
+            }
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+            assert_eq!(test.expected_device_session, ctx.device_session);
         }
     }
 }

@@ -162,6 +162,9 @@ message UplinkAdrHistory {
 message Relay {
     // Devices provisioned on the relay.
     repeated RelayDevice devices = 1;
+
+    // Filter list.
+    repeated RelayFilter filters = 2;
 }
 
 message RelayDevice {
@@ -183,6 +186,27 @@ message RelayDevice {
 
     // Provisioned.
     bool provisioned = 6;
+}
+
+message RelayFilter {
+    // Index.
+    // This must be between 0 - 15.
+    uint32 index = 1;
+
+    // Action.
+    //  * 0: No Rule
+    //  * 1: Forward
+    //  * 2: Filter
+    uint32 action = 2;
+
+    // DevEUI (EUI64).
+    bytes dev_eui = 3;
+
+    // JoinEUI (EUI64).
+    bytes join_eui = 4;
+
+    // Provisioned.
+    bool provisioned = 5;
 }
 
 message DeviceSessionChannel {

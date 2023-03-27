@@ -11,7 +11,10 @@ use lrwn::{DevAddr, EUI64};
 use super::schema::{device, device_profile, relay_device};
 use super::{device::Device, error::Error, get_db_conn};
 
-const RELAY_MAX_DEVICES: i64 = 16;
+// This is set to 15, because the FilterList must contain a "catch-all" record to filter all
+// uplinks that do not match the remaining records. This means that we can use 16 - 1 FilterList
+// entries effectively.
+const RELAY_MAX_DEVICES: i64 = 15;
 
 #[derive(Default, Clone)]
 pub struct RelayFilters {
@@ -32,6 +35,7 @@ pub struct DeviceFilters {
 #[derive(Queryable, PartialEq, Eq, Debug)]
 pub struct DeviceListItem {
     pub dev_eui: EUI64,
+    pub join_eui: EUI64,
     pub dev_addr: Option<DevAddr>,
     pub created_at: DateTime<Utc>,
     pub name: String,
@@ -120,6 +124,7 @@ pub async fn list_devices(
                 .inner_join(device::table.on(relay_device::dsl::dev_eui.eq(device::dsl::dev_eui)))
                 .select((
                     relay_device::dev_eui,
+                    device::join_eui,
                     device::dev_addr,
                     relay_device::created_at,
                     device::name,
