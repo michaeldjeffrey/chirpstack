@@ -1957,42 +1957,10 @@ impl FilterListAction {
 }
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
-pub struct FilterListParam {
-    pub filter_list_idx: u8,
-    pub filter_list_action: FilterListAction,
-    filter_list_len: u8,
-}
-
-impl FilterListParam {
-    pub fn to_bytes(&self) -> Result<[u8; 2]> {
-        if self.filter_list_len > 31 {
-            return Err(anyhow!("max value of filter_list_len is 31"));
-        }
-        if self.filter_list_idx > 15 {
-            return Err(anyhow!("max value of filter_list_idx is 15"));
-        }
-
-        Ok([
-            self.filter_list_len
-                | (self.filter_list_action.to_u8() << 5)
-                | (self.filter_list_idx << 7),
-            (self.filter_list_idx >> 1),
-        ])
-    }
-
-    pub fn from_bytes(b: [u8; 2]) -> Result<Self> {
-        Ok(FilterListParam {
-            filter_list_len: b[0] & 0x17,
-            filter_list_action: FilterListAction::from_u8((b[0] & 0x60) >> 5)?,
-            filter_list_idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x07) << 1),
-        })
-    }
-}
-
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct FilterListReqPayload {
-    pub filter_list_param: FilterListParam,
-    pub filter_list_eui: Vec<u8>,
+    pub idx: u8,
+    pub action: FilterListAction,
+    pub eui: Vec<u8>,
 }
 
 impl PayloadCodec for FilterListReqPayload {
@@ -2000,22 +1968,31 @@ impl PayloadCodec for FilterListReqPayload {
         let mut b = vec![0; 2];
         cur.read_exact(&mut b)?;
 
-        let flp = FilterListParam::from_bytes([b[0], b[1]])?;
-        let mut b = vec![0; flp.filter_list_len as usize];
-        cur.read_exact(&mut b)?;
+        let len = b[0] & 0x17;
+        let mut eui = vec![0; len as usize];
+        cur.read_exact(&mut eui)?;
 
         Ok(FilterListReqPayload {
-            filter_list_param: flp,
-            filter_list_eui: b,
+            action: FilterListAction::from_u8((b[0] & 0x60) >> 5)?,
+            idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x07) << 1),
+            eui: eui,
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        let mut flp = self.filter_list_param.clone();
-        flp.filter_list_len = self.filter_list_eui.len() as u8;
+        if self.idx > 15 {
+            return Err(anyhow!("max idx value is 15"));
+        }
+        if self.eui.len() > 16 {
+            return Err(anyhow!("max eui length is 16"));
+        }
 
-        let mut b = flp.to_bytes()?.to_vec();
-        b.extend_from_slice(&self.filter_list_eui);
+        let mut b = vec![
+            self.eui.len() as u8 | (self.action.to_u8() << 5) | (self.idx << 7),
+            (self.idx >> 1),
+        ];
+
+        b.extend_from_slice(&self.eui);
         Ok(b)
     }
 }
@@ -2930,12 +2907,9 @@ mod test {
             MacTest {
                 uplink: false,
                 command: MACCommand::FilterListReq(FilterListReqPayload {
-                    filter_list_param: FilterListParam {
-                        filter_list_idx: 3,
-                        filter_list_action: FilterListAction::Forward,
-                        filter_list_len: 16,
-                    },
-                    filter_list_eui: vec![1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
+                    idx: 3,
+                    action: FilterListAction::Forward,
+                    eui: vec![1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
                 }),
                 bytes: vec![66, 176, 1, 1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
             },
