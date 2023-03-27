@@ -1718,6 +1718,7 @@ ApplicationService is the service providing API methods for managing application
 | is_disabled | [bool](#bool) |  | Device is disabled. |
 | variables | [Device.VariablesEntry](#api-Device-VariablesEntry) | repeated | Variables (user defined). These variables can be used together with integrations to store tokens / secrets that must be configured per device. These variables are not exposed in the event payloads. |
 | tags | [Device.TagsEntry](#api-Device-TagsEntry) | repeated | Tags (user defined). These tags are exposed in the event payloads or to integration. Tags are intended for aggregation and filtering. |
+| join_eui | [string](#string) |  | JoinEUI (optional, EUI64). This field will be automatically set / updated on OTAA. However, in some cases it must be pre-configured. For example to allow OTAA using a Relay. In this case the Relay needs to know the JoinEUI &#43; DevEUI combinations of the devices for which it needs to forward uplinks. |
 
 
 

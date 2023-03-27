@@ -12,3 +12,9 @@ create table relay_device (
     created_at timestamp with time zone not null,
     primary key (relay_dev_eui, dev_eui)
 );
+
+alter table device
+    add column join_eui bytea not null default decode('0000000000000000', 'hex');
+
+alter table device
+    alter column join_eui drop default;

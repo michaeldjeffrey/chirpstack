@@ -210,6 +210,15 @@ pub fn status_event(st: integration_pb::StatusEvent) -> Validator {
     })
 }
 
+pub fn device_join_eui(dev_eui: EUI64, join_eui: EUI64) -> Validator {
+    Box::new(move || {
+        Box::pin(async move {
+            let d = device::get(&dev_eui).await.unwrap();
+            assert_eq!(join_eui, d.join_eui);
+        })
+    })
+}
+
 pub fn device_session(dev_eui: EUI64, ds: internal::DeviceSession) -> Validator {
     Box::new(move || {
         let ds = ds.clone();

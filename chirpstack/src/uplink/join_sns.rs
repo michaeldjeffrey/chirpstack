@@ -99,6 +99,7 @@ impl JoinRequest {
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
+        ctx.set_join_eui().await?;
         ctx.send_join_event().await?;
         ctx.set_pr_start_ans_payload()?;
 
@@ -658,6 +659,16 @@ impl JoinRequest {
         } else {
             *device = device::set_enabled_class(&device.dev_eui, "A").await?;
         }
+        Ok(())
+    }
+
+    async fn set_join_eui(&mut self) -> Result<()> {
+        trace!("Setting JoinEUI");
+        let dev = self.device.as_mut().unwrap();
+        let req = self.join_request.as_ref().unwrap();
+
+        *dev = device::set_join_eui(dev.dev_eui, req.join_eui).await?;
+
         Ok(())
     }
 

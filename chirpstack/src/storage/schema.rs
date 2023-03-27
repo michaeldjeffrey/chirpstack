@@ -56,6 +56,7 @@ diesel::table! {
         is_disabled -> Bool,
         tags -> Jsonb,
         variables -> Jsonb,
+        join_eui -> Bytea,
     }
 }
 
