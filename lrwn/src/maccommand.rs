@@ -1958,9 +1958,9 @@ impl FilterListAction {
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct FilterListReqPayload {
-    pub idx: u8,
-    pub action: FilterListAction,
-    pub eui: Vec<u8>,
+    pub filter_list_idx: u8,
+    pub filter_list_action: FilterListAction,
+    pub filter_list_eui: Vec<u8>,
 }
 
 impl PayloadCodec for FilterListReqPayload {
@@ -1973,26 +1973,28 @@ impl PayloadCodec for FilterListReqPayload {
         cur.read_exact(&mut eui)?;
 
         Ok(FilterListReqPayload {
-            action: FilterListAction::from_u8((b[0] & 0x60) >> 5)?,
-            idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x07) << 1),
-            eui: eui,
+            filter_list_action: FilterListAction::from_u8((b[0] & 0x60) >> 5)?,
+            filter_list_idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x07) << 1),
+            filter_list_eui: eui,
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
-        if self.idx > 15 {
-            return Err(anyhow!("max idx value is 15"));
+        if self.filter_list_idx > 15 {
+            return Err(anyhow!("max filter_list_idx value is 15"));
         }
-        if self.eui.len() > 16 {
-            return Err(anyhow!("max eui length is 16"));
+        if self.filter_list_eui.len() > 16 {
+            return Err(anyhow!("max filter_list_eui length is 16"));
         }
 
         let mut b = vec![
-            self.eui.len() as u8 | (self.action.to_u8() << 5) | (self.idx << 7),
-            (self.idx >> 1),
+            self.filter_list_eui.len() as u8
+                | (self.filter_list_action.to_u8() << 5)
+                | (self.filter_list_idx << 7),
+            (self.filter_list_idx >> 1),
         ];
 
-        b.extend_from_slice(&self.eui);
+        b.extend_from_slice(&self.filter_list_eui);
         Ok(b)
     }
 }
@@ -2907,9 +2909,9 @@ mod test {
             MacTest {
                 uplink: false,
                 command: MACCommand::FilterListReq(FilterListReqPayload {
-                    idx: 3,
-                    action: FilterListAction::Forward,
-                    eui: vec![1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
+                    filter_list_idx: 3,
+                    filter_list_action: FilterListAction::Forward,
+                    filter_list_eui: vec![1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
                 }),
                 bytes: vec![66, 176, 1, 1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
             },

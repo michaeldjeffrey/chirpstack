@@ -1558,9 +1558,9 @@ impl Data {
                 if !filter.provisioned {
                     let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
                         lrwn::FilterListReqPayload {
-                            idx: 0,
-                            action: lrwn::FilterListAction::Filter,
-                            eui: vec![],
+                            filter_list_idx: 0,
+                            filter_list_action: lrwn::FilterListAction::Filter,
+                            filter_list_eui: vec![],
                         },
                     )]);
                     mac_command::set_pending(&self.device.dev_eui, lrwn::CID::FilterListReq, &set)
@@ -1591,9 +1591,9 @@ impl Data {
 
                         let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
                             lrwn::FilterListReqPayload {
-                                idx: f.index as u8,
-                                action: lrwn::FilterListAction::Forward,
-                                eui: eui,
+                                filter_list_idx: f.index as u8,
+                                filter_list_action: lrwn::FilterListAction::Forward,
+                                filter_list_eui: eui,
                             },
                         )]);
                         mac_command::set_pending(
@@ -1628,9 +1628,9 @@ impl Data {
 
                 let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListReq(
                     lrwn::FilterListReqPayload {
-                        idx: free_slots[0] as u8,
-                        action: lrwn::FilterListAction::Forward,
-                        eui: eui,
+                        filter_list_idx: free_slots[0] as u8,
+                        filter_list_action: lrwn::FilterListAction::Forward,
+                        filter_list_eui: eui,
                     },
                 )]);
                 mac_command::set_pending(&self.device.dev_eui, lrwn::CID::FilterListReq, &set)
@@ -2697,9 +2697,9 @@ mod test {
                 relay_devices: vec![],
                 expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
                     lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
-                        idx: 0,
-                        action: lrwn::FilterListAction::Filter,
-                        eui: vec![],
+                        filter_list_idx: 0,
+                        filter_list_action: lrwn::FilterListAction::Filter,
+                        filter_list_eui: vec![],
                     }),
                 ])],
                 expected_device_session: internal::DeviceSession {
@@ -2732,9 +2732,9 @@ mod test {
                 relay_devices: vec![],
                 expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
                     lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
-                        idx: 0,
-                        action: lrwn::FilterListAction::Filter,
-                        eui: vec![],
+                        filter_list_idx: 0,
+                        filter_list_action: lrwn::FilterListAction::Filter,
+                        filter_list_eui: vec![],
                     }),
                 ])],
                 expected_device_session: internal::DeviceSession {
@@ -2859,9 +2859,9 @@ mod test {
                 )],
                 expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
                     lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
-                        idx: 1,
-                        action: lrwn::FilterListAction::Forward,
-                        eui: vec![2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 0],
+                        filter_list_idx: 1,
+                        filter_list_action: lrwn::FilterListAction::Forward,
+                        filter_list_eui: vec![2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 0],
                     }),
                 ])],
                 expected_device_session: internal::DeviceSession {
@@ -2922,9 +2922,9 @@ mod test {
                 ],
                 expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
                     lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
-                        idx: 2,
-                        action: lrwn::FilterListAction::Forward,
-                        eui: vec![2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2],
+                        filter_list_idx: 2,
+                        filter_list_action: lrwn::FilterListAction::Forward,
+                        filter_list_eui: vec![2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2],
                     }),
                 ])],
                 expected_device_session: internal::DeviceSession {

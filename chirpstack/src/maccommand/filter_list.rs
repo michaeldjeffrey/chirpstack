@@ -35,10 +35,10 @@ pub fn handle(
     if ans_pl.filter_list_action_ack && ans_pl.filter_list_len_ack && ans_pl.combined_rules_ack {
         if let Some(relay) = &mut ds.relay {
             for f in &mut relay.filters {
-                if req_pl.idx as u32 == f.index {
+                if req_pl.filter_list_idx as u32 == f.index {
                     info!(
-                        idx = req_pl.idx,
-                        eui = %hex::encode(&req_pl.eui),
+                        filter_list_idx = req_pl.filter_list_idx,
+                        filter_list_eui = %hex::encode(&req_pl.filter_list_eui),
                         "FilterListReq acknowledged"
                     );
                     f.provisioned = true;
@@ -103,9 +103,9 @@ mod test {
                 },
                 filter_list_req: Some(lrwn::MACCommandSet::new(vec![
                     lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
-                        idx: 1,
-                        action: lrwn::FilterListAction::Forward,
-                        eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                        filter_list_idx: 1,
+                        filter_list_action: lrwn::FilterListAction::Forward,
+                        filter_list_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     }),
                 ])),
                 filter_list_ans: lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListAns(
@@ -143,9 +143,9 @@ mod test {
                 },
                 filter_list_req: Some(lrwn::MACCommandSet::new(vec![
                     lrwn::MACCommand::FilterListReq(lrwn::FilterListReqPayload {
-                        idx: 1,
-                        action: lrwn::FilterListAction::Forward,
-                        eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
+                        filter_list_idx: 1,
+                        filter_list_action: lrwn::FilterListAction::Forward,
+                        filter_list_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                     }),
                 ])),
                 filter_list_ans: lrwn::MACCommandSet::new(vec![lrwn::MACCommand::FilterListAns(
