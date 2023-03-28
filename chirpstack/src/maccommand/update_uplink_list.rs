@@ -55,7 +55,7 @@ pub mod test {
 
     #[test]
     fn test_response() {
-        let tests: Vec<Test> = vec![
+        let tests = vec![
             Test {
                 name: "nothing pending".into(),
                 device_session: internal::DeviceSession::default(),

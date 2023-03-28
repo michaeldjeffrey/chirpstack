@@ -12,6 +12,7 @@ use lrwn::EUI64;
 pub mod dev_status;
 pub mod device_mode_ind;
 pub mod device_time;
+pub mod filter_list;
 pub mod link_adr;
 pub mod link_check;
 pub mod new_channel;
@@ -149,6 +150,7 @@ async fn handle(
         lrwn::CID::RxTimingSetupAns => rx_timing_setup::handle(dev, ds, block, pending_block),
         lrwn::CID::TxParamSetupAns => tx_param_setup::handle(dev, ds, block, pending_block),
         lrwn::CID::UpdateUplinkListAns => update_uplink_list::handle(dev, ds, block, pending_block),
+        lrwn::CID::FilterListAns => filter_list::handle(dev, ds, block, pending_block),
         _ => {
             error!(cid = %cid, "Unexpected CID");
             // Return OK, we don't want to break out of the uplink handling.
