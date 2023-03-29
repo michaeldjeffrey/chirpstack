@@ -201,6 +201,7 @@ pub struct LoraCloudConfiguration {
 }
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
 pub struct LoraCloudModemGeolocationServices {
     pub token: String,
     pub modem_enabled: bool,
@@ -208,6 +209,7 @@ pub struct LoraCloudModemGeolocationServices {
     pub gnss_port: u32,
     pub forward_f_ports: Vec<u32>,
     pub gnss_use_rx_time: bool,
+    pub gnss_use_gateway_location: bool,
     pub parse_tlv: bool,
     pub geolocation_buffer_ttl: u32,
     pub geolocation_min_buffer_size: u32,

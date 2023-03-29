@@ -59,6 +59,7 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
       mgs.setModemEnabled(mgsv.modemEnabled);
       mgs.setForwardFPortsList(mgsv.forwardFPortsList);
       mgs.setGnssUseRxTime(mgsv.gnssUseRxTime);
+      mgs.setGnssUseGatewayLocation(mgsv.gnssUseGatewayLocation);
       mgs.setParseTlv(mgsv.parseTlv);
       mgs.setGeolocationBufferTtl(mgsv.geolocationBufferTtl);
       mgs.setGeolocationMinBufferSize(mgsv.geolocationMinBufferSize);
@@ -162,9 +163,19 @@ class LoRaCloudIntegrationForm extends Component<IProps, IState> {
             )}
             {this.state.modemEnabled && (
               <Form.Item
-                label="My device adheres to the LoRa Edge&trade; Tracker Reference Design protocol"
+                label="Use location of receiving gateways for assistance"
+                name={["modemGeolocationServices", "gnssUseGatewayLocation"]}
+                tooltip="If enabled, the gateway location will be provided to the geolocation resolver to aid the resolving process."
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+            )}
+            {this.state.modemEnabled && (
+              <Form.Item
+                label="My device adheres to the LoRa Edge&trade; Tracker Modem-E Version Reference Design protocol"
                 name={["modemGeolocationServices", "parseTlv"]}
-                tooltip="If enabled, ChirpStack Application Server will try to resolve the location of the device if a geolocation payload is detected."
+                tooltip="If enabled, ChirpStack will try to resolve the location of the device if a geolocation payload is detected."
                 valuePropName="checked"
               >
                 <Switch />
