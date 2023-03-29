@@ -165,6 +165,24 @@ message Relay {
 
     // Filter list.
     repeated RelayFilter filters = 2;
+
+    // Relay is enabled.
+    bool enabled = 3;
+
+    // CAD periodicity.
+    uint32 cad_periodicity = 4;
+
+    // Default channel index.
+    uint32 default_channel_index = 5;
+
+    // Second channel freq.
+    uint32 second_channel_freq = 6;
+
+    // Second channel DR.
+    uint32 second_channel_dr = 7;
+
+    // Second channel ACK offset.
+    uint32 second_channel_ack_offset = 8;
 }
 
 message RelayDevice {

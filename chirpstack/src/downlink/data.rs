@@ -517,8 +517,9 @@ impl Data {
         self._set_tx_parameters().await?;
 
         if self.device_profile.is_relay {
-            self._update_uplink_list().await?;
+            self._update_relay_conf().await?;
             self._update_filter_list().await?;
+            self._update_uplink_list().await?;
         }
 
         self.mac_commands = filter_mac_commands(&self.device_session, &self.mac_commands);
@@ -1651,6 +1652,54 @@ impl Data {
                     });
             }
         }
+
+        Ok(())
+    }
+
+    async fn _update_relay_conf(&mut self) -> Result<()> {
+        trace!("Updating Relay Conf");
+
+        // Get the current relay state.
+        let relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        if relay.enabled != self.device_profile.relay_enabled
+            || relay.cad_periodicity != self.device_profile.relay_cad_periodicity as u32
+            || relay.default_channel_index != self.device_profile.relay_default_channel_index as u32
+            || relay.second_channel_freq != self.device_profile.relay_second_channel_freq as u32
+            || relay.second_channel_dr != self.device_profile.relay_second_channel_dr as u32
+            || relay.second_channel_ack_offset
+                != self.device_profile.relay_second_channel_ack_offset as u32
+        {
+            let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::RelayConfReq(
+                lrwn::RelayConfReqPayload {
+                    channel_settings_relay: lrwn::ChannelSettingsRelay {
+                        start_stop: match self.device_profile.relay_enabled {
+                            true => 1,
+                            false => 0,
+                        },
+                        cad_periodicity: self.device_profile.relay_cad_periodicity as u8,
+                        default_ch_idx: self.device_profile.relay_default_channel_index as u8,
+                        second_ch_idx: if self.device_profile.relay_second_channel_freq > 0 {
+                            1
+                        } else {
+                            0
+                        },
+                        second_ch_dr: self.device_profile.relay_second_channel_dr as u8,
+                        second_ch_ack_offset: self.device_profile.relay_second_channel_ack_offset
+                            as u8,
+                    },
+                    second_ch_freq: self.device_profile.relay_second_channel_freq as u32,
+                },
+            )]);
+            mac_command::set_pending(&self.device.dev_eui, lrwn::CID::RelayConfReq, &set).await?;
+            self.mac_commands.push(set);
+        }
+
+        self.device_session.relay = Some(relay);
 
         Ok(())
     }
@@ -3053,6 +3102,115 @@ mod test {
 
             assert_eq!(test.expected_mac_commands, ctx.mac_commands);
             assert_eq!(test.expected_device_session, ctx.device_session);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_update_relay_conf() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            device_profile: device_profile::DeviceProfile,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
+        let tests = vec![
+            Test {
+                name: "relay in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        enabled: true,
+                        cad_periodicity: 1,
+                        default_channel_index: 0,
+                        second_channel_freq: 868300000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 2,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    is_relay: true,
+                    relay_enabled: true,
+                    relay_cad_periodicity: 1,
+                    relay_default_channel_index: 0,
+                    relay_second_channel_freq: 868300000,
+                    relay_second_channel_dr: 3,
+                    relay_second_channel_ack_offset: 2,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![],
+            },
+            Test {
+                name: "relay out of sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        enabled: true,
+                        cad_periodicity: 1,
+                        default_channel_index: 0,
+                        second_channel_freq: 868300000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 2,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    is_relay: true,
+                    relay_enabled: true,
+                    relay_cad_periodicity: 1,
+                    relay_default_channel_index: 0,
+                    relay_second_channel_freq: 868500000,
+                    relay_second_channel_dr: 3,
+                    relay_second_channel_ack_offset: 2,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::RelayConfReq(lrwn::RelayConfReqPayload {
+                        channel_settings_relay: lrwn::ChannelSettingsRelay {
+                            start_stop: 1,
+                            cad_periodicity: 1,
+                            default_ch_idx: 0,
+                            second_ch_idx: 1,
+                            second_ch_dr: 3,
+                            second_ch_ack_offset: 2,
+                        },
+                        second_ch_freq: 868500000,
+                    }),
+                ])],
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: tenant::Tenant::default(),
+                application: application::Application::default(),
+                device_profile: test.device_profile.clone(),
+                device: device::Device::default(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._update_relay_conf().await.unwrap();
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
         }
     }
 }
