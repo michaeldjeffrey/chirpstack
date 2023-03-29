@@ -100,6 +100,24 @@ export class DeviceProfile extends jspb.Message {
   getEdRelayOnly(): boolean;
   setEdRelayOnly(value: boolean): DeviceProfile;
 
+  getRelayEnabled(): boolean;
+  setRelayEnabled(value: boolean): DeviceProfile;
+
+  getRelayCadPeriodicity(): CadPeriodicity;
+  setRelayCadPeriodicity(value: CadPeriodicity): DeviceProfile;
+
+  getRelayDefaultChannelIndex(): number;
+  setRelayDefaultChannelIndex(value: number): DeviceProfile;
+
+  getRelaySecondChannelFreq(): number;
+  setRelaySecondChannelFreq(value: number): DeviceProfile;
+
+  getRelaySecondChannelDr(): number;
+  setRelaySecondChannelDr(value: number): DeviceProfile;
+
+  getRelaySecondChannelAckOffset(): SecondChAckOffset;
+  setRelaySecondChannelAckOffset(value: SecondChAckOffset): DeviceProfile;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfile): DeviceProfile.AsObject;
@@ -141,6 +159,12 @@ export namespace DeviceProfile {
     regionConfigId: string,
     isRelay: boolean,
     edRelayOnly: boolean,
+    relayEnabled: boolean,
+    relayCadPeriodicity: CadPeriodicity,
+    relayDefaultChannelIndex: number,
+    relaySecondChannelFreq: number,
+    relaySecondChannelDr: number,
+    relaySecondChannelAckOffset: SecondChAckOffset,
   }
 }
 
@@ -461,4 +485,20 @@ export enum MeasurementKind {
   ABSOLUTE = 2,
   GAUGE = 3,
   STRING = 4,
+}
+export enum CadPeriodicity { 
+  SEC_1 = 0,
+  MS_500 = 1,
+  MS_250 = 2,
+  MS_100 = 3,
+  MS_50 = 4,
+  MS_20 = 5,
+}
+export enum SecondChAckOffset { 
+  KHZ_0 = 0,
+  KHZ_200 = 1,
+  KHZ_400 = 2,
+  KHZ_800 = 3,
+  KHZ_1600 = 4,
+  KHZ_3200 = 5,
 }

@@ -8,6 +8,8 @@ import {
   CodecRuntime,
   Measurement,
   MeasurementKind,
+  CadPeriodicity,
+  SecondChAckOffset,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -196,6 +198,7 @@ interface IState {
   supportsOtaa: boolean;
   supportsClassB: boolean;
   supportsClassC: boolean;
+  isRelay: boolean;
   payloadCodecRuntime: CodecRuntime;
   adrAlgorithms: [string, string][];
   regionConfigurations: RegionListItem[];
@@ -213,6 +216,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
       supportsOtaa: false,
       supportsClassB: false,
       supportsClassC: false,
+      isRelay: false,
       payloadCodecRuntime: CodecRuntime.NONE,
       adrAlgorithms: [],
       regionConfigurations: [],
@@ -230,6 +234,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
       supportsClassB: v.getSupportsClassB(),
       supportsClassC: v.getSupportsClassC(),
       payloadCodecRuntime: v.getPayloadCodecRuntime(),
+      isRelay: v.getIsRelay(),
     });
 
     InternalStore.listRegions((resp: ListRegionsResponse) => {
@@ -312,6 +317,12 @@ class DeviceProfileForm extends Component<IProps, IState> {
     // relay
     dp.setIsRelay(v.isRelay);
     dp.setEdRelayOnly(v.edRelayOnly);
+    dp.setRelayEnabled(v.relayEnabled);
+    dp.setRelayCadPeriodicity(v.relayCadPeriodicity);
+    dp.setRelayDefaultChannelIndex(v.relayDefaultChannelIndex);
+    dp.setRelaySecondChannelFreq(v.relaySecondChannelFreq);
+    dp.setRelaySecondChannelDr(v.relaySecondChannelDr);
+    dp.setRelaySecondChannelAckOffset(v.relaySecondChannelAckOffset);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -353,6 +364,12 @@ class DeviceProfileForm extends Component<IProps, IState> {
       payloadCodecRuntime: value,
     });
   };
+
+  onIsRelayChange = (checked: boolean) => {
+    this.setState({
+      isRelay: checked,
+    });
+  }
 
   showTemplateModal = () => {
     this.setState({
@@ -789,7 +806,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   valuePropName="checked"
                   tooltip="Enable this if the device(s) under this profile implement the Relay specification (please refer to the TS011 specification for more information)"
                 >
-                  <Switch disabled={this.props.disabled} />
+                  <Switch onChange={this.onIsRelayChange} disabled={this.props.disabled} />
                 </Form.Item>
               </Col>
               <Col span={8}>
@@ -803,6 +820,75 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 </Form.Item>
               </Col>
             </Row>
+            {this.state.isRelay && (
+              <Row gutter={24}>
+                <Col span={8}>
+                  <Form.Item
+                    label="Default channel index"
+                    name="relayDefaultChannelIndex"
+                    tooltip="Please refer to the RP002 specification for the meaning of index 0 and 1."
+                    rules={[{ required: true, message: "Please enter a channel number!" }]}
+                  >
+                    <InputNumber min={0} max={1} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Second channel frequency (Hz)"
+                    name="relaySecondChannelFreq"
+                    tooltip="To disable the second channel, set this value to 0."
+                    rules={[{ required: true, message: "Please enter a frequency!" }]}
+                  >
+                    <InputNumber min={0} style={{width: "200px"}} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Second channel data-rate"
+                    name="relaySecondChannelDr"
+                    rules={[{ required: true, message: "Please enter a data-rate!" }]}
+                  >
+                    <InputNumber min={0} max={15} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )} 
+            {this.state.isRelay && (
+              <Row gutter={24}>
+                <Col span={12}>
+                  <Form.Item
+                    label="CAD periodicity"
+                    name="relayCadPeriodicity"
+                    rules={[{ required: true, message: "Please select a CAD periodicity!" }]}
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={CadPeriodicity.SEC_1}>1 second</Select.Option>
+                      <Select.Option value={CadPeriodicity.MS_500}>500 milliseconds</Select.Option>
+                      <Select.Option value={CadPeriodicity.MS_250}>250 milliseconds</Select.Option>
+                      <Select.Option value={CadPeriodicity.MS_100}>100 milliseconds</Select.Option>
+                      <Select.Option value={CadPeriodicity.MS_50}>50 milliseconds</Select.Option>
+                      <Select.Option value={CadPeriodicity.MS_20}>20 milliseconds</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Second channel ACK offset"
+                    name="relaySecondChannelAckOffset"
+                    rules={[{ required: true, message: "Please select an ACK offset!" }]}
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={SecondChAckOffset.KHZ_0}>0 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_200}>200 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_400}>400 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_800}>800 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_1600}>1600 kHz</Select.Option>
+                      <Select.Option value={SecondChAckOffset.KHZ_3200}>3200 kHz</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
           </Tabs.TabPane>
           <Tabs.TabPane tab="Tags" key="7">
             <Form.List name="tagsMap">

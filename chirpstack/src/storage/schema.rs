@@ -107,6 +107,12 @@ diesel::table! {
         region_config_id -> Nullable<Varchar>,
         is_relay -> Bool,
         ed_relay_only -> Bool,
+        relay_enabled -> Bool,
+        relay_cad_periodicity -> Int2,
+        relay_default_channel_index -> Int2,
+        relay_second_channel_freq -> Int8,
+        relay_second_channel_dr -> Int2,
+        relay_second_channel_ack_offset -> Int2,
     }
 }
 

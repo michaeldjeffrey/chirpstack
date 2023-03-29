@@ -99,6 +99,24 @@ export class DeviceProfile extends jspb.Message {
   getEdRelayOnly(): boolean;
   setEdRelayOnly(value: boolean): void;
 
+  getRelayEnabled(): boolean;
+  setRelayEnabled(value: boolean): void;
+
+  getRelayCadPeriodicity(): CadPeriodicityMap[keyof CadPeriodicityMap];
+  setRelayCadPeriodicity(value: CadPeriodicityMap[keyof CadPeriodicityMap]): void;
+
+  getRelayDefaultChannelIndex(): number;
+  setRelayDefaultChannelIndex(value: number): void;
+
+  getRelaySecondChannelFreq(): number;
+  setRelaySecondChannelFreq(value: number): void;
+
+  getRelaySecondChannelDr(): number;
+  setRelaySecondChannelDr(value: number): void;
+
+  getRelaySecondChannelAckOffset(): SecondChAckOffsetMap[keyof SecondChAckOffsetMap];
+  setRelaySecondChannelAckOffset(value: SecondChAckOffsetMap[keyof SecondChAckOffsetMap]): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfile): DeviceProfile.AsObject;
@@ -142,6 +160,12 @@ export namespace DeviceProfile {
     regionConfigId: string,
     isRelay: boolean,
     edRelayOnly: boolean,
+    relayEnabled: boolean,
+    relayCadPeriodicity: CadPeriodicityMap[keyof CadPeriodicityMap],
+    relayDefaultChannelIndex: number,
+    relaySecondChannelFreq: number,
+    relaySecondChannelDr: number,
+    relaySecondChannelAckOffset: SecondChAckOffsetMap[keyof SecondChAckOffsetMap],
   }
 }
 
@@ -492,4 +516,26 @@ export interface MeasurementKindMap {
 }
 
 export const MeasurementKind: MeasurementKindMap;
+
+export interface CadPeriodicityMap {
+  SEC_1: 0;
+  MS_500: 1;
+  MS_250: 2;
+  MS_100: 3;
+  MS_50: 4;
+  MS_20: 5;
+}
+
+export const CadPeriodicity: CadPeriodicityMap;
+
+export interface SecondChAckOffsetMap {
+  KHZ_0: 0;
+  KHZ_200: 1;
+  KHZ_400: 2;
+  KHZ_800: 3;
+  KHZ_1600: 4;
+  KHZ_3200: 5;
+}
+
+export const SecondChAckOffset: SecondChAckOffsetMap;
 

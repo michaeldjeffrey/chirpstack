@@ -149,8 +149,10 @@
     - [Measurement](#api-Measurement)
     - [UpdateDeviceProfileRequest](#api-UpdateDeviceProfileRequest)
   
+    - [CadPeriodicity](#api-CadPeriodicity)
     - [CodecRuntime](#api-CodecRuntime)
     - [MeasurementKind](#api-MeasurementKind)
+    - [SecondChAckOffset](#api-SecondChAckOffset)
   
     - [DeviceProfileService](#api-DeviceProfileService)
   
@@ -2409,6 +2411,12 @@ The actual number of ping-slots per beacon period equals to 2^k. |
 | region_config_id | [string](#string) |  | Region configuration ID. If set, devices will only use the associated region. If let blank, then devices will use all regions matching the selected common-name. Note that multiple region configurations can exist for the same common-name, e.g. to provide an 8 channel and 16 channel configuration for the US915 band. |
 | is_relay | [bool](#bool) |  | Device is a Relay device. Enable this in case the device is a Relay. A Relay device implements TS011 and is able to relay data from relay capable devices. See for more information the TS011 specification. |
 | ed_relay_only | [bool](#bool) |  | End-device only accept data through relay. Only accept data for this device through a relay. This setting is useful for testing as in case of a test-setup, the end-device is usually within range of the gateway. |
+| relay_enabled | [bool](#bool) |  | Relay must be enabled. |
+| relay_cad_periodicity | [CadPeriodicity](#api-CadPeriodicity) |  | Relay CAD periodicity. |
+| relay_default_channel_index | [uint32](#uint32) |  | Relay default channel index. Valid values are 0 and 1, please refer to the RP002 specification for the meaning of these values. |
+| relay_second_channel_freq | [uint32](#uint32) |  | Relay second channel frequency (Hz). |
+| relay_second_channel_dr | [uint32](#uint32) |  | Relay second channel DR. |
+| relay_second_channel_ack_offset | [SecondChAckOffset](#api-SecondChAckOffset) |  | Relay second channel ACK offset. |
 
 
 
@@ -2586,6 +2594,22 @@ The actual number of ping-slots per beacon period equals to 2^k. |
  
 
 
+<a name="api-CadPeriodicity"></a>
+
+### CadPeriodicity
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| SEC_1 | 0 | 1 second. |
+| MS_500 | 1 | 500 milliseconds |
+| MS_250 | 2 | 250 milliseconds |
+| MS_100 | 3 | 100 milliseconds |
+| MS_50 | 4 | 50 milliseconds |
+| MS_20 | 5 | 20 milliseconds |
+
+
+
 <a name="api-CodecRuntime"></a>
 
 ### CodecRuntime
@@ -2611,6 +2635,22 @@ The actual number of ping-slots per beacon period equals to 2^k. |
 | ABSOLUTE | 2 | Counters that do get reset upon reading. |
 | GAUGE | 3 | E.g. a temperature value. |
 | STRING | 4 | E.g. a firmware version, true / false value. |
+
+
+
+<a name="api-SecondChAckOffset"></a>
+
+### SecondChAckOffset
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| KHZ_0 | 0 | 0 kHz. |
+| KHZ_200 | 1 | 200 kHz. |
+| KHZ_400 | 2 | 400 kHz. |
+| KHZ_800 | 3 | 800 kHz. |
+| KHZ_1600 | 4 | 1600 kHz. |
+| KHZ_3200 | 5 | 3200 kHz. |
 
 
  

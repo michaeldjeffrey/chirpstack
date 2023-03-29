@@ -41,6 +41,47 @@ enum MeasurementKind {
     STRING = 4;
 }
 
+enum CadPeriodicity {
+    // 1 second.
+    SEC_1 = 0;
+
+    // 500 milliseconds
+    MS_500 = 1;
+
+    // 250 milliseconds
+    MS_250 = 2;
+
+    // 100 milliseconds
+    MS_100 = 3;
+
+    // 50 milliseconds
+    MS_50 = 4;
+
+    // 20 milliseconds
+    MS_20 = 5;
+}
+
+enum SecondChAckOffset {
+    // 0 kHz.
+    KHZ_0 = 0;
+
+    // 200 kHz.
+    KHZ_200 = 1;
+
+    // 400 kHz.
+    KHZ_400 = 2;
+
+    // 800 kHz.
+    KHZ_800 = 3;
+
+    // 1600 kHz.
+    KHZ_1600 = 4;
+
+    // 3200 kHz.
+    KHZ_3200 = 5;
+
+}
+
 // DeviceProfileService is the service providing API methods for managing device-profiles.
 service DeviceProfileService {
     // Create the given device-profile.
@@ -207,6 +248,26 @@ message DeviceProfile {
     // for testing as in case of a test-setup, the end-device is usually within
     // range of the gateway.
     bool ed_relay_only = 31;
+
+    // Relay must be enabled.
+    bool relay_enabled = 32;
+
+    // Relay CAD periodicity.
+    CadPeriodicity relay_cad_periodicity = 33;
+
+    // Relay default channel index.
+    // Valid values are 0 and 1, please refer to the RP002 specification for
+    // the meaning of these values.
+    uint32 relay_default_channel_index = 34;
+
+    // Relay second channel frequency (Hz).
+    uint32 relay_second_channel_freq = 35;
+
+    // Relay second channel DR.
+    uint32 relay_second_channel_dr = 36;
+
+    // Relay second channel ACK offset.
+    SecondChAckOffset relay_second_channel_ack_offset = 37;
 }
 
 message Measurement {

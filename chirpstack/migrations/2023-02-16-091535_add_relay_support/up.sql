@@ -1,10 +1,22 @@
 alter table device_profile
     add column is_relay boolean not null default false,
-    add column ed_relay_only boolean not null default false;
+    add column ed_relay_only boolean not null default false,
+    add column relay_enabled boolean not null default false,
+    add column relay_cad_periodicity smallint not null default 0,
+    add column relay_default_channel_index smallint not null default 0,
+    add column relay_second_channel_freq bigint not null default 0,
+    add column relay_second_channel_dr smallint not null default 0,
+    add column relay_second_channel_ack_offset smallint not null default 0;
 
 alter table device_profile
     alter column is_relay drop default,
-    alter column ed_relay_only drop default;
+    alter column ed_relay_only drop default,
+    alter column relay_enabled drop default,
+    alter column relay_cad_periodicity drop default,
+    alter column relay_default_channel_index drop default,
+    alter column relay_second_channel_freq drop default,
+    alter column relay_second_channel_dr drop default,
+    alter column relay_second_channel_ack_offset drop default;
 
 create table relay_device (
     relay_dev_eui bytea not null references device on delete cascade,
