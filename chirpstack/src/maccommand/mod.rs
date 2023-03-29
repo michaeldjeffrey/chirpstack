@@ -20,6 +20,7 @@ pub mod ping_slot_channel;
 pub mod ping_slot_info;
 pub mod rejoin_param_setup;
 pub mod rekey;
+pub mod relay_conf;
 pub mod reset;
 pub mod rx_param_setup;
 pub mod rx_timing_setup;
@@ -151,6 +152,7 @@ async fn handle(
         lrwn::CID::TxParamSetupAns => tx_param_setup::handle(dev, ds, block, pending_block),
         lrwn::CID::UpdateUplinkListAns => update_uplink_list::handle(dev, ds, block, pending_block),
         lrwn::CID::FilterListAns => filter_list::handle(dev, ds, block, pending_block),
+        lrwn::CID::RelayConfAns => relay_conf::handle(dev, ds, block, pending_block),
         _ => {
             error!(cid = %cid, "Unexpected CID");
             // Return OK, we don't want to break out of the uplink handling.
