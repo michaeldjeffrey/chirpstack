@@ -810,6 +810,18 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 </Form.Item>
               </Col>
               <Col span={8}>
+                {this.state.isRelay && (
+                  <Form.Item
+                    label="Relay enabled"
+                    name="relayEnabled"
+                    valuePropName="checked"
+                    tooltip="This will configure the Relay to be enabled / disabled through mac-commands."
+                  >
+                    <Switch disabled={this.props.disabled} />
+                  </Form.Item>
+                )}
+              </Col>
+              <Col span={8}>
                 <Form.Item
                   label="Only use Relay (end-device)"
                   name="edRelayOnly"
