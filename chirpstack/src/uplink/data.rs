@@ -461,8 +461,10 @@ impl Data {
     }
 
     fn abort_on_relay_only_comm(&self) -> Result<()> {
-        // In case the relay context is not set and ed_relay_only is set, abort.
-        if !self.relay_context.is_some() && self.device_profile.as_ref().unwrap().ed_relay_only {
+        // In case the relay context is not set and relay_ed_relay_only is set, abort.
+        if !self.relay_context.is_some()
+            && self.device_profile.as_ref().unwrap().relay_ed_relay_only
+        {
             return Err(anyhow!("Only communication through relay is allowed"));
         }
         Ok(())

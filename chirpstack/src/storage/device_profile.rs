@@ -51,13 +51,16 @@ pub struct DeviceProfile {
     pub auto_detect_measurements: bool,
     pub region_config_id: Option<String>,
     pub is_relay: bool,
-    pub ed_relay_only: bool,
+    pub relay_ed_relay_only: bool,
     pub relay_enabled: bool,
     pub relay_cad_periodicity: i16,
     pub relay_default_channel_index: i16,
     pub relay_second_channel_freq: i64,
     pub relay_second_channel_dr: i16,
     pub relay_second_channel_ack_offset: i16,
+    pub relay_ed_activation_mode: i16,
+    pub relay_ed_smart_enable_level: i16,
+    pub relay_ed_back_off: i16,
 }
 
 impl DeviceProfile {
@@ -106,13 +109,16 @@ impl Default for DeviceProfile {
             auto_detect_measurements: false,
             region_config_id: None,
             is_relay: false,
-            ed_relay_only: false,
+            relay_ed_relay_only: false,
             relay_enabled: false,
             relay_cad_periodicity: 0,
             relay_default_channel_index: 0,
             relay_second_channel_freq: 0,
             relay_second_channel_dr: 0,
             relay_second_channel_ack_offset: 0,
+            relay_ed_activation_mode: 0,
+            relay_ed_smart_enable_level: 0,
+            relay_ed_back_off: 0,
         }
     }
 }
@@ -227,7 +233,7 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::auto_detect_measurements.eq(&dp.auto_detect_measurements),
                     device_profile::region_config_id.eq(&dp.region_config_id),
                     device_profile::is_relay.eq(&dp.is_relay),
-                    device_profile::ed_relay_only.eq(&dp.ed_relay_only),
+                    device_profile::relay_ed_relay_only.eq(&dp.relay_ed_relay_only),
                     device_profile::relay_enabled.eq(&dp.relay_enabled),
                     device_profile::relay_cad_periodicity.eq(&dp.relay_cad_periodicity),
                     device_profile::relay_default_channel_index.eq(&dp.relay_default_channel_index),
@@ -235,6 +241,9 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::relay_second_channel_dr.eq(&dp.relay_second_channel_dr),
                     device_profile::relay_second_channel_ack_offset
                         .eq(&dp.relay_second_channel_ack_offset),
+                    device_profile::relay_ed_activation_mode.eq(&dp.relay_ed_activation_mode),
+                    device_profile::relay_ed_smart_enable_level.eq(&dp.relay_ed_smart_enable_level),
+                    device_profile::relay_ed_back_off.eq(&dp.relay_ed_back_off),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))

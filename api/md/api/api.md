@@ -152,6 +152,7 @@
     - [CadPeriodicity](#api-CadPeriodicity)
     - [CodecRuntime](#api-CodecRuntime)
     - [MeasurementKind](#api-MeasurementKind)
+    - [RelayModeActivation](#api-RelayModeActivation)
     - [SecondChAckOffset](#api-SecondChAckOffset)
   
     - [DeviceProfileService](#api-DeviceProfileService)
@@ -2410,13 +2411,16 @@ The actual number of ping-slots per beacon period equals to 2^k. |
 | auto_detect_measurements | [bool](#bool) |  | Auto-detect measurements. If set to true, measurements will be automatically added based on the keys of the decoded payload. In cases where the decoded payload contains random keys in the data, you want to set this to false. |
 | region_config_id | [string](#string) |  | Region configuration ID. If set, devices will only use the associated region. If let blank, then devices will use all regions matching the selected common-name. Note that multiple region configurations can exist for the same common-name, e.g. to provide an 8 channel and 16 channel configuration for the US915 band. |
 | is_relay | [bool](#bool) |  | Device is a Relay device. Enable this in case the device is a Relay. A Relay device implements TS011 and is able to relay data from relay capable devices. See for more information the TS011 specification. |
-| ed_relay_only | [bool](#bool) |  | End-device only accept data through relay. Only accept data for this device through a relay. This setting is useful for testing as in case of a test-setup, the end-device is usually within range of the gateway. |
+| relay_ed_relay_only | [bool](#bool) |  | End-device only accept data through relay. Only accept data for this device through a relay. This setting is useful for testing as in case of a test-setup, the end-device is usually within range of the gateway. |
 | relay_enabled | [bool](#bool) |  | Relay must be enabled. |
 | relay_cad_periodicity | [CadPeriodicity](#api-CadPeriodicity) |  | Relay CAD periodicity. |
 | relay_default_channel_index | [uint32](#uint32) |  | Relay default channel index. Valid values are 0 and 1, please refer to the RP002 specification for the meaning of these values. |
 | relay_second_channel_freq | [uint32](#uint32) |  | Relay second channel frequency (Hz). |
 | relay_second_channel_dr | [uint32](#uint32) |  | Relay second channel DR. |
 | relay_second_channel_ack_offset | [SecondChAckOffset](#api-SecondChAckOffset) |  | Relay second channel ACK offset. |
+| relay_ed_activation_mode | [RelayModeActivation](#api-RelayModeActivation) |  | Relay end-device activation mode. |
+| relay_ed_smart_enable_level | [uint32](#uint32) |  | Relay end-device smart-enable level. |
+| relay_ed_back_off | [uint32](#uint32) |  | Relay end-device back-off (in case it does not receive WOR ACK frame). 0 = Always send a LoRaWAN uplink 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK |
 
 
 
@@ -2635,6 +2639,20 @@ The actual number of ping-slots per beacon period equals to 2^k. |
 | ABSOLUTE | 2 | Counters that do get reset upon reading. |
 | GAUGE | 3 | E.g. a temperature value. |
 | STRING | 4 | E.g. a firmware version, true / false value. |
+
+
+
+<a name="api-RelayModeActivation"></a>
+
+### RelayModeActivation
+
+
+| Name | Number | Description |
+| ---- | ------ | ----------- |
+| DISABLE_RELAY_MODE | 0 | Disable the relay mode. |
+| ENABLE_RELAY_MODE | 1 | Enable the relay model. |
+| DYNAMIC | 2 | Dynamic. |
+| END_DEVICE_CONTROLLED | 3 | End-device controlled. |
 
 
 

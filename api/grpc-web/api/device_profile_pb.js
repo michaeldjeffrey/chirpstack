@@ -35,6 +35,7 @@ goog.exportSymbol('proto.api.ListDeviceProfilesRequest', null, global);
 goog.exportSymbol('proto.api.ListDeviceProfilesResponse', null, global);
 goog.exportSymbol('proto.api.Measurement', null, global);
 goog.exportSymbol('proto.api.MeasurementKind', null, global);
+goog.exportSymbol('proto.api.RelayModeActivation', null, global);
 goog.exportSymbol('proto.api.SecondChAckOffset', null, global);
 goog.exportSymbol('proto.api.UpdateDeviceProfileRequest', null, global);
 /**
@@ -372,13 +373,16 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     autoDetectMeasurements: jspb.Message.getBooleanFieldWithDefault(msg, 28, false),
     regionConfigId: jspb.Message.getFieldWithDefault(msg, 29, ""),
     isRelay: jspb.Message.getBooleanFieldWithDefault(msg, 30, false),
-    edRelayOnly: jspb.Message.getBooleanFieldWithDefault(msg, 31, false),
+    relayEdRelayOnly: jspb.Message.getBooleanFieldWithDefault(msg, 31, false),
     relayEnabled: jspb.Message.getBooleanFieldWithDefault(msg, 32, false),
     relayCadPeriodicity: jspb.Message.getFieldWithDefault(msg, 33, 0),
     relayDefaultChannelIndex: jspb.Message.getFieldWithDefault(msg, 34, 0),
     relaySecondChannelFreq: jspb.Message.getFieldWithDefault(msg, 35, 0),
     relaySecondChannelDr: jspb.Message.getFieldWithDefault(msg, 36, 0),
-    relaySecondChannelAckOffset: jspb.Message.getFieldWithDefault(msg, 37, 0)
+    relaySecondChannelAckOffset: jspb.Message.getFieldWithDefault(msg, 37, 0),
+    relayEdActivationMode: jspb.Message.getFieldWithDefault(msg, 38, 0),
+    relayEdSmartEnableLevel: jspb.Message.getFieldWithDefault(msg, 39, 0),
+    relayEdBackOff: jspb.Message.getFieldWithDefault(msg, 40, 0)
   };
 
   if (includeInstance) {
@@ -541,7 +545,7 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 31:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setEdRelayOnly(value);
+      msg.setRelayEdRelayOnly(value);
       break;
     case 32:
       var value = /** @type {boolean} */ (reader.readBool());
@@ -566,6 +570,18 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
     case 37:
       var value = /** @type {!proto.api.SecondChAckOffset} */ (reader.readEnum());
       msg.setRelaySecondChannelAckOffset(value);
+      break;
+    case 38:
+      var value = /** @type {!proto.api.RelayModeActivation} */ (reader.readEnum());
+      msg.setRelayEdActivationMode(value);
+      break;
+    case 39:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setRelayEdSmartEnableLevel(value);
+      break;
+    case 40:
+      var value = /** @type {number} */ (reader.readUint32());
+      msg.setRelayEdBackOff(value);
       break;
     default:
       reader.skipField();
@@ -800,7 +816,7 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getEdRelayOnly();
+  f = message.getRelayEdRelayOnly();
   if (f) {
     writer.writeBool(
       31,
@@ -846,6 +862,27 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
   if (f !== 0.0) {
     writer.writeEnum(
       37,
+      f
+    );
+  }
+  f = message.getRelayEdActivationMode();
+  if (f !== 0.0) {
+    writer.writeEnum(
+      38,
+      f
+    );
+  }
+  f = message.getRelayEdSmartEnableLevel();
+  if (f !== 0) {
+    writer.writeUint32(
+      39,
+      f
+    );
+  }
+  f = message.getRelayEdBackOff();
+  if (f !== 0) {
+    writer.writeUint32(
+      40,
       f
     );
   }
@@ -1401,10 +1438,10 @@ proto.api.DeviceProfile.prototype.setIsRelay = function(value) {
 
 
 /**
- * optional bool ed_relay_only = 31;
+ * optional bool relay_ed_relay_only = 31;
  * @return {boolean}
  */
-proto.api.DeviceProfile.prototype.getEdRelayOnly = function() {
+proto.api.DeviceProfile.prototype.getRelayEdRelayOnly = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 31, false));
 };
 
@@ -1413,7 +1450,7 @@ proto.api.DeviceProfile.prototype.getEdRelayOnly = function() {
  * @param {boolean} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setEdRelayOnly = function(value) {
+proto.api.DeviceProfile.prototype.setRelayEdRelayOnly = function(value) {
   return jspb.Message.setProto3BooleanField(this, 31, value);
 };
 
@@ -1523,6 +1560,60 @@ proto.api.DeviceProfile.prototype.getRelaySecondChannelAckOffset = function() {
  */
 proto.api.DeviceProfile.prototype.setRelaySecondChannelAckOffset = function(value) {
   return jspb.Message.setProto3EnumField(this, 37, value);
+};
+
+
+/**
+ * optional RelayModeActivation relay_ed_activation_mode = 38;
+ * @return {!proto.api.RelayModeActivation}
+ */
+proto.api.DeviceProfile.prototype.getRelayEdActivationMode = function() {
+  return /** @type {!proto.api.RelayModeActivation} */ (jspb.Message.getFieldWithDefault(this, 38, 0));
+};
+
+
+/**
+ * @param {!proto.api.RelayModeActivation} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setRelayEdActivationMode = function(value) {
+  return jspb.Message.setProto3EnumField(this, 38, value);
+};
+
+
+/**
+ * optional uint32 relay_ed_smart_enable_level = 39;
+ * @return {number}
+ */
+proto.api.DeviceProfile.prototype.getRelayEdSmartEnableLevel = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 39, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setRelayEdSmartEnableLevel = function(value) {
+  return jspb.Message.setProto3IntField(this, 39, value);
+};
+
+
+/**
+ * optional uint32 relay_ed_back_off = 40;
+ * @return {number}
+ */
+proto.api.DeviceProfile.prototype.getRelayEdBackOff = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 40, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setRelayEdBackOff = function(value) {
+  return jspb.Message.setProto3IntField(this, 40, value);
 };
 
 
@@ -3875,6 +3966,16 @@ proto.api.SecondChAckOffset = {
   KHZ_800: 3,
   KHZ_1600: 4,
   KHZ_3200: 5
+};
+
+/**
+ * @enum {number}
+ */
+proto.api.RelayModeActivation = {
+  DISABLE_RELAY_MODE: 0,
+  ENABLE_RELAY_MODE: 1,
+  DYNAMIC: 2,
+  END_DEVICE_CONTROLLED: 3
 };
 
 goog.object.extend(exports, proto.api);

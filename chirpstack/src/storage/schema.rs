@@ -106,13 +106,16 @@ diesel::table! {
         auto_detect_measurements -> Bool,
         region_config_id -> Nullable<Varchar>,
         is_relay -> Bool,
-        ed_relay_only -> Bool,
+        relay_ed_relay_only -> Bool,
         relay_enabled -> Bool,
         relay_cad_periodicity -> Int2,
         relay_default_channel_index -> Int2,
         relay_second_channel_freq -> Int8,
         relay_second_channel_dr -> Int2,
         relay_second_channel_ack_offset -> Int2,
+        relay_ed_activation_mode -> Int2,
+        relay_ed_smart_enable_level -> Int2,
+        relay_ed_back_off -> Int2,
     }
 }
 

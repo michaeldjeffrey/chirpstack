@@ -96,8 +96,8 @@ export class DeviceProfile extends jspb.Message {
   getIsRelay(): boolean;
   setIsRelay(value: boolean): void;
 
-  getEdRelayOnly(): boolean;
-  setEdRelayOnly(value: boolean): void;
+  getRelayEdRelayOnly(): boolean;
+  setRelayEdRelayOnly(value: boolean): void;
 
   getRelayEnabled(): boolean;
   setRelayEnabled(value: boolean): void;
@@ -116,6 +116,15 @@ export class DeviceProfile extends jspb.Message {
 
   getRelaySecondChannelAckOffset(): SecondChAckOffsetMap[keyof SecondChAckOffsetMap];
   setRelaySecondChannelAckOffset(value: SecondChAckOffsetMap[keyof SecondChAckOffsetMap]): void;
+
+  getRelayEdActivationMode(): RelayModeActivationMap[keyof RelayModeActivationMap];
+  setRelayEdActivationMode(value: RelayModeActivationMap[keyof RelayModeActivationMap]): void;
+
+  getRelayEdSmartEnableLevel(): number;
+  setRelayEdSmartEnableLevel(value: number): void;
+
+  getRelayEdBackOff(): number;
+  setRelayEdBackOff(value: number): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
@@ -159,13 +168,16 @@ export namespace DeviceProfile {
     autoDetectMeasurements: boolean,
     regionConfigId: string,
     isRelay: boolean,
-    edRelayOnly: boolean,
+    relayEdRelayOnly: boolean,
     relayEnabled: boolean,
     relayCadPeriodicity: CadPeriodicityMap[keyof CadPeriodicityMap],
     relayDefaultChannelIndex: number,
     relaySecondChannelFreq: number,
     relaySecondChannelDr: number,
     relaySecondChannelAckOffset: SecondChAckOffsetMap[keyof SecondChAckOffsetMap],
+    relayEdActivationMode: RelayModeActivationMap[keyof RelayModeActivationMap],
+    relayEdSmartEnableLevel: number,
+    relayEdBackOff: number,
   }
 }
 
@@ -538,4 +550,13 @@ export interface SecondChAckOffsetMap {
 }
 
 export const SecondChAckOffset: SecondChAckOffsetMap;
+
+export interface RelayModeActivationMap {
+  DISABLE_RELAY_MODE: 0;
+  ENABLE_RELAY_MODE: 1;
+  DYNAMIC: 2;
+  END_DEVICE_CONTROLLED: 3;
+}
+
+export const RelayModeActivation: RelayModeActivationMap;
 

@@ -97,8 +97,8 @@ export class DeviceProfile extends jspb.Message {
   getIsRelay(): boolean;
   setIsRelay(value: boolean): DeviceProfile;
 
-  getEdRelayOnly(): boolean;
-  setEdRelayOnly(value: boolean): DeviceProfile;
+  getRelayEdRelayOnly(): boolean;
+  setRelayEdRelayOnly(value: boolean): DeviceProfile;
 
   getRelayEnabled(): boolean;
   setRelayEnabled(value: boolean): DeviceProfile;
@@ -117,6 +117,15 @@ export class DeviceProfile extends jspb.Message {
 
   getRelaySecondChannelAckOffset(): SecondChAckOffset;
   setRelaySecondChannelAckOffset(value: SecondChAckOffset): DeviceProfile;
+
+  getRelayEdActivationMode(): RelayModeActivation;
+  setRelayEdActivationMode(value: RelayModeActivation): DeviceProfile;
+
+  getRelayEdSmartEnableLevel(): number;
+  setRelayEdSmartEnableLevel(value: number): DeviceProfile;
+
+  getRelayEdBackOff(): number;
+  setRelayEdBackOff(value: number): DeviceProfile;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
@@ -158,13 +167,16 @@ export namespace DeviceProfile {
     autoDetectMeasurements: boolean,
     regionConfigId: string,
     isRelay: boolean,
-    edRelayOnly: boolean,
+    relayEdRelayOnly: boolean,
     relayEnabled: boolean,
     relayCadPeriodicity: CadPeriodicity,
     relayDefaultChannelIndex: number,
     relaySecondChannelFreq: number,
     relaySecondChannelDr: number,
     relaySecondChannelAckOffset: SecondChAckOffset,
+    relayEdActivationMode: RelayModeActivation,
+    relayEdSmartEnableLevel: number,
+    relayEdBackOff: number,
   }
 }
 
@@ -501,4 +513,10 @@ export enum SecondChAckOffset {
   KHZ_800 = 3,
   KHZ_1600 = 4,
   KHZ_3200 = 5,
+}
+export enum RelayModeActivation { 
+  DISABLE_RELAY_MODE = 0,
+  ENABLE_RELAY_MODE = 1,
+  DYNAMIC = 2,
+  END_DEVICE_CONTROLLED = 3,
 }

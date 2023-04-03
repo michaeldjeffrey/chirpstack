@@ -82,6 +82,20 @@ enum SecondChAckOffset {
 
 }
 
+enum RelayModeActivation {
+    // Disable the relay mode.
+    DISABLE_RELAY_MODE = 0;
+
+    // Enable the relay model.
+    ENABLE_RELAY_MODE = 1;
+
+    // Dynamic.
+    DYNAMIC = 2;
+
+    // End-device controlled.
+    END_DEVICE_CONTROLLED = 3;
+}
+
 // DeviceProfileService is the service providing API methods for managing device-profiles.
 service DeviceProfileService {
     // Create the given device-profile.
@@ -247,7 +261,7 @@ message DeviceProfile {
     // Only accept data for this device through a relay. This setting is useful
     // for testing as in case of a test-setup, the end-device is usually within
     // range of the gateway.
-    bool ed_relay_only = 31;
+    bool relay_ed_relay_only = 31;
 
     // Relay must be enabled.
     bool relay_enabled = 32;
@@ -268,6 +282,17 @@ message DeviceProfile {
 
     // Relay second channel ACK offset.
     SecondChAckOffset relay_second_channel_ack_offset = 37;
+
+    // Relay end-device activation mode.
+    RelayModeActivation relay_ed_activation_mode = 38;
+
+    // Relay end-device smart-enable level.
+    uint32 relay_ed_smart_enable_level = 39;
+
+    // Relay end-device back-off (in case it does not receive WOR ACK frame).
+    // 0 = Always send a LoRaWAN uplink
+    // 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK
+    uint32 relay_ed_back_off = 40;
 }
 
 message Measurement {
