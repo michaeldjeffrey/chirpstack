@@ -1972,6 +1972,9 @@ impl PayloadCodec for FilterListReqPayload {
         let mut eui = vec![0; len as usize];
         cur.read_exact(&mut eui)?;
 
+        // decode from little-endian
+        eui.reverse();
+
         Ok(FilterListReqPayload {
             filter_list_action: FilterListAction::from_u8((b[0] & 0x60) >> 5)?,
             filter_list_idx: ((b[0] & 0x80) >> 7) | ((b[1] & 0x07) << 1),
@@ -1994,7 +1997,11 @@ impl PayloadCodec for FilterListReqPayload {
             (self.filter_list_idx >> 1),
         ];
 
-        b.extend_from_slice(&self.filter_list_eui);
+        // encode as little-endian
+        let mut filter_list_eui = self.filter_list_eui.clone();
+        filter_list_eui.reverse();
+
+        b.extend_from_slice(&filter_list_eui);
         Ok(b)
     }
 }
@@ -2911,9 +2918,9 @@ mod test {
                 command: MACCommand::FilterListReq(FilterListReqPayload {
                     filter_list_idx: 3,
                     filter_list_action: FilterListAction::Forward,
-                    filter_list_eui: vec![1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
+                    filter_list_eui: vec![1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 2],
                 }),
-                bytes: vec![66, 176, 1, 1, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
+                bytes: vec![66, 176, 1, 2, 2, 3, 4, 5, 6, 7, 8, 8, 7, 6, 5, 4, 3, 2, 1],
             },
             MacTest {
                 uplink: true,
