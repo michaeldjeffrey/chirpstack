@@ -4,6 +4,9 @@ use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
 use anyhow::Result;
+use diesel::backend::{self, Backend};
+use diesel::sql_types::SmallInt;
+use diesel::{deserialize, serialize};
 use serde::Serialize;
 
 use crate::cflist::ChMask;
@@ -1766,7 +1769,8 @@ impl PayloadCodec for RelayConfAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy, AsExpression, FromSqlRow)]
+#[diesel(sql_type = diesel::sql_types::SmallInt)]
 pub enum RelayModeActivation {
     DisableRelayMode,
     EnableRelayMode,
@@ -1794,6 +1798,27 @@ impl RelayModeActivation {
                 return Err(anyhow!("invalid RelayModeActivation: {}", v));
             }
         })
+    }
+}
+
+impl<DB> deserialize::FromSql<SmallInt, DB> for RelayModeActivation
+where
+    DB: Backend,
+    i16: deserialize::FromSql<SmallInt, DB>,
+{
+    fn from_sql(value: backend::RawValue<DB>) -> deserialize::Result<Self> {
+        let i = i16::from_sql(value)?;
+        Ok(RelayModeActivation::from_u8(i as u8)?)
+    }
+}
+
+impl serialize::ToSql<SmallInt, diesel::pg::Pg> for RelayModeActivation
+where
+    i16: serialize::ToSql<SmallInt, diesel::pg::Pg>,
+{
+    fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
+        let i = self.to_u8() as i16;
+        <i16 as serialize::ToSql<SmallInt, diesel::pg::Pg>>::to_sql(&i, &mut out.reborrow())
     }
 }
 
