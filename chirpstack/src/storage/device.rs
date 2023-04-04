@@ -244,6 +244,21 @@ pub async fn set_join_eui(dev_eui: EUI64, join_eui: EUI64) -> Result<Device, Err
     Ok(d)
 }
 
+pub async fn set_dev_addr(dev_eui: EUI64, dev_addr: DevAddr) -> Result<Device, Error> {
+    let d = task::spawn_blocking({
+        move || -> Result<Device, Error> {
+            let mut c = get_db_conn()?;
+            diesel::update(device::dsl::device.find(&dev_eui))
+                .set(device::dev_addr.eq(&dev_addr))
+                .get_result(&mut c)
+                .map_err(|e| Error::from_diesel(e, dev_eui.to_string()))
+        }
+    })
+    .await??;
+    info!(dev_eui = %dev_eui, dev_addr = %dev_addr, "Updated DevAddr");
+    Ok(d)
+}
+
 // In case the current_ts has been updated during the last device get and calling this update
 // function, this will return a NotFound error. The purpose of this error is to catch concurrent
 // scheduling, e.g. Class-A downlink and Class-B/C downlink. In such case we want to terminate one

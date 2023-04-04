@@ -133,6 +133,7 @@ impl JoinRequest {
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
+        ctx.set_dev_addr().await?;
         ctx.set_join_eui().await?;
         ctx.start_downlink_join_accept_flow().await?;
         ctx.send_join_event().await?;
@@ -185,6 +186,8 @@ impl JoinRequest {
         ctx.create_device_session().await?;
         ctx.flush_device_queue().await?;
         ctx.set_device_mode().await?;
+        ctx.set_dev_addr().await?;
+        ctx.set_join_eui().await?;
         ctx.start_downlink_join_accept_flow_relayed().await?;
         ctx.send_join_event().await?;
 
@@ -832,6 +835,13 @@ impl JoinRequest {
         } else {
             *device = device::set_enabled_class(&device.dev_eui, "A").await?;
         }
+        Ok(())
+    }
+
+    async fn set_dev_addr(&mut self) -> Result<()> {
+        trace!("Setting DevAddr");
+        let dev = self.device.as_mut().unwrap();
+        *dev = device::set_dev_addr(dev.dev_eui, self.dev_addr.unwrap()).await?;
         Ok(())
     }
 
