@@ -10,6 +10,7 @@ import {
   MeasurementKind,
   CadPeriodicity,
   SecondChAckOffset,
+  RelayModeActivation,
 } from "@chirpstack/chirpstack-api-grpc-web/api/device_profile_pb";
 import { Region, MacVersion, RegParamsRevision } from "@chirpstack/chirpstack-api-grpc-web/common/common_pb";
 import { ListRegionsResponse, RegionListItem } from "@chirpstack/chirpstack-api-grpc-web/api/internal_pb";
@@ -327,6 +328,9 @@ class DeviceProfileForm extends Component<IProps, IState> {
     dp.setRelaySecondChannelFreq(v.relaySecondChannelFreq);
     dp.setRelaySecondChannelDr(v.relaySecondChannelDr);
     dp.setRelaySecondChannelAckOffset(v.relaySecondChannelAckOffset);
+    dp.setRelayEdActivationMode(v.relayEdActivationMode);
+    dp.setRelayEdSmartEnableLevel(v.relayEdSmartEnableLevel);
+    dp.setRelayEdBackOff(v.relayEdBackOff);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -924,6 +928,48 @@ class DeviceProfileForm extends Component<IProps, IState> {
                       </Select>
                     </Form.Item>
                   )}
+                </Col>
+              </Row>
+            )}
+            {this.state.isRelayEd && (
+              <Row gutter={24}>
+                <Col span={8}>
+                  <Form.Item
+                    label="End-device activation mode"
+                    name="relayEdActivationMode"
+                    rules={[{ required: true, message: "Please select an activation mode!" }]}
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={RelayModeActivation.DISABLE_RELAY_MODE}>Disable relay mode</Select.Option>
+                      <Select.Option value={RelayModeActivation.ENABLE_RELAY_MODE}>Enable relay mode</Select.Option>
+                      <Select.Option value={RelayModeActivation.DYNAMIC}>Dynamic</Select.Option>
+                      <Select.Option value={RelayModeActivation.END_DEVICE_CONTROLLED}>End-device controlled</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Smart enable level"
+                    name="relayEdSmartEnableLevel"
+                    tooltip="This indicates that the relay mode shall be enabled if the end-device does not receive a valid downlink after X consecutive uplinks." 
+                    rules={[{ required: true, message: "Please select an enable level!" }]}
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>8</Select.Option>
+                      <Select.Option value={1}>16</Select.Option>
+                      <Select.Option value={2}>32</Select.Option>
+                      <Select.Option value={3}>64</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    label="Back-off"
+                    name="relayEdBackOff"
+                    tooltip="This indicates how the end-device SHALL behave when it does not receive a WOR ACK frame. 0 = Always send a LoRaWAN uplink. 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK."
+                  >
+                    <InputNumber min={0} max={63} />
+                  </Form.Item>
                 </Col>
               </Row>
             )}
