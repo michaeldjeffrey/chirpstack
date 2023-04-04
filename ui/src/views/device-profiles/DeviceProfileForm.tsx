@@ -199,6 +199,7 @@ interface IState {
   supportsClassB: boolean;
   supportsClassC: boolean;
   isRelay: boolean;
+  isRelayEd: boolean,
   payloadCodecRuntime: CodecRuntime;
   adrAlgorithms: [string, string][];
   regionConfigurations: RegionListItem[];
@@ -217,6 +218,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
       supportsClassB: false,
       supportsClassC: false,
       isRelay: false,
+      isRelayEd: false,
       payloadCodecRuntime: CodecRuntime.NONE,
       adrAlgorithms: [],
       regionConfigurations: [],
@@ -235,6 +237,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
       supportsClassC: v.getSupportsClassC(),
       payloadCodecRuntime: v.getPayloadCodecRuntime(),
       isRelay: v.getIsRelay(),
+      isRelayEd: v.getIsRelayEd(),
     });
 
     InternalStore.listRegions((resp: ListRegionsResponse) => {
@@ -316,7 +319,8 @@ class DeviceProfileForm extends Component<IProps, IState> {
 
     // relay
     dp.setIsRelay(v.isRelay);
-    dp.setEdRelayOnly(v.edRelayOnly);
+    dp.setIsRelayEd(v.isRelayEd);
+    dp.setRelayEdRelayOnly(v.relayEdRelayOnly);
     dp.setRelayEnabled(v.relayEnabled);
     dp.setRelayCadPeriodicity(v.relayCadPeriodicity);
     dp.setRelayDefaultChannelIndex(v.relayDefaultChannelIndex);
@@ -368,6 +372,12 @@ class DeviceProfileForm extends Component<IProps, IState> {
   onIsRelayChange = (checked: boolean) => {
     this.setState({
       isRelay: checked,
+    });
+  }
+
+  onIsRelayEdChange = (checked: boolean) => {
+    this.setState({
+      isRelayEd: checked,
     });
   }
 
@@ -799,7 +809,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
           </Tabs.TabPane>
           <Tabs.TabPane tab="Relay" key="6">
             <Row gutter={24}>
-              <Col span={8}>
+              <Col span={12}>
                 <Form.Item
                   label="Device is a Relay"
                   name="isRelay"
@@ -809,7 +819,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   <Switch onChange={this.onIsRelayChange} disabled={this.props.disabled} />
                 </Form.Item>
               </Col>
-              <Col span={8}>
+              <Col span={12}>
                 {this.state.isRelay && (
                   <Form.Item
                     label="Relay enabled"
@@ -821,18 +831,32 @@ class DeviceProfileForm extends Component<IProps, IState> {
                   </Form.Item>
                 )}
               </Col>
-              <Col span={8}>
+            </Row>
+            <Row gutter={24}>
+              <Col span={12}>
                 <Form.Item
-                  label="Only use Relay (end-device)"
-                  name="edRelayOnly"
+                  label="Device is a Relay capable end-device"
+                  name="isRelayEd" 
                   valuePropName="checked"
-                  tooltip="If enabled, device(s) under this profile will only be able to communicate through a Relay device. Uplink messages received directly by ChirpStack will be discarded. Enabling this feature can be helpful for testing the Relay communication."
+                  tooltip="Enable this of the device(s) under this profile are able to operate under a Relay as specified by the TS011 specification."
                 >
-                  <Switch disabled={this.props.disabled} />
+                  <Switch onChange={this.onIsRelayEdChange} disabled={this.props.disabled} />
                 </Form.Item>
               </Col>
+              <Col span={12}>
+                { this.state.isRelayEd && (
+                  <Form.Item
+                    label="Only use Relay (end-device)"
+                    name="relayEdRelayOnly"
+                    valuePropName="checked"
+                    tooltip="If enabled, device(s) under this profile will only be able to communicate through a Relay device. Uplink messages received directly by ChirpStack will be discarded. Enabling this feature can be helpful for testing the Relay communication."
+                  >
+                    <Switch disabled={this.props.disabled} />
+                  </Form.Item>
+                )}
+              </Col>
             </Row>
-            {this.state.isRelay && (
+            {(this.state.isRelay || this.state.isRelayEd ) && (
               <Row gutter={24}>
                 <Col span={8}>
                   <Form.Item
@@ -865,24 +889,8 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 </Col>
               </Row>
             )} 
-            {this.state.isRelay && (
+            {(this.state.isRelay || this.state.isRelayEd) && (
               <Row gutter={24}>
-                <Col span={12}>
-                  <Form.Item
-                    label="CAD periodicity"
-                    name="relayCadPeriodicity"
-                    rules={[{ required: true, message: "Please select a CAD periodicity!" }]}
-                  >
-                    <Select disabled={this.props.disabled}>
-                      <Select.Option value={CadPeriodicity.SEC_1}>1 second</Select.Option>
-                      <Select.Option value={CadPeriodicity.MS_500}>500 milliseconds</Select.Option>
-                      <Select.Option value={CadPeriodicity.MS_250}>250 milliseconds</Select.Option>
-                      <Select.Option value={CadPeriodicity.MS_100}>100 milliseconds</Select.Option>
-                      <Select.Option value={CadPeriodicity.MS_50}>50 milliseconds</Select.Option>
-                      <Select.Option value={CadPeriodicity.MS_20}>20 milliseconds</Select.Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
                 <Col span={12}>
                   <Form.Item
                     label="Second channel ACK offset"
@@ -898,6 +906,24 @@ class DeviceProfileForm extends Component<IProps, IState> {
                       <Select.Option value={SecondChAckOffset.KHZ_3200}>3200 kHz</Select.Option>
                     </Select>
                   </Form.Item>
+                </Col>
+                <Col span={12}>
+                  {this.state.isRelay && (
+                    <Form.Item
+                      label="CAD periodicity"
+                      name="relayCadPeriodicity"
+                      rules={[{ required: true, message: "Please select a CAD periodicity!" }]}
+                    >
+                      <Select disabled={this.props.disabled}>
+                        <Select.Option value={CadPeriodicity.SEC_1}>1 second</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_500}>500 milliseconds</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_250}>250 milliseconds</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_100}>100 milliseconds</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_50}>50 milliseconds</Select.Option>
+                        <Select.Option value={CadPeriodicity.MS_20}>20 milliseconds</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  )}
                 </Col>
               </Row>
             )}

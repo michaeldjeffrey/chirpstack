@@ -257,42 +257,47 @@ message DeviceProfile {
     // See for more information the TS011 specification.
     bool is_relay = 30;
 
+    // Device is a Relay end-device.
+    // Enable this in case the device is an end-device that can operate under a
+    // Relay. Please refer to the TS011 specification for more information.
+    bool is_relay_ed = 31;
+
     // End-device only accept data through relay.
     // Only accept data for this device through a relay. This setting is useful
     // for testing as in case of a test-setup, the end-device is usually within
     // range of the gateway.
-    bool relay_ed_relay_only = 31;
+    bool relay_ed_relay_only = 32;
 
     // Relay must be enabled.
-    bool relay_enabled = 32;
+    bool relay_enabled = 33;
 
     // Relay CAD periodicity.
-    CadPeriodicity relay_cad_periodicity = 33;
+    CadPeriodicity relay_cad_periodicity = 34;
 
     // Relay default channel index.
     // Valid values are 0 and 1, please refer to the RP002 specification for
     // the meaning of these values.
-    uint32 relay_default_channel_index = 34;
+    uint32 relay_default_channel_index = 35;
 
     // Relay second channel frequency (Hz).
-    uint32 relay_second_channel_freq = 35;
+    uint32 relay_second_channel_freq = 36;
 
     // Relay second channel DR.
-    uint32 relay_second_channel_dr = 36;
+    uint32 relay_second_channel_dr = 37;
 
     // Relay second channel ACK offset.
-    SecondChAckOffset relay_second_channel_ack_offset = 37;
+    SecondChAckOffset relay_second_channel_ack_offset = 38;
 
     // Relay end-device activation mode.
-    RelayModeActivation relay_ed_activation_mode = 38;
+    RelayModeActivation relay_ed_activation_mode = 39;
 
     // Relay end-device smart-enable level.
-    uint32 relay_ed_smart_enable_level = 39;
+    uint32 relay_ed_smart_enable_level = 40;
 
     // Relay end-device back-off (in case it does not receive WOR ACK frame).
     // 0 = Always send a LoRaWAN uplink
     // 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK
-    uint32 relay_ed_back_off = 40;
+    uint32 relay_ed_back_off = 41;
 }
 
 message Measurement {

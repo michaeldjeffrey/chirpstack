@@ -1,5 +1,6 @@
 alter table device_profile
     add column is_relay boolean not null default false,
+    add column is_relay_ed boolean not null default false,
     add column relay_ed_relay_only boolean not null default false,
     add column relay_enabled boolean not null default false,
     add column relay_cad_periodicity smallint not null default 0,
@@ -13,6 +14,7 @@ alter table device_profile
 
 alter table device_profile
     alter column is_relay drop default,
+    alter column is_relay_ed drop default,
     alter column relay_ed_relay_only drop default,
     alter column relay_enabled drop default,
     alter column relay_cad_periodicity drop default,

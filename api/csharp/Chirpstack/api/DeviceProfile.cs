@@ -27,7 +27,7 @@ namespace Chirpstack.Api {
             "ChhhcGkvZGV2aWNlX3Byb2ZpbGUucHJvdG8SA2FwaRocZ29vZ2xlL2FwaS9h",
             "bm5vdGF0aW9ucy5wcm90bxofZ29vZ2xlL3Byb3RvYnVmL3RpbWVzdGFtcC5w",
             "cm90bxobZ29vZ2xlL3Byb3RvYnVmL2VtcHR5LnByb3RvGhNjb21tb24vY29t",
-            "bW9uLnByb3RvIokLCg1EZXZpY2VQcm9maWxlEgoKAmlkGAEgASgJEhEKCXRl",
+            "bW9uLnByb3RvIp4LCg1EZXZpY2VQcm9maWxlEgoKAmlkGAEgASgJEhEKCXRl",
             "bmFudF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhMKC2Rlc2NyaXB0aW9uGBog",
             "ASgJEh4KBnJlZ2lvbhgEIAEoDjIOLmNvbW1vbi5SZWdpb24SJwoLbWFjX3Zl",
             "cnNpb24YBSABKA4yEi5jb21tb24uTWFjVmVyc2lvbhI2ChNyZWdfcGFyYW1z",
@@ -47,77 +47,77 @@ namespace Chirpstack.Api {
             "bGUuVGFnc0VudHJ5EjoKDG1lYXN1cmVtZW50cxgbIAMoCzIkLmFwaS5EZXZp",
             "Y2VQcm9maWxlLk1lYXN1cmVtZW50c0VudHJ5EiAKGGF1dG9fZGV0ZWN0X21l",
             "YXN1cmVtZW50cxgcIAEoCBIYChByZWdpb25fY29uZmlnX2lkGB0gASgJEhAK",
-            "CGlzX3JlbGF5GB4gASgIEhsKE3JlbGF5X2VkX3JlbGF5X29ubHkYHyABKAgS",
-            "FQoNcmVsYXlfZW5hYmxlZBggIAEoCBIyChVyZWxheV9jYWRfcGVyaW9kaWNp",
-            "dHkYISABKA4yEy5hcGkuQ2FkUGVyaW9kaWNpdHkSIwobcmVsYXlfZGVmYXVs",
-            "dF9jaGFubmVsX2luZGV4GCIgASgNEiEKGXJlbGF5X3NlY29uZF9jaGFubmVs",
-            "X2ZyZXEYIyABKA0SHwoXcmVsYXlfc2Vjb25kX2NoYW5uZWxfZHIYJCABKA0S",
-            "PwofcmVsYXlfc2Vjb25kX2NoYW5uZWxfYWNrX29mZnNldBglIAEoDjIWLmFw",
-            "aS5TZWNvbmRDaEFja09mZnNldBI6ChhyZWxheV9lZF9hY3RpdmF0aW9uX21v",
-            "ZGUYJiABKA4yGC5hcGkuUmVsYXlNb2RlQWN0aXZhdGlvbhIjChtyZWxheV9l",
-            "ZF9zbWFydF9lbmFibGVfbGV2ZWwYJyABKA0SGQoRcmVsYXlfZWRfYmFja19v",
-            "ZmYYKCABKA0aKwoJVGFnc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgC",
-            "IAEoCToCOAEaRQoRTWVhc3VyZW1lbnRzRW50cnkSCwoDa2V5GAEgASgJEh8K",
-            "BXZhbHVlGAIgASgLMhAuYXBpLk1lYXN1cmVtZW50OgI4ASI/CgtNZWFzdXJl",
-            "bWVudBIMCgRuYW1lGAIgASgJEiIKBGtpbmQYAyABKA4yFC5hcGkuTWVhc3Vy",
-            "ZW1lbnRLaW5kIt0CChVEZXZpY2VQcm9maWxlTGlzdEl0ZW0SCgoCaWQYASAB",
-            "KAkSLgoKY3JlYXRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l",
-            "c3RhbXASLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
-            "aW1lc3RhbXASDAoEbmFtZRgEIAEoCRIeCgZyZWdpb24YBSABKA4yDi5jb21t",
-            "b24uUmVnaW9uEicKC21hY192ZXJzaW9uGAYgASgOMhIuY29tbW9uLk1hY1Zl",
-            "cnNpb24SNgoTcmVnX3BhcmFtc19yZXZpc2lvbhgHIAEoDjIZLmNvbW1vbi5S",
-            "ZWdQYXJhbXNSZXZpc2lvbhIVCg1zdXBwb3J0c19vdGFhGAggASgIEhgKEHN1",
-            "cHBvcnRzX2NsYXNzX2IYCSABKAgSGAoQc3VwcG9ydHNfY2xhc3NfYxgKIAEo",
-            "CCJIChpDcmVhdGVEZXZpY2VQcm9maWxlUmVxdWVzdBIqCg5kZXZpY2VfcHJv",
-            "ZmlsZRgBIAEoCzISLmFwaS5EZXZpY2VQcm9maWxlIikKG0NyZWF0ZURldmlj",
-            "ZVByb2ZpbGVSZXNwb25zZRIKCgJpZBgBIAEoCSIlChdHZXREZXZpY2VQcm9m",
-            "aWxlUmVxdWVzdBIKCgJpZBgBIAEoCSKmAQoYR2V0RGV2aWNlUHJvZmlsZVJl",
-            "c3BvbnNlEioKDmRldmljZV9wcm9maWxlGAEgASgLMhIuYXBpLkRldmljZVBy",
-            "b2ZpbGUSLgoKY3JlYXRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
-            "aW1lc3RhbXASLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1",
-            "Zi5UaW1lc3RhbXAiSAoaVXBkYXRlRGV2aWNlUHJvZmlsZVJlcXVlc3QSKgoO",
-            "ZGV2aWNlX3Byb2ZpbGUYASABKAsyEi5hcGkuRGV2aWNlUHJvZmlsZSIoChpE",
-            "ZWxldGVEZXZpY2VQcm9maWxlUmVxdWVzdBIKCgJpZBgBIAEoCSJdChlMaXN0",
-            "RGV2aWNlUHJvZmlsZXNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgNEg4KBm9mZnNl",
-            "dBgCIAEoDRIOCgZzZWFyY2gYAyABKAkSEQoJdGVuYW50X2lkGAQgASgJIl0K",
-            "Gkxpc3REZXZpY2VQcm9maWxlc1Jlc3BvbnNlEhMKC3RvdGFsX2NvdW50GAEg",
-            "ASgNEioKBnJlc3VsdBgCIAMoCzIaLmFwaS5EZXZpY2VQcm9maWxlTGlzdEl0",
-            "ZW0iaAomTGlzdERldmljZVByb2ZpbGVBZHJBbGdvcml0aG1zUmVzcG9uc2US",
-            "EwoLdG90YWxfY291bnQYASABKA0SKQoGcmVzdWx0GAIgAygLMhkuYXBpLkFk",
-            "ckFsZ29yaXRobUxpc3RJdGVtIjAKFEFkckFsZ29yaXRobUxpc3RJdGVtEgoK",
-            "AmlkGAEgASgJEgwKBG5hbWUYAiABKAkqMQoMQ29kZWNSdW50aW1lEggKBE5P",
-            "TkUQABIPCgtDQVlFTk5FX0xQUBABEgYKAkpTEAIqUAoPTWVhc3VyZW1lbnRL",
-            "aW5kEgsKB1VOS05PV04QABILCgdDT1VOVEVSEAESDAoIQUJTT0xVVEUQAhIJ",
-            "CgVHQVVHRRADEgoKBlNUUklORxAEKlUKDkNhZFBlcmlvZGljaXR5EgkKBVNF",
-            "Q18xEAASCgoGTVNfNTAwEAESCgoGTVNfMjUwEAISCgoGTVNfMTAwEAMSCQoF",
-            "TVNfNTAQBBIJCgVNU18yMBAFKmEKEVNlY29uZENoQWNrT2Zmc2V0EgkKBUtI",
-            "Wl8wEAASCwoHS0haXzIwMBABEgsKB0tIWl80MDAQAhILCgdLSFpfODAwEAMS",
-            "DAoIS0haXzE2MDAQBBIMCghLSFpfMzIwMBAFKmwKE1JlbGF5TW9kZUFjdGl2",
-            "YXRpb24SFgoSRElTQUJMRV9SRUxBWV9NT0RFEAASFQoRRU5BQkxFX1JFTEFZ",
-            "X01PREUQARILCgdEWU5BTUlDEAISGQoVRU5EX0RFVklDRV9DT05UUk9MTEVE",
-            "EAMyuAUKFERldmljZVByb2ZpbGVTZXJ2aWNlEmwKBkNyZWF0ZRIfLmFwaS5D",
-            "cmVhdGVEZXZpY2VQcm9maWxlUmVxdWVzdBogLmFwaS5DcmVhdGVEZXZpY2VQ",
-            "cm9maWxlUmVzcG9uc2UiH4LT5JMCGSIUL2FwaS9kZXZpY2UtcHJvZmlsZXM6",
-            "ASoSZQoDR2V0EhwuYXBpLkdldERldmljZVByb2ZpbGVSZXF1ZXN0Gh0uYXBp",
-            "LkdldERldmljZVByb2ZpbGVSZXNwb25zZSIhgtPkkwIbEhkvYXBpL2Rldmlj",
-            "ZS1wcm9maWxlcy97aWR9EnYKBlVwZGF0ZRIfLmFwaS5VcGRhdGVEZXZpY2VQ",
-            "cm9maWxlUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIzgtPkkwIt",
-            "GigvYXBpL2RldmljZS1wcm9maWxlcy97ZGV2aWNlX3Byb2ZpbGUuaWR9OgEq",
-            "EmQKBkRlbGV0ZRIfLmFwaS5EZWxldGVEZXZpY2VQcm9maWxlUmVxdWVzdBoW",
-            "Lmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIhgtPkkwIbKhkvYXBpL2RldmljZS1w",
-            "cm9maWxlcy97aWR9EmUKBExpc3QSHi5hcGkuTGlzdERldmljZVByb2ZpbGVz",
-            "UmVxdWVzdBofLmFwaS5MaXN0RGV2aWNlUHJvZmlsZXNSZXNwb25zZSIcgtPk",
-            "kwIWEhQvYXBpL2RldmljZS1wcm9maWxlcxKFAQoRTGlzdEFkckFsZ29yaXRo",
-            "bXMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaKy5hcGkuTGlzdERldmljZVBy",
-            "b2ZpbGVBZHJBbGdvcml0aG1zUmVzcG9uc2UiK4LT5JMCJRIjL2FwaS9kZXZp",
-            "Y2UtcHJvZmlsZXMvYWRyLWFsZ29yaXRobXNCagoRaW8uY2hpcnBzdGFjay5h",
-            "cGlCEkRldmljZVByb2ZpbGVQcm90b1ABWi5naXRodWIuY29tL2NoaXJwc3Rh",
-            "Y2svY2hpcnBzdGFjay9hcGkvZ28vdjQvYXBpqgIOQ2hpcnBzdGFjay5BcGli",
-            "BnByb3RvMw=="));
+            "CGlzX3JlbGF5GB4gASgIEhMKC2lzX3JlbGF5X2VkGB8gASgIEhsKE3JlbGF5",
+            "X2VkX3JlbGF5X29ubHkYICABKAgSFQoNcmVsYXlfZW5hYmxlZBghIAEoCBIy",
+            "ChVyZWxheV9jYWRfcGVyaW9kaWNpdHkYIiABKA4yEy5hcGkuQ2FkUGVyaW9k",
+            "aWNpdHkSIwobcmVsYXlfZGVmYXVsdF9jaGFubmVsX2luZGV4GCMgASgNEiEK",
+            "GXJlbGF5X3NlY29uZF9jaGFubmVsX2ZyZXEYJCABKA0SHwoXcmVsYXlfc2Vj",
+            "b25kX2NoYW5uZWxfZHIYJSABKA0SPwofcmVsYXlfc2Vjb25kX2NoYW5uZWxf",
+            "YWNrX29mZnNldBgmIAEoDjIWLmFwaS5TZWNvbmRDaEFja09mZnNldBI6Chhy",
+            "ZWxheV9lZF9hY3RpdmF0aW9uX21vZGUYJyABKA4yGC5hcGkuUmVsYXlNb2Rl",
+            "QWN0aXZhdGlvbhIjChtyZWxheV9lZF9zbWFydF9lbmFibGVfbGV2ZWwYKCAB",
+            "KA0SGQoRcmVsYXlfZWRfYmFja19vZmYYKSABKA0aKwoJVGFnc0VudHJ5EgsK",
+            "A2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEaRQoRTWVhc3VyZW1lbnRz",
+            "RW50cnkSCwoDa2V5GAEgASgJEh8KBXZhbHVlGAIgASgLMhAuYXBpLk1lYXN1",
+            "cmVtZW50OgI4ASI/CgtNZWFzdXJlbWVudBIMCgRuYW1lGAIgASgJEiIKBGtp",
+            "bmQYAyABKA4yFC5hcGkuTWVhc3VyZW1lbnRLaW5kIt0CChVEZXZpY2VQcm9m",
+            "aWxlTGlzdEl0ZW0SCgoCaWQYASABKAkSLgoKY3JlYXRlZF9hdBgCIAEoCzIa",
+            "Lmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgDIAEo",
+            "CzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASDAoEbmFtZRgEIAEoCRIe",
+            "CgZyZWdpb24YBSABKA4yDi5jb21tb24uUmVnaW9uEicKC21hY192ZXJzaW9u",
+            "GAYgASgOMhIuY29tbW9uLk1hY1ZlcnNpb24SNgoTcmVnX3BhcmFtc19yZXZp",
+            "c2lvbhgHIAEoDjIZLmNvbW1vbi5SZWdQYXJhbXNSZXZpc2lvbhIVCg1zdXBw",
+            "b3J0c19vdGFhGAggASgIEhgKEHN1cHBvcnRzX2NsYXNzX2IYCSABKAgSGAoQ",
+            "c3VwcG9ydHNfY2xhc3NfYxgKIAEoCCJIChpDcmVhdGVEZXZpY2VQcm9maWxl",
+            "UmVxdWVzdBIqCg5kZXZpY2VfcHJvZmlsZRgBIAEoCzISLmFwaS5EZXZpY2VQ",
+            "cm9maWxlIikKG0NyZWF0ZURldmljZVByb2ZpbGVSZXNwb25zZRIKCgJpZBgB",
+            "IAEoCSIlChdHZXREZXZpY2VQcm9maWxlUmVxdWVzdBIKCgJpZBgBIAEoCSKm",
+            "AQoYR2V0RGV2aWNlUHJvZmlsZVJlc3BvbnNlEioKDmRldmljZV9wcm9maWxl",
+            "GAEgASgLMhIuYXBpLkRldmljZVByb2ZpbGUSLgoKY3JlYXRlZF9hdBgCIAEo",
+            "CzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXASLgoKdXBkYXRlZF9hdBgD",
+            "IAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3RhbXAiSAoaVXBkYXRlRGV2",
+            "aWNlUHJvZmlsZVJlcXVlc3QSKgoOZGV2aWNlX3Byb2ZpbGUYASABKAsyEi5h",
+            "cGkuRGV2aWNlUHJvZmlsZSIoChpEZWxldGVEZXZpY2VQcm9maWxlUmVxdWVz",
+            "dBIKCgJpZBgBIAEoCSJdChlMaXN0RGV2aWNlUHJvZmlsZXNSZXF1ZXN0Eg0K",
+            "BWxpbWl0GAEgASgNEg4KBm9mZnNldBgCIAEoDRIOCgZzZWFyY2gYAyABKAkS",
+            "EQoJdGVuYW50X2lkGAQgASgJIl0KGkxpc3REZXZpY2VQcm9maWxlc1Jlc3Bv",
+            "bnNlEhMKC3RvdGFsX2NvdW50GAEgASgNEioKBnJlc3VsdBgCIAMoCzIaLmFw",
+            "aS5EZXZpY2VQcm9maWxlTGlzdEl0ZW0iaAomTGlzdERldmljZVByb2ZpbGVB",
+            "ZHJBbGdvcml0aG1zUmVzcG9uc2USEwoLdG90YWxfY291bnQYASABKA0SKQoG",
+            "cmVzdWx0GAIgAygLMhkuYXBpLkFkckFsZ29yaXRobUxpc3RJdGVtIjAKFEFk",
+            "ckFsZ29yaXRobUxpc3RJdGVtEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkq",
+            "MQoMQ29kZWNSdW50aW1lEggKBE5PTkUQABIPCgtDQVlFTk5FX0xQUBABEgYK",
+            "AkpTEAIqUAoPTWVhc3VyZW1lbnRLaW5kEgsKB1VOS05PV04QABILCgdDT1VO",
+            "VEVSEAESDAoIQUJTT0xVVEUQAhIJCgVHQVVHRRADEgoKBlNUUklORxAEKlUK",
+            "DkNhZFBlcmlvZGljaXR5EgkKBVNFQ18xEAASCgoGTVNfNTAwEAESCgoGTVNf",
+            "MjUwEAISCgoGTVNfMTAwEAMSCQoFTVNfNTAQBBIJCgVNU18yMBAFKmEKEVNl",
+            "Y29uZENoQWNrT2Zmc2V0EgkKBUtIWl8wEAASCwoHS0haXzIwMBABEgsKB0tI",
+            "Wl80MDAQAhILCgdLSFpfODAwEAMSDAoIS0haXzE2MDAQBBIMCghLSFpfMzIw",
+            "MBAFKmwKE1JlbGF5TW9kZUFjdGl2YXRpb24SFgoSRElTQUJMRV9SRUxBWV9N",
+            "T0RFEAASFQoRRU5BQkxFX1JFTEFZX01PREUQARILCgdEWU5BTUlDEAISGQoV",
+            "RU5EX0RFVklDRV9DT05UUk9MTEVEEAMyuAUKFERldmljZVByb2ZpbGVTZXJ2",
+            "aWNlEmwKBkNyZWF0ZRIfLmFwaS5DcmVhdGVEZXZpY2VQcm9maWxlUmVxdWVz",
+            "dBogLmFwaS5DcmVhdGVEZXZpY2VQcm9maWxlUmVzcG9uc2UiH4LT5JMCGSIU",
+            "L2FwaS9kZXZpY2UtcHJvZmlsZXM6ASoSZQoDR2V0EhwuYXBpLkdldERldmlj",
+            "ZVByb2ZpbGVSZXF1ZXN0Gh0uYXBpLkdldERldmljZVByb2ZpbGVSZXNwb25z",
+            "ZSIhgtPkkwIbEhkvYXBpL2RldmljZS1wcm9maWxlcy97aWR9EnYKBlVwZGF0",
+            "ZRIfLmFwaS5VcGRhdGVEZXZpY2VQcm9maWxlUmVxdWVzdBoWLmdvb2dsZS5w",
+            "cm90b2J1Zi5FbXB0eSIzgtPkkwItGigvYXBpL2RldmljZS1wcm9maWxlcy97",
+            "ZGV2aWNlX3Byb2ZpbGUuaWR9OgEqEmQKBkRlbGV0ZRIfLmFwaS5EZWxldGVE",
+            "ZXZpY2VQcm9maWxlUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIh",
+            "gtPkkwIbKhkvYXBpL2RldmljZS1wcm9maWxlcy97aWR9EmUKBExpc3QSHi5h",
+            "cGkuTGlzdERldmljZVByb2ZpbGVzUmVxdWVzdBofLmFwaS5MaXN0RGV2aWNl",
+            "UHJvZmlsZXNSZXNwb25zZSIcgtPkkwIWEhQvYXBpL2RldmljZS1wcm9maWxl",
+            "cxKFAQoRTGlzdEFkckFsZ29yaXRobXMSFi5nb29nbGUucHJvdG9idWYuRW1w",
+            "dHkaKy5hcGkuTGlzdERldmljZVByb2ZpbGVBZHJBbGdvcml0aG1zUmVzcG9u",
+            "c2UiK4LT5JMCJRIjL2FwaS9kZXZpY2UtcHJvZmlsZXMvYWRyLWFsZ29yaXRo",
+            "bXNCagoRaW8uY2hpcnBzdGFjay5hcGlCEkRldmljZVByb2ZpbGVQcm90b1AB",
+            "Wi5naXRodWIuY29tL2NoaXJwc3RhY2svY2hpcnBzdGFjay9hcGkvZ28vdjQv",
+            "YXBpqgIOQ2hpcnBzdGFjay5BcGliBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Api.AnnotationsReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Chirpstack.Common.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Api.CodecRuntime), typeof(global::Chirpstack.Api.MeasurementKind), typeof(global::Chirpstack.Api.CadPeriodicity), typeof(global::Chirpstack.Api.SecondChAckOffset), typeof(global::Chirpstack.Api.RelayModeActivation), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfile), global::Chirpstack.Api.DeviceProfile.Parser, new[]{ "Id", "TenantId", "Name", "Description", "Region", "MacVersion", "RegParamsRevision", "AdrAlgorithmId", "PayloadCodecRuntime", "PayloadCodecScript", "FlushQueueOnActivate", "UplinkInterval", "DeviceStatusReqInterval", "SupportsOtaa", "SupportsClassB", "SupportsClassC", "ClassBTimeout", "ClassBPingSlotNbK", "ClassBPingSlotDr", "ClassBPingSlotFreq", "ClassCTimeout", "AbpRx1Delay", "AbpRx1DrOffset", "AbpRx2Dr", "AbpRx2Freq", "Tags", "Measurements", "AutoDetectMeasurements", "RegionConfigId", "IsRelay", "RelayEdRelayOnly", "RelayEnabled", "RelayCadPeriodicity", "RelayDefaultChannelIndex", "RelaySecondChannelFreq", "RelaySecondChannelDr", "RelaySecondChannelAckOffset", "RelayEdActivationMode", "RelayEdSmartEnableLevel", "RelayEdBackOff" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfile), global::Chirpstack.Api.DeviceProfile.Parser, new[]{ "Id", "TenantId", "Name", "Description", "Region", "MacVersion", "RegParamsRevision", "AdrAlgorithmId", "PayloadCodecRuntime", "PayloadCodecScript", "FlushQueueOnActivate", "UplinkInterval", "DeviceStatusReqInterval", "SupportsOtaa", "SupportsClassB", "SupportsClassC", "ClassBTimeout", "ClassBPingSlotNbK", "ClassBPingSlotDr", "ClassBPingSlotFreq", "ClassCTimeout", "AbpRx1Delay", "AbpRx1DrOffset", "AbpRx2Dr", "AbpRx2Freq", "Tags", "Measurements", "AutoDetectMeasurements", "RegionConfigId", "IsRelay", "IsRelayEd", "RelayEdRelayOnly", "RelayEnabled", "RelayCadPeriodicity", "RelayDefaultChannelIndex", "RelaySecondChannelFreq", "RelaySecondChannelDr", "RelaySecondChannelAckOffset", "RelayEdActivationMode", "RelayEdSmartEnableLevel", "RelayEdBackOff" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.Measurement), global::Chirpstack.Api.Measurement.Parser, new[]{ "Name", "Kind" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfileListItem), global::Chirpstack.Api.DeviceProfileListItem.Parser, new[]{ "Id", "CreatedAt", "UpdatedAt", "Name", "Region", "MacVersion", "RegParamsRevision", "SupportsOtaa", "SupportsClassB", "SupportsClassC" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.CreateDeviceProfileRequest), global::Chirpstack.Api.CreateDeviceProfileRequest.Parser, new[]{ "DeviceProfile" }, null, null, null, null),
@@ -314,6 +314,7 @@ namespace Chirpstack.Api {
       autoDetectMeasurements_ = other.autoDetectMeasurements_;
       regionConfigId_ = other.regionConfigId_;
       isRelay_ = other.isRelay_;
+      isRelayEd_ = other.isRelayEd_;
       relayEdRelayOnly_ = other.relayEdRelayOnly_;
       relayEnabled_ = other.relayEnabled_;
       relayCadPeriodicity_ = other.relayCadPeriodicity_;
@@ -804,8 +805,25 @@ namespace Chirpstack.Api {
       }
     }
 
+    /// <summary>Field number for the "is_relay_ed" field.</summary>
+    public const int IsRelayEdFieldNumber = 31;
+    private bool isRelayEd_;
+    /// <summary>
+    /// Device is a Relay end-device.
+    /// Enable this in case the device is an end-device that can operate under a
+    /// Relay. Please refer to the TS011 specification for more information.
+    /// </summary>
+    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
+    [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
+    public bool IsRelayEd {
+      get { return isRelayEd_; }
+      set {
+        isRelayEd_ = value;
+      }
+    }
+
     /// <summary>Field number for the "relay_ed_relay_only" field.</summary>
-    public const int RelayEdRelayOnlyFieldNumber = 31;
+    public const int RelayEdRelayOnlyFieldNumber = 32;
     private bool relayEdRelayOnly_;
     /// <summary>
     /// End-device only accept data through relay.
@@ -823,7 +841,7 @@ namespace Chirpstack.Api {
     }
 
     /// <summary>Field number for the "relay_enabled" field.</summary>
-    public const int RelayEnabledFieldNumber = 32;
+    public const int RelayEnabledFieldNumber = 33;
     private bool relayEnabled_;
     /// <summary>
     /// Relay must be enabled.
@@ -838,7 +856,7 @@ namespace Chirpstack.Api {
     }
 
     /// <summary>Field number for the "relay_cad_periodicity" field.</summary>
-    public const int RelayCadPeriodicityFieldNumber = 33;
+    public const int RelayCadPeriodicityFieldNumber = 34;
     private global::Chirpstack.Api.CadPeriodicity relayCadPeriodicity_ = global::Chirpstack.Api.CadPeriodicity.Sec1;
     /// <summary>
     /// Relay CAD periodicity.
@@ -853,7 +871,7 @@ namespace Chirpstack.Api {
     }
 
     /// <summary>Field number for the "relay_default_channel_index" field.</summary>
-    public const int RelayDefaultChannelIndexFieldNumber = 34;
+    public const int RelayDefaultChannelIndexFieldNumber = 35;
     private uint relayDefaultChannelIndex_;
     /// <summary>
     /// Relay default channel index.
@@ -870,7 +888,7 @@ namespace Chirpstack.Api {
     }
 
     /// <summary>Field number for the "relay_second_channel_freq" field.</summary>
-    public const int RelaySecondChannelFreqFieldNumber = 35;
+    public const int RelaySecondChannelFreqFieldNumber = 36;
     private uint relaySecondChannelFreq_;
     /// <summary>
     /// Relay second channel frequency (Hz).
@@ -885,7 +903,7 @@ namespace Chirpstack.Api {
     }
 
     /// <summary>Field number for the "relay_second_channel_dr" field.</summary>
-    public const int RelaySecondChannelDrFieldNumber = 36;
+    public const int RelaySecondChannelDrFieldNumber = 37;
     private uint relaySecondChannelDr_;
     /// <summary>
     /// Relay second channel DR.
@@ -900,7 +918,7 @@ namespace Chirpstack.Api {
     }
 
     /// <summary>Field number for the "relay_second_channel_ack_offset" field.</summary>
-    public const int RelaySecondChannelAckOffsetFieldNumber = 37;
+    public const int RelaySecondChannelAckOffsetFieldNumber = 38;
     private global::Chirpstack.Api.SecondChAckOffset relaySecondChannelAckOffset_ = global::Chirpstack.Api.SecondChAckOffset.Khz0;
     /// <summary>
     /// Relay second channel ACK offset.
@@ -915,7 +933,7 @@ namespace Chirpstack.Api {
     }
 
     /// <summary>Field number for the "relay_ed_activation_mode" field.</summary>
-    public const int RelayEdActivationModeFieldNumber = 38;
+    public const int RelayEdActivationModeFieldNumber = 39;
     private global::Chirpstack.Api.RelayModeActivation relayEdActivationMode_ = global::Chirpstack.Api.RelayModeActivation.DisableRelayMode;
     /// <summary>
     /// Relay end-device activation mode.
@@ -930,7 +948,7 @@ namespace Chirpstack.Api {
     }
 
     /// <summary>Field number for the "relay_ed_smart_enable_level" field.</summary>
-    public const int RelayEdSmartEnableLevelFieldNumber = 39;
+    public const int RelayEdSmartEnableLevelFieldNumber = 40;
     private uint relayEdSmartEnableLevel_;
     /// <summary>
     /// Relay end-device smart-enable level.
@@ -945,7 +963,7 @@ namespace Chirpstack.Api {
     }
 
     /// <summary>Field number for the "relay_ed_back_off" field.</summary>
-    public const int RelayEdBackOffFieldNumber = 40;
+    public const int RelayEdBackOffFieldNumber = 41;
     private uint relayEdBackOff_;
     /// <summary>
     /// Relay end-device back-off (in case it does not receive WOR ACK frame).
@@ -1006,6 +1024,7 @@ namespace Chirpstack.Api {
       if (AutoDetectMeasurements != other.AutoDetectMeasurements) return false;
       if (RegionConfigId != other.RegionConfigId) return false;
       if (IsRelay != other.IsRelay) return false;
+      if (IsRelayEd != other.IsRelayEd) return false;
       if (RelayEdRelayOnly != other.RelayEdRelayOnly) return false;
       if (RelayEnabled != other.RelayEnabled) return false;
       if (RelayCadPeriodicity != other.RelayCadPeriodicity) return false;
@@ -1053,6 +1072,7 @@ namespace Chirpstack.Api {
       if (AutoDetectMeasurements != false) hash ^= AutoDetectMeasurements.GetHashCode();
       if (RegionConfigId.Length != 0) hash ^= RegionConfigId.GetHashCode();
       if (IsRelay != false) hash ^= IsRelay.GetHashCode();
+      if (IsRelayEd != false) hash ^= IsRelayEd.GetHashCode();
       if (RelayEdRelayOnly != false) hash ^= RelayEdRelayOnly.GetHashCode();
       if (RelayEnabled != false) hash ^= RelayEnabled.GetHashCode();
       if (RelayCadPeriodicity != global::Chirpstack.Api.CadPeriodicity.Sec1) hash ^= RelayCadPeriodicity.GetHashCode();
@@ -1195,44 +1215,48 @@ namespace Chirpstack.Api {
         output.WriteRawTag(240, 1);
         output.WriteBool(IsRelay);
       }
-      if (RelayEdRelayOnly != false) {
+      if (IsRelayEd != false) {
         output.WriteRawTag(248, 1);
+        output.WriteBool(IsRelayEd);
+      }
+      if (RelayEdRelayOnly != false) {
+        output.WriteRawTag(128, 2);
         output.WriteBool(RelayEdRelayOnly);
       }
       if (RelayEnabled != false) {
-        output.WriteRawTag(128, 2);
+        output.WriteRawTag(136, 2);
         output.WriteBool(RelayEnabled);
       }
       if (RelayCadPeriodicity != global::Chirpstack.Api.CadPeriodicity.Sec1) {
-        output.WriteRawTag(136, 2);
+        output.WriteRawTag(144, 2);
         output.WriteEnum((int) RelayCadPeriodicity);
       }
       if (RelayDefaultChannelIndex != 0) {
-        output.WriteRawTag(144, 2);
+        output.WriteRawTag(152, 2);
         output.WriteUInt32(RelayDefaultChannelIndex);
       }
       if (RelaySecondChannelFreq != 0) {
-        output.WriteRawTag(152, 2);
+        output.WriteRawTag(160, 2);
         output.WriteUInt32(RelaySecondChannelFreq);
       }
       if (RelaySecondChannelDr != 0) {
-        output.WriteRawTag(160, 2);
+        output.WriteRawTag(168, 2);
         output.WriteUInt32(RelaySecondChannelDr);
       }
       if (RelaySecondChannelAckOffset != global::Chirpstack.Api.SecondChAckOffset.Khz0) {
-        output.WriteRawTag(168, 2);
+        output.WriteRawTag(176, 2);
         output.WriteEnum((int) RelaySecondChannelAckOffset);
       }
       if (RelayEdActivationMode != global::Chirpstack.Api.RelayModeActivation.DisableRelayMode) {
-        output.WriteRawTag(176, 2);
+        output.WriteRawTag(184, 2);
         output.WriteEnum((int) RelayEdActivationMode);
       }
       if (RelayEdSmartEnableLevel != 0) {
-        output.WriteRawTag(184, 2);
+        output.WriteRawTag(192, 2);
         output.WriteUInt32(RelayEdSmartEnableLevel);
       }
       if (RelayEdBackOff != 0) {
-        output.WriteRawTag(192, 2);
+        output.WriteRawTag(200, 2);
         output.WriteUInt32(RelayEdBackOff);
       }
       if (_unknownFields != null) {
@@ -1359,44 +1383,48 @@ namespace Chirpstack.Api {
         output.WriteRawTag(240, 1);
         output.WriteBool(IsRelay);
       }
-      if (RelayEdRelayOnly != false) {
+      if (IsRelayEd != false) {
         output.WriteRawTag(248, 1);
+        output.WriteBool(IsRelayEd);
+      }
+      if (RelayEdRelayOnly != false) {
+        output.WriteRawTag(128, 2);
         output.WriteBool(RelayEdRelayOnly);
       }
       if (RelayEnabled != false) {
-        output.WriteRawTag(128, 2);
+        output.WriteRawTag(136, 2);
         output.WriteBool(RelayEnabled);
       }
       if (RelayCadPeriodicity != global::Chirpstack.Api.CadPeriodicity.Sec1) {
-        output.WriteRawTag(136, 2);
+        output.WriteRawTag(144, 2);
         output.WriteEnum((int) RelayCadPeriodicity);
       }
       if (RelayDefaultChannelIndex != 0) {
-        output.WriteRawTag(144, 2);
+        output.WriteRawTag(152, 2);
         output.WriteUInt32(RelayDefaultChannelIndex);
       }
       if (RelaySecondChannelFreq != 0) {
-        output.WriteRawTag(152, 2);
+        output.WriteRawTag(160, 2);
         output.WriteUInt32(RelaySecondChannelFreq);
       }
       if (RelaySecondChannelDr != 0) {
-        output.WriteRawTag(160, 2);
+        output.WriteRawTag(168, 2);
         output.WriteUInt32(RelaySecondChannelDr);
       }
       if (RelaySecondChannelAckOffset != global::Chirpstack.Api.SecondChAckOffset.Khz0) {
-        output.WriteRawTag(168, 2);
+        output.WriteRawTag(176, 2);
         output.WriteEnum((int) RelaySecondChannelAckOffset);
       }
       if (RelayEdActivationMode != global::Chirpstack.Api.RelayModeActivation.DisableRelayMode) {
-        output.WriteRawTag(176, 2);
+        output.WriteRawTag(184, 2);
         output.WriteEnum((int) RelayEdActivationMode);
       }
       if (RelayEdSmartEnableLevel != 0) {
-        output.WriteRawTag(184, 2);
+        output.WriteRawTag(192, 2);
         output.WriteUInt32(RelayEdSmartEnableLevel);
       }
       if (RelayEdBackOff != 0) {
-        output.WriteRawTag(192, 2);
+        output.WriteRawTag(200, 2);
         output.WriteUInt32(RelayEdBackOff);
       }
       if (_unknownFields != null) {
@@ -1493,6 +1521,9 @@ namespace Chirpstack.Api {
         size += 2 + pb::CodedOutputStream.ComputeStringSize(RegionConfigId);
       }
       if (IsRelay != false) {
+        size += 2 + 1;
+      }
+      if (IsRelayEd != false) {
         size += 2 + 1;
       }
       if (RelayEdRelayOnly != false) {
@@ -1622,6 +1653,9 @@ namespace Chirpstack.Api {
       }
       if (other.IsRelay != false) {
         IsRelay = other.IsRelay;
+      }
+      if (other.IsRelayEd != false) {
+        IsRelayEd = other.IsRelayEd;
       }
       if (other.RelayEdRelayOnly != false) {
         RelayEdRelayOnly = other.RelayEdRelayOnly;
@@ -1789,42 +1823,46 @@ namespace Chirpstack.Api {
             break;
           }
           case 248: {
-            RelayEdRelayOnly = input.ReadBool();
+            IsRelayEd = input.ReadBool();
             break;
           }
           case 256: {
-            RelayEnabled = input.ReadBool();
+            RelayEdRelayOnly = input.ReadBool();
             break;
           }
           case 264: {
-            RelayCadPeriodicity = (global::Chirpstack.Api.CadPeriodicity) input.ReadEnum();
+            RelayEnabled = input.ReadBool();
             break;
           }
           case 272: {
-            RelayDefaultChannelIndex = input.ReadUInt32();
+            RelayCadPeriodicity = (global::Chirpstack.Api.CadPeriodicity) input.ReadEnum();
             break;
           }
           case 280: {
-            RelaySecondChannelFreq = input.ReadUInt32();
+            RelayDefaultChannelIndex = input.ReadUInt32();
             break;
           }
           case 288: {
-            RelaySecondChannelDr = input.ReadUInt32();
+            RelaySecondChannelFreq = input.ReadUInt32();
             break;
           }
           case 296: {
-            RelaySecondChannelAckOffset = (global::Chirpstack.Api.SecondChAckOffset) input.ReadEnum();
+            RelaySecondChannelDr = input.ReadUInt32();
             break;
           }
           case 304: {
-            RelayEdActivationMode = (global::Chirpstack.Api.RelayModeActivation) input.ReadEnum();
+            RelaySecondChannelAckOffset = (global::Chirpstack.Api.SecondChAckOffset) input.ReadEnum();
             break;
           }
           case 312: {
-            RelayEdSmartEnableLevel = input.ReadUInt32();
+            RelayEdActivationMode = (global::Chirpstack.Api.RelayModeActivation) input.ReadEnum();
             break;
           }
           case 320: {
+            RelayEdSmartEnableLevel = input.ReadUInt32();
+            break;
+          }
+          case 328: {
             RelayEdBackOff = input.ReadUInt32();
             break;
           }
@@ -1964,42 +2002,46 @@ namespace Chirpstack.Api {
             break;
           }
           case 248: {
-            RelayEdRelayOnly = input.ReadBool();
+            IsRelayEd = input.ReadBool();
             break;
           }
           case 256: {
-            RelayEnabled = input.ReadBool();
+            RelayEdRelayOnly = input.ReadBool();
             break;
           }
           case 264: {
-            RelayCadPeriodicity = (global::Chirpstack.Api.CadPeriodicity) input.ReadEnum();
+            RelayEnabled = input.ReadBool();
             break;
           }
           case 272: {
-            RelayDefaultChannelIndex = input.ReadUInt32();
+            RelayCadPeriodicity = (global::Chirpstack.Api.CadPeriodicity) input.ReadEnum();
             break;
           }
           case 280: {
-            RelaySecondChannelFreq = input.ReadUInt32();
+            RelayDefaultChannelIndex = input.ReadUInt32();
             break;
           }
           case 288: {
-            RelaySecondChannelDr = input.ReadUInt32();
+            RelaySecondChannelFreq = input.ReadUInt32();
             break;
           }
           case 296: {
-            RelaySecondChannelAckOffset = (global::Chirpstack.Api.SecondChAckOffset) input.ReadEnum();
+            RelaySecondChannelDr = input.ReadUInt32();
             break;
           }
           case 304: {
-            RelayEdActivationMode = (global::Chirpstack.Api.RelayModeActivation) input.ReadEnum();
+            RelaySecondChannelAckOffset = (global::Chirpstack.Api.SecondChAckOffset) input.ReadEnum();
             break;
           }
           case 312: {
-            RelayEdSmartEnableLevel = input.ReadUInt32();
+            RelayEdActivationMode = (global::Chirpstack.Api.RelayModeActivation) input.ReadEnum();
             break;
           }
           case 320: {
+            RelayEdSmartEnableLevel = input.ReadUInt32();
+            break;
+          }
+          case 328: {
             RelayEdBackOff = input.ReadUInt32();
             break;
           }

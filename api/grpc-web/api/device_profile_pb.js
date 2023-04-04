@@ -373,16 +373,17 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     autoDetectMeasurements: jspb.Message.getBooleanFieldWithDefault(msg, 28, false),
     regionConfigId: jspb.Message.getFieldWithDefault(msg, 29, ""),
     isRelay: jspb.Message.getBooleanFieldWithDefault(msg, 30, false),
-    relayEdRelayOnly: jspb.Message.getBooleanFieldWithDefault(msg, 31, false),
-    relayEnabled: jspb.Message.getBooleanFieldWithDefault(msg, 32, false),
-    relayCadPeriodicity: jspb.Message.getFieldWithDefault(msg, 33, 0),
-    relayDefaultChannelIndex: jspb.Message.getFieldWithDefault(msg, 34, 0),
-    relaySecondChannelFreq: jspb.Message.getFieldWithDefault(msg, 35, 0),
-    relaySecondChannelDr: jspb.Message.getFieldWithDefault(msg, 36, 0),
-    relaySecondChannelAckOffset: jspb.Message.getFieldWithDefault(msg, 37, 0),
-    relayEdActivationMode: jspb.Message.getFieldWithDefault(msg, 38, 0),
-    relayEdSmartEnableLevel: jspb.Message.getFieldWithDefault(msg, 39, 0),
-    relayEdBackOff: jspb.Message.getFieldWithDefault(msg, 40, 0)
+    isRelayEd: jspb.Message.getBooleanFieldWithDefault(msg, 31, false),
+    relayEdRelayOnly: jspb.Message.getBooleanFieldWithDefault(msg, 32, false),
+    relayEnabled: jspb.Message.getBooleanFieldWithDefault(msg, 33, false),
+    relayCadPeriodicity: jspb.Message.getFieldWithDefault(msg, 34, 0),
+    relayDefaultChannelIndex: jspb.Message.getFieldWithDefault(msg, 35, 0),
+    relaySecondChannelFreq: jspb.Message.getFieldWithDefault(msg, 36, 0),
+    relaySecondChannelDr: jspb.Message.getFieldWithDefault(msg, 37, 0),
+    relaySecondChannelAckOffset: jspb.Message.getFieldWithDefault(msg, 38, 0),
+    relayEdActivationMode: jspb.Message.getFieldWithDefault(msg, 39, 0),
+    relayEdSmartEnableLevel: jspb.Message.getFieldWithDefault(msg, 40, 0),
+    relayEdBackOff: jspb.Message.getFieldWithDefault(msg, 41, 0)
   };
 
   if (includeInstance) {
@@ -545,41 +546,45 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 31:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setRelayEdRelayOnly(value);
+      msg.setIsRelayEd(value);
       break;
     case 32:
       var value = /** @type {boolean} */ (reader.readBool());
-      msg.setRelayEnabled(value);
+      msg.setRelayEdRelayOnly(value);
       break;
     case 33:
+      var value = /** @type {boolean} */ (reader.readBool());
+      msg.setRelayEnabled(value);
+      break;
+    case 34:
       var value = /** @type {!proto.api.CadPeriodicity} */ (reader.readEnum());
       msg.setRelayCadPeriodicity(value);
       break;
-    case 34:
+    case 35:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setRelayDefaultChannelIndex(value);
       break;
-    case 35:
+    case 36:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setRelaySecondChannelFreq(value);
       break;
-    case 36:
+    case 37:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setRelaySecondChannelDr(value);
       break;
-    case 37:
+    case 38:
       var value = /** @type {!proto.api.SecondChAckOffset} */ (reader.readEnum());
       msg.setRelaySecondChannelAckOffset(value);
       break;
-    case 38:
+    case 39:
       var value = /** @type {!proto.api.RelayModeActivation} */ (reader.readEnum());
       msg.setRelayEdActivationMode(value);
       break;
-    case 39:
+    case 40:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setRelayEdSmartEnableLevel(value);
       break;
-    case 40:
+    case 41:
       var value = /** @type {number} */ (reader.readUint32());
       msg.setRelayEdBackOff(value);
       break;
@@ -816,73 +821,80 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getRelayEdRelayOnly();
+  f = message.getIsRelayEd();
   if (f) {
     writer.writeBool(
       31,
       f
     );
   }
-  f = message.getRelayEnabled();
+  f = message.getRelayEdRelayOnly();
   if (f) {
     writer.writeBool(
       32,
       f
     );
   }
+  f = message.getRelayEnabled();
+  if (f) {
+    writer.writeBool(
+      33,
+      f
+    );
+  }
   f = message.getRelayCadPeriodicity();
   if (f !== 0.0) {
     writer.writeEnum(
-      33,
+      34,
       f
     );
   }
   f = message.getRelayDefaultChannelIndex();
   if (f !== 0) {
     writer.writeUint32(
-      34,
+      35,
       f
     );
   }
   f = message.getRelaySecondChannelFreq();
   if (f !== 0) {
     writer.writeUint32(
-      35,
+      36,
       f
     );
   }
   f = message.getRelaySecondChannelDr();
   if (f !== 0) {
     writer.writeUint32(
-      36,
+      37,
       f
     );
   }
   f = message.getRelaySecondChannelAckOffset();
   if (f !== 0.0) {
     writer.writeEnum(
-      37,
+      38,
       f
     );
   }
   f = message.getRelayEdActivationMode();
   if (f !== 0.0) {
     writer.writeEnum(
-      38,
+      39,
       f
     );
   }
   f = message.getRelayEdSmartEnableLevel();
   if (f !== 0) {
     writer.writeUint32(
-      39,
+      40,
       f
     );
   }
   f = message.getRelayEdBackOff();
   if (f !== 0) {
     writer.writeUint32(
-      40,
+      41,
       f
     );
   }
@@ -1438,10 +1450,10 @@ proto.api.DeviceProfile.prototype.setIsRelay = function(value) {
 
 
 /**
- * optional bool relay_ed_relay_only = 31;
+ * optional bool is_relay_ed = 31;
  * @return {boolean}
  */
-proto.api.DeviceProfile.prototype.getRelayEdRelayOnly = function() {
+proto.api.DeviceProfile.prototype.getIsRelayEd = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 31, false));
 };
 
@@ -1450,16 +1462,16 @@ proto.api.DeviceProfile.prototype.getRelayEdRelayOnly = function() {
  * @param {boolean} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setRelayEdRelayOnly = function(value) {
+proto.api.DeviceProfile.prototype.setIsRelayEd = function(value) {
   return jspb.Message.setProto3BooleanField(this, 31, value);
 };
 
 
 /**
- * optional bool relay_enabled = 32;
+ * optional bool relay_ed_relay_only = 32;
  * @return {boolean}
  */
-proto.api.DeviceProfile.prototype.getRelayEnabled = function() {
+proto.api.DeviceProfile.prototype.getRelayEdRelayOnly = function() {
   return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 32, false));
 };
 
@@ -1468,17 +1480,35 @@ proto.api.DeviceProfile.prototype.getRelayEnabled = function() {
  * @param {boolean} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setRelayEnabled = function(value) {
+proto.api.DeviceProfile.prototype.setRelayEdRelayOnly = function(value) {
   return jspb.Message.setProto3BooleanField(this, 32, value);
 };
 
 
 /**
- * optional CadPeriodicity relay_cad_periodicity = 33;
+ * optional bool relay_enabled = 33;
+ * @return {boolean}
+ */
+proto.api.DeviceProfile.prototype.getRelayEnabled = function() {
+  return /** @type {boolean} */ (jspb.Message.getBooleanFieldWithDefault(this, 33, false));
+};
+
+
+/**
+ * @param {boolean} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setRelayEnabled = function(value) {
+  return jspb.Message.setProto3BooleanField(this, 33, value);
+};
+
+
+/**
+ * optional CadPeriodicity relay_cad_periodicity = 34;
  * @return {!proto.api.CadPeriodicity}
  */
 proto.api.DeviceProfile.prototype.getRelayCadPeriodicity = function() {
-  return /** @type {!proto.api.CadPeriodicity} */ (jspb.Message.getFieldWithDefault(this, 33, 0));
+  return /** @type {!proto.api.CadPeriodicity} */ (jspb.Message.getFieldWithDefault(this, 34, 0));
 };
 
 
@@ -1487,33 +1517,15 @@ proto.api.DeviceProfile.prototype.getRelayCadPeriodicity = function() {
  * @return {!proto.api.DeviceProfile} returns this
  */
 proto.api.DeviceProfile.prototype.setRelayCadPeriodicity = function(value) {
-  return jspb.Message.setProto3EnumField(this, 33, value);
+  return jspb.Message.setProto3EnumField(this, 34, value);
 };
 
 
 /**
- * optional uint32 relay_default_channel_index = 34;
+ * optional uint32 relay_default_channel_index = 35;
  * @return {number}
  */
 proto.api.DeviceProfile.prototype.getRelayDefaultChannelIndex = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 34, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.api.DeviceProfile} returns this
- */
-proto.api.DeviceProfile.prototype.setRelayDefaultChannelIndex = function(value) {
-  return jspb.Message.setProto3IntField(this, 34, value);
-};
-
-
-/**
- * optional uint32 relay_second_channel_freq = 35;
- * @return {number}
- */
-proto.api.DeviceProfile.prototype.getRelaySecondChannelFreq = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 35, 0));
 };
 
@@ -1522,16 +1534,16 @@ proto.api.DeviceProfile.prototype.getRelaySecondChannelFreq = function() {
  * @param {number} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setRelaySecondChannelFreq = function(value) {
+proto.api.DeviceProfile.prototype.setRelayDefaultChannelIndex = function(value) {
   return jspb.Message.setProto3IntField(this, 35, value);
 };
 
 
 /**
- * optional uint32 relay_second_channel_dr = 36;
+ * optional uint32 relay_second_channel_freq = 36;
  * @return {number}
  */
-proto.api.DeviceProfile.prototype.getRelaySecondChannelDr = function() {
+proto.api.DeviceProfile.prototype.getRelaySecondChannelFreq = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 36, 0));
 };
 
@@ -1540,17 +1552,35 @@ proto.api.DeviceProfile.prototype.getRelaySecondChannelDr = function() {
  * @param {number} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setRelaySecondChannelDr = function(value) {
+proto.api.DeviceProfile.prototype.setRelaySecondChannelFreq = function(value) {
   return jspb.Message.setProto3IntField(this, 36, value);
 };
 
 
 /**
- * optional SecondChAckOffset relay_second_channel_ack_offset = 37;
+ * optional uint32 relay_second_channel_dr = 37;
+ * @return {number}
+ */
+proto.api.DeviceProfile.prototype.getRelaySecondChannelDr = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 37, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setRelaySecondChannelDr = function(value) {
+  return jspb.Message.setProto3IntField(this, 37, value);
+};
+
+
+/**
+ * optional SecondChAckOffset relay_second_channel_ack_offset = 38;
  * @return {!proto.api.SecondChAckOffset}
  */
 proto.api.DeviceProfile.prototype.getRelaySecondChannelAckOffset = function() {
-  return /** @type {!proto.api.SecondChAckOffset} */ (jspb.Message.getFieldWithDefault(this, 37, 0));
+  return /** @type {!proto.api.SecondChAckOffset} */ (jspb.Message.getFieldWithDefault(this, 38, 0));
 };
 
 
@@ -1559,16 +1589,16 @@ proto.api.DeviceProfile.prototype.getRelaySecondChannelAckOffset = function() {
  * @return {!proto.api.DeviceProfile} returns this
  */
 proto.api.DeviceProfile.prototype.setRelaySecondChannelAckOffset = function(value) {
-  return jspb.Message.setProto3EnumField(this, 37, value);
+  return jspb.Message.setProto3EnumField(this, 38, value);
 };
 
 
 /**
- * optional RelayModeActivation relay_ed_activation_mode = 38;
+ * optional RelayModeActivation relay_ed_activation_mode = 39;
  * @return {!proto.api.RelayModeActivation}
  */
 proto.api.DeviceProfile.prototype.getRelayEdActivationMode = function() {
-  return /** @type {!proto.api.RelayModeActivation} */ (jspb.Message.getFieldWithDefault(this, 38, 0));
+  return /** @type {!proto.api.RelayModeActivation} */ (jspb.Message.getFieldWithDefault(this, 39, 0));
 };
 
 
@@ -1577,33 +1607,15 @@ proto.api.DeviceProfile.prototype.getRelayEdActivationMode = function() {
  * @return {!proto.api.DeviceProfile} returns this
  */
 proto.api.DeviceProfile.prototype.setRelayEdActivationMode = function(value) {
-  return jspb.Message.setProto3EnumField(this, 38, value);
+  return jspb.Message.setProto3EnumField(this, 39, value);
 };
 
 
 /**
- * optional uint32 relay_ed_smart_enable_level = 39;
+ * optional uint32 relay_ed_smart_enable_level = 40;
  * @return {number}
  */
 proto.api.DeviceProfile.prototype.getRelayEdSmartEnableLevel = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 39, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.api.DeviceProfile} returns this
- */
-proto.api.DeviceProfile.prototype.setRelayEdSmartEnableLevel = function(value) {
-  return jspb.Message.setProto3IntField(this, 39, value);
-};
-
-
-/**
- * optional uint32 relay_ed_back_off = 40;
- * @return {number}
- */
-proto.api.DeviceProfile.prototype.getRelayEdBackOff = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 40, 0));
 };
 
@@ -1612,8 +1624,26 @@ proto.api.DeviceProfile.prototype.getRelayEdBackOff = function() {
  * @param {number} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setRelayEdBackOff = function(value) {
+proto.api.DeviceProfile.prototype.setRelayEdSmartEnableLevel = function(value) {
   return jspb.Message.setProto3IntField(this, 40, value);
+};
+
+
+/**
+ * optional uint32 relay_ed_back_off = 41;
+ * @return {number}
+ */
+proto.api.DeviceProfile.prototype.getRelayEdBackOff = function() {
+  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 41, 0));
+};
+
+
+/**
+ * @param {number} value
+ * @return {!proto.api.DeviceProfile} returns this
+ */
+proto.api.DeviceProfile.prototype.setRelayEdBackOff = function(value) {
+  return jspb.Message.setProto3IntField(this, 41, value);
 };
 
 

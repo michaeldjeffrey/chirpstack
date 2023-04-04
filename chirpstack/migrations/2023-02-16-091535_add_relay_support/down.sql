@@ -5,6 +5,7 @@ drop table relay_device;
 
 alter table device_profile
     drop column is_relay,
+    drop column is_relay_ed,
     drop column relay_ed_relay_only,
     drop column relay_enabled,
     drop column relay_cad_periodicity,

@@ -89,6 +89,7 @@ impl DeviceProfileService for DeviceProfile {
             region_config_id: (!req_dp.region_config_id.is_empty())
                 .then(|| req_dp.region_config_id.clone()),
             is_relay: req_dp.is_relay,
+            is_relay_ed: req_dp.is_relay_ed,
             relay_ed_relay_only: req_dp.relay_ed_relay_only,
             relay_enabled: req_dp.relay_enabled,
             relay_cad_periodicity: req_dp.relay_cad_periodicity as i16,
@@ -176,6 +177,7 @@ impl DeviceProfileService for DeviceProfile {
                 auto_detect_measurements: dp.auto_detect_measurements,
                 region_config_id: dp.region_config_id.clone().unwrap_or_default(),
                 is_relay: dp.is_relay,
+                is_relay_ed: dp.is_relay_ed,
                 relay_ed_relay_only: dp.relay_ed_relay_only,
                 relay_enabled: dp.relay_enabled,
                 relay_cad_periodicity: dp.relay_cad_periodicity as i32,
@@ -261,6 +263,7 @@ impl DeviceProfileService for DeviceProfile {
             region_config_id: (!req_dp.region_config_id.is_empty())
                 .then(|| req_dp.region_config_id.clone()),
             is_relay: req_dp.is_relay,
+            is_relay_ed: req_dp.is_relay_ed,
             relay_ed_relay_only: req_dp.relay_ed_relay_only,
             relay_enabled: req_dp.relay_enabled,
             relay_cad_periodicity: req_dp.relay_cad_periodicity as i16,

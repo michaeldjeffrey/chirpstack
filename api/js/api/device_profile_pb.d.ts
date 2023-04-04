@@ -96,6 +96,9 @@ export class DeviceProfile extends jspb.Message {
   getIsRelay(): boolean;
   setIsRelay(value: boolean): void;
 
+  getIsRelayEd(): boolean;
+  setIsRelayEd(value: boolean): void;
+
   getRelayEdRelayOnly(): boolean;
   setRelayEdRelayOnly(value: boolean): void;
 
@@ -168,6 +171,7 @@ export namespace DeviceProfile {
     autoDetectMeasurements: boolean,
     regionConfigId: string,
     isRelay: boolean,
+    isRelayEd: boolean,
     relayEdRelayOnly: boolean,
     relayEnabled: boolean,
     relayCadPeriodicity: CadPeriodicityMap[keyof CadPeriodicityMap],
