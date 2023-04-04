@@ -183,6 +183,15 @@ message Relay {
 
     // Second channel ACK offset.
     uint32 second_channel_ack_offset = 8;
+
+    // End-device activation mode.
+    uint32 ed_activation_mode = 9;
+
+    // End-device smart-enable level.
+    uint32 ed_smart_enable_level = 10;
+
+    // End-device back-off.
+    uint32 ed_back_off = 11;
 }
 
 message RelayDevice {

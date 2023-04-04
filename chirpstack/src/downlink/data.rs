@@ -8,7 +8,7 @@ use rand::Rng;
 use tracing::{error, span, trace, warn, Instrument, Level};
 
 use crate::api::backend::get_async_receiver;
-use crate::api::helpers::FromProto;
+use crate::api::helpers::{FromProto, ToProto};
 use crate::backend::roaming;
 use crate::downlink::{classb, helpers, tx_ack};
 use crate::gpstime::{ToDateTime, ToGpsTime};
@@ -520,6 +520,10 @@ impl Data {
             self._update_relay_conf().await?;
             self._update_filter_list().await?;
             self._update_uplink_list().await?;
+        }
+
+        if self.device_profile.is_relay_ed {
+            self._update_end_device_conf().await?;
         }
 
         self.mac_commands = filter_mac_commands(&self.device_session, &self.mac_commands);
@@ -1696,6 +1700,55 @@ impl Data {
                 },
             )]);
             mac_command::set_pending(&self.device.dev_eui, lrwn::CID::RelayConfReq, &set).await?;
+            self.mac_commands.push(set);
+        }
+
+        self.device_session.relay = Some(relay);
+
+        Ok(())
+    }
+
+    async fn _update_end_device_conf(&mut self) -> Result<()> {
+        trace!("Updating End Device Conf");
+
+        // Get the current relay state.
+        let relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        if relay.ed_activation_mode
+            != self.device_profile.relay_ed_activation_mode.to_proto() as u32
+            || relay.ed_smart_enable_level != self.device_profile.relay_ed_smart_enable_level as u32
+            || relay.ed_back_off != self.device_profile.relay_ed_back_off as u32
+            || relay.second_channel_freq != self.device_profile.relay_second_channel_freq as u32
+            || relay.second_channel_dr != self.device_profile.relay_second_channel_dr as u32
+            || relay.second_channel_ack_offset
+                != self.device_profile.relay_second_channel_ack_offset as u32
+        {
+            let set = lrwn::MACCommandSet::new(vec![lrwn::MACCommand::EndDeviceConfReq(
+                lrwn::EndDeviceConfReqPayload {
+                    activation_relay_mode: lrwn::ActivationRelayMode {
+                        relay_mode_activation: self.device_profile.relay_ed_activation_mode,
+                        smart_enable_level: self.device_profile.relay_ed_smart_enable_level as u8,
+                    },
+                    channel_settings_ed: lrwn::ChannelSettingsED {
+                        second_ch_ack_offset: self.device_profile.relay_second_channel_ack_offset
+                            as u8,
+                        second_ch_dr: self.device_profile.relay_second_channel_dr as u8,
+                        second_ch_idx: if self.device_profile.relay_second_channel_freq > 0 {
+                            1
+                        } else {
+                            0
+                        },
+                        backoff: self.device_profile.relay_ed_back_off as u8,
+                    },
+                    second_ch_freq: self.device_profile.relay_second_channel_freq as u32,
+                },
+            )]);
+            mac_command::set_pending(&self.device.dev_eui, lrwn::CID::EndDeviceConfReq, &set)
+                .await?;
             self.mac_commands.push(set);
         }
 
@@ -3209,6 +3262,115 @@ mod test {
             };
 
             ctx._update_relay_conf().await.unwrap();
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_update_end_device_conf() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            device_profile: device_profile::DeviceProfile,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
+        let tests = vec![
+            Test {
+                name: "device is in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        ed_activation_mode: 1,
+                        ed_smart_enable_level: 1,
+                        ed_back_off: 16,
+                        second_channel_freq: 868100000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 4,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    relay_ed_activation_mode: lrwn::RelayModeActivation::EnableRelayMode,
+                    relay_ed_smart_enable_level: 1,
+                    relay_ed_back_off: 16,
+                    relay_second_channel_freq: 868100000,
+                    relay_second_channel_dr: 3,
+                    relay_second_channel_ack_offset: 4,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![],
+            },
+            Test {
+                name: "device is not in sync".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        ed_activation_mode: 0,
+                        ed_smart_enable_level: 1,
+                        ed_back_off: 16,
+                        second_channel_freq: 868100000,
+                        second_channel_dr: 3,
+                        second_channel_ack_offset: 4,
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                device_profile: device_profile::DeviceProfile {
+                    relay_ed_activation_mode: lrwn::RelayModeActivation::EnableRelayMode,
+                    relay_ed_smart_enable_level: 1,
+                    relay_ed_back_off: 16,
+                    relay_second_channel_freq: 868100000,
+                    relay_second_channel_dr: 3,
+                    relay_second_channel_ack_offset: 4,
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::EndDeviceConfReq(lrwn::EndDeviceConfReqPayload {
+                        activation_relay_mode: lrwn::ActivationRelayMode {
+                            relay_mode_activation: lrwn::RelayModeActivation::EnableRelayMode,
+                            smart_enable_level: 1,
+                        },
+                        channel_settings_ed: lrwn::ChannelSettingsED {
+                            second_ch_ack_offset: 4,
+                            second_ch_dr: 3,
+                            second_ch_idx: 1,
+                            backoff: 16,
+                        },
+                        second_ch_freq: 868100000,
+                    }),
+                ])],
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: tenant::Tenant::default(),
+                application: application::Application::default(),
+                device_profile: test.device_profile.clone(),
+                device: device::Device::default(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._update_end_device_conf().await.unwrap();
 
             assert_eq!(test.expected_mac_commands, ctx.mac_commands);
         }

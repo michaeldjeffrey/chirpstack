@@ -59,7 +59,7 @@ pub struct DeviceProfile {
     pub relay_second_channel_freq: i64,
     pub relay_second_channel_dr: i16,
     pub relay_second_channel_ack_offset: i16,
-    pub relay_ed_activation_mode: i16,
+    pub relay_ed_activation_mode: lrwn::RelayModeActivation,
     pub relay_ed_smart_enable_level: i16,
     pub relay_ed_back_off: i16,
 }
@@ -118,7 +118,7 @@ impl Default for DeviceProfile {
             relay_second_channel_freq: 0,
             relay_second_channel_dr: 0,
             relay_second_channel_ack_offset: 0,
-            relay_ed_activation_mode: 0,
+            relay_ed_activation_mode: lrwn::RelayModeActivation::DisableRelayMode,
             relay_ed_smart_enable_level: 0,
             relay_ed_back_off: 0,
         }

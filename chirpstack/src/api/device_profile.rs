@@ -97,7 +97,7 @@ impl DeviceProfileService for DeviceProfile {
             relay_second_channel_freq: req_dp.relay_second_channel_freq as i64,
             relay_second_channel_dr: req_dp.relay_second_channel_dr as i16,
             relay_second_channel_ack_offset: req_dp.relay_second_channel_ack_offset as i16,
-            relay_ed_activation_mode: req_dp.relay_ed_activation_mode as i16,
+            relay_ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
             relay_ed_smart_enable_level: req_dp.relay_ed_smart_enable_level as i16,
             relay_ed_back_off: req_dp.relay_ed_back_off as i16,
             ..Default::default()
@@ -185,7 +185,7 @@ impl DeviceProfileService for DeviceProfile {
                 relay_second_channel_freq: dp.relay_second_channel_freq as u32,
                 relay_second_channel_dr: dp.relay_second_channel_dr as u32,
                 relay_second_channel_ack_offset: dp.relay_second_channel_ack_offset as i32,
-                relay_ed_activation_mode: dp.relay_ed_activation_mode as i32,
+                relay_ed_activation_mode: dp.relay_ed_activation_mode.to_proto().into(),
                 relay_ed_smart_enable_level: dp.relay_ed_smart_enable_level as u32,
                 relay_ed_back_off: dp.relay_ed_back_off as u32,
             }),
@@ -271,7 +271,7 @@ impl DeviceProfileService for DeviceProfile {
             relay_second_channel_freq: req_dp.relay_second_channel_freq as i64,
             relay_second_channel_dr: req_dp.relay_second_channel_dr as i16,
             relay_second_channel_ack_offset: req_dp.relay_second_channel_ack_offset as i16,
-            relay_ed_activation_mode: req_dp.relay_ed_activation_mode as i16,
+            relay_ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
             relay_ed_smart_enable_level: req_dp.relay_ed_smart_enable_level as i16,
             relay_ed_back_off: req_dp.relay_ed_back_off as i16,
             ..Default::default()
