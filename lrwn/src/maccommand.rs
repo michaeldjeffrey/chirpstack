@@ -1801,6 +1801,37 @@ impl RelayModeActivation {
     }
 }
 
+#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+pub enum ResetLimitCounter {
+    TokenCounterToZero,
+    TokenCounterToReloadRate,
+    TokenCounterToMaxValue,
+    NoChange,
+}
+
+impl ResetLimitCounter {
+    pub fn to_u8(&self) -> u8 {
+        match self {
+            ResetLimitCounter::TokenCounterToZero => 0x00,
+            ResetLimitCounter::TokenCounterToReloadRate => 0x01,
+            ResetLimitCounter::TokenCounterToMaxValue => 0x02,
+            ResetLimitCounter::NoChange => 0x03,
+        }
+    }
+
+    pub fn from_u8(v: u8) -> Result<Self> {
+        Ok(match v {
+            0x00 => ResetLimitCounter::TokenCounterToZero,
+            0x01 => ResetLimitCounter::TokenCounterToReloadRate,
+            0x02 => ResetLimitCounter::TokenCounterToMaxValue,
+            0x03 => ResetLimitCounter::NoChange,
+            _ => {
+                return Err(anyhow!("Invalid ResetLimitCounter value: {}", v));
+            }
+        })
+    }
+}
+
 impl<DB> deserialize::FromSql<SmallInt, DB> for RelayModeActivation
 where
     DB: Backend,
@@ -2226,24 +2257,21 @@ pub struct FwdLimitReloadRatePL {
     pub global_uplink_reload_rate: u8,
     pub notify_reload_rate: u8,
     pub join_req_reload_rate: u8,
-    pub reset_limit_counter: u8,
+    pub reset_limit_counter: ResetLimitCounter,
 }
 
 impl FwdLimitReloadRatePL {
-    pub fn from_bytes(b: [u8; 4]) -> Self {
-        FwdLimitReloadRatePL {
+    pub fn from_bytes(b: [u8; 4]) -> Result<Self> {
+        Ok(FwdLimitReloadRatePL {
             overall_reload_rate: b[0] & 0x7f,
             global_uplink_reload_rate: (b[0] >> 7) | ((b[1] & 0x3f) << 1),
             notify_reload_rate: (b[1] >> 6) | ((b[2] & 0x1f) << 2),
             join_req_reload_rate: (b[2] >> 5) | ((b[3] & 0x0f) << 3),
-            reset_limit_counter: (b[3] & 0x30) >> 4,
-        }
+            reset_limit_counter: ResetLimitCounter::from_u8((b[3] & 0x30) >> 4)?,
+        })
     }
 
     pub fn to_bytes(&self) -> Result<[u8; 4]> {
-        if self.reset_limit_counter > 3 {
-            return Err(anyhow!("max reset_limit_counter is 3"));
-        }
         if self.join_req_reload_rate > 127 {
             return Err(anyhow!("max join_req_reload_rate is 127"));
         }
@@ -2261,7 +2289,7 @@ impl FwdLimitReloadRatePL {
             self.overall_reload_rate | (self.global_uplink_reload_rate << 7),
             (self.global_uplink_reload_rate >> 1) | (self.notify_reload_rate << 6),
             (self.notify_reload_rate >> 2) | (self.join_req_reload_rate << 5),
-            (self.join_req_reload_rate >> 3) | (self.reset_limit_counter << 4),
+            (self.join_req_reload_rate >> 3) | (self.reset_limit_counter.to_u8() << 4),
         ])
     }
 }
@@ -2307,8 +2335,8 @@ impl FwdLimitLoadCapacityPL {
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct ConfigureFwdLimitReqPayload {
-    pub fwd_limit_reload_rate: FwdLimitReloadRatePL,
-    pub fwd_limit_load_capacity: FwdLimitLoadCapacityPL,
+    pub reload_rate: FwdLimitReloadRatePL,
+    pub load_capacity: FwdLimitLoadCapacityPL,
 }
 
 impl PayloadCodec for ConfigureFwdLimitReqPayload {
@@ -2317,19 +2345,19 @@ impl PayloadCodec for ConfigureFwdLimitReqPayload {
         cur.read_exact(&mut b)?;
 
         Ok(ConfigureFwdLimitReqPayload {
-            fwd_limit_reload_rate: FwdLimitReloadRatePL::from_bytes({
+            reload_rate: FwdLimitReloadRatePL::from_bytes({
                 let mut bb = [0; 4];
                 bb.copy_from_slice(&b[0..4]);
                 bb
-            }),
-            fwd_limit_load_capacity: FwdLimitLoadCapacityPL::from_u8(b[4]),
+            })?,
+            load_capacity: FwdLimitLoadCapacityPL::from_u8(b[4]),
         })
     }
 
     fn encode(&self) -> Result<Vec<u8>> {
         let mut b = vec![0; 5];
-        b[0..4].copy_from_slice(&self.fwd_limit_reload_rate.to_bytes()?);
-        b[4] = self.fwd_limit_load_capacity.to_u8()?;
+        b[0..4].copy_from_slice(&self.reload_rate.to_bytes()?);
+        b[4] = self.load_capacity.to_u8()?;
         Ok(b)
     }
 }
@@ -3001,14 +3029,14 @@ mod test {
             MacTest {
                 uplink: false,
                 command: MACCommand::ConfigureFwdLimitReq(ConfigureFwdLimitReqPayload {
-                    fwd_limit_reload_rate: FwdLimitReloadRatePL {
+                    reload_rate: FwdLimitReloadRatePL {
                         overall_reload_rate: 100,
                         global_uplink_reload_rate: 90,
                         notify_reload_rate: 80,
                         join_req_reload_rate: 70,
-                        reset_limit_counter: 3,
+                        reset_limit_counter: ResetLimitCounter::NoChange,
                     },
-                    fwd_limit_load_capacity: FwdLimitLoadCapacityPL {
+                    load_capacity: FwdLimitLoadCapacityPL {
                         overal_limit_size: 2,
                         global_uplink_limit_size: 2,
                         notify_limit_size: 1,
