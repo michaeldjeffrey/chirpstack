@@ -43,7 +43,7 @@ pub fn handle(
         && ans_pl.default_ch_idx_ack
         && ans_pl.cad_periodicity_ack
     {
-        info!("RelayConfReq acknowledged");
+        info!(dev_eui = %dev.dev_eui, "RelayConfReq acknowledged");
 
         if let Some(relay) = &mut ds.relay {
             relay.enabled = req_pl.channel_settings_relay.start_stop == 1;

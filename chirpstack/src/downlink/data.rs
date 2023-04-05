@@ -8,7 +8,7 @@ use rand::Rng;
 use tracing::{error, span, trace, warn, Instrument, Level};
 
 use crate::api::backend::get_async_receiver;
-use crate::api::helpers::{FromProto, ToProto};
+use crate::api::helpers::FromProto;
 use crate::backend::roaming;
 use crate::downlink::{classb, helpers, tx_ack};
 use crate::gpstime::{ToDateTime, ToGpsTime};
@@ -1718,8 +1718,7 @@ impl Data {
             internal::Relay::default()
         };
 
-        if relay.ed_activation_mode
-            != self.device_profile.relay_ed_activation_mode.to_proto() as u32
+        if relay.ed_activation_mode != self.device_profile.relay_ed_activation_mode.to_u8() as u32
             || relay.ed_smart_enable_level != self.device_profile.relay_ed_smart_enable_level as u32
             || relay.ed_back_off != self.device_profile.relay_ed_back_off as u32
             || relay.second_channel_freq != self.device_profile.relay_second_channel_freq as u32
