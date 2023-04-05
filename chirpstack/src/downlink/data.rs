@@ -1399,8 +1399,14 @@ impl Data {
                         found = true;
 
                         // The device has not yet been provisioned, or
-                        // the device has a new DevAddr, we must update it (same index).
-                        if !rd.provisioned || rd.dev_addr != dev_addr.to_vec() {
+                        // the settings must be updated
+                        if !rd.provisioned
+                            || rd.dev_addr != dev_addr.to_vec()
+                            || rd.uplink_limit_bucket_size
+                                != device.relay_ed_uplink_limit_bucket_size as u32
+                            || rd.uplink_limit_reload_rate
+                                != device.relay_ed_uplink_limit_reload_rate as u32
+                        {
                             let ds = match device_session::get(&device.dev_eui).await {
                                 Ok(v) => v,
                                 Err(_) => {
@@ -1417,8 +1423,10 @@ impl Data {
                                     lrwn::UpdateUplinkListReqPayload {
                                         uplink_list_idx: rd.index as u8,
                                         uplink_limit: lrwn::UplinkLimitPL {
-                                            bucket_size: 0,
-                                            reload_rate: 0,
+                                            bucket_size: device.relay_ed_uplink_limit_bucket_size
+                                                as u8,
+                                            reload_rate: device.relay_ed_uplink_limit_reload_rate
+                                                as u8,
                                         },
                                         dev_addr: dev_addr,
                                         w_fcnt: 0,
@@ -1436,6 +1444,10 @@ impl Data {
 
                             rd.dev_addr = dev_addr.to_vec();
                             rd.root_wor_s_key = root_wor_s_key.to_vec();
+                            rd.uplink_limit_bucket_size =
+                                device.relay_ed_uplink_limit_bucket_size as u32;
+                            rd.uplink_limit_reload_rate =
+                                device.relay_ed_uplink_limit_reload_rate as u32;
                             rd.provisioned = false;
 
                             // Return because we can't add multiple sets and if we would combine
@@ -1469,8 +1481,8 @@ impl Data {
                             lrwn::UpdateUplinkListReqPayload {
                                 uplink_list_idx: free_slots[0] as u8,
                                 uplink_limit: lrwn::UplinkLimitPL {
-                                    bucket_size: 0,
-                                    reload_rate: 0,
+                                    bucket_size: device.relay_ed_uplink_limit_bucket_size as u8,
+                                    reload_rate: device.relay_ed_uplink_limit_reload_rate as u8,
                                 },
                                 dev_addr: dev_addr,
                                 w_fcnt: 0,
@@ -1492,6 +1504,10 @@ impl Data {
                             dev_eui: device.dev_eui.to_vec(),
                             dev_addr: dev_addr.to_vec(),
                             root_wor_s_key: root_wor_s_key.to_vec(),
+                            uplink_limit_bucket_size: device.relay_ed_uplink_limit_bucket_size
+                                as u32,
+                            uplink_limit_reload_rate: device.relay_ed_uplink_limit_reload_rate
+                                as u32,
                             provisioned: false,
                         },
                     );
@@ -2485,6 +2501,8 @@ mod test {
                             dev_addr: vec![1, 2, 3, 4],
                             root_wor_s_key: vec![],
                             provisioned: true,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
                         }],
                         ..Default::default()
                     }),
@@ -2504,6 +2522,8 @@ mod test {
                             dev_addr: vec![1, 2, 3, 4],
                             root_wor_s_key: vec![],
                             provisioned: true,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
                         }],
                         ..Default::default()
                     }),
@@ -2523,8 +2543,8 @@ mod test {
                     lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
                         uplink_list_idx: 0,
                         uplink_limit: lrwn::UplinkLimitPL {
-                            reload_rate: 0,
-                            bucket_size: 0,
+                            reload_rate: 1,
+                            bucket_size: 2,
                         },
                         dev_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
                         w_fcnt: 0,
@@ -2546,6 +2566,8 @@ mod test {
                                 0x2b, 0xf5, 0x8e, 0x0f, 0xd3,
                             ],
                             provisioned: false,
+                            uplink_limit_reload_rate: 1,
+                            uplink_limit_bucket_size: 2,
                         }],
                         ..Default::default()
                     }),
@@ -2563,6 +2585,8 @@ mod test {
                             dev_addr: vec![1, 2, 3, 4],
                             root_wor_s_key: vec![],
                             provisioned: true,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
                         }],
                         ..Default::default()
                     }),
@@ -2576,8 +2600,8 @@ mod test {
                     lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
                         uplink_list_idx: 1,
                         uplink_limit: lrwn::UplinkLimitPL {
-                            reload_rate: 0,
-                            bucket_size: 0,
+                            reload_rate: 1,
+                            bucket_size: 2,
                         },
                         dev_addr: DevAddr::from_be_bytes([2, 2, 3, 4]),
                         w_fcnt: 0,
@@ -2599,6 +2623,8 @@ mod test {
                                 0x2b, 0xf5, 0x8e, 0x0f, 0xd3,
                             ],
                             provisioned: false,
+                            uplink_limit_reload_rate: 1,
+                            uplink_limit_bucket_size: 2,
                         }],
                         ..Default::default()
                     }),
@@ -2616,6 +2642,8 @@ mod test {
                             dev_addr: vec![1, 2, 3, 4],
                             root_wor_s_key: vec![],
                             provisioned: true,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
                         }],
                         ..Default::default()
                     }),
@@ -2635,8 +2663,8 @@ mod test {
                     lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
                         uplink_list_idx: 0,
                         uplink_limit: lrwn::UplinkLimitPL {
-                            reload_rate: 0,
-                            bucket_size: 0,
+                            reload_rate: 1,
+                            bucket_size: 2,
                         },
                         dev_addr: DevAddr::from_be_bytes([2, 2, 3, 4]),
                         w_fcnt: 0,
@@ -2656,6 +2684,8 @@ mod test {
                                 dev_addr: vec![1, 2, 3, 4],
                                 root_wor_s_key: vec![],
                                 provisioned: true,
+                                uplink_limit_reload_rate: 1,
+                                uplink_limit_bucket_size: 2,
                             },
                             internal::RelayDevice {
                                 index: 0,
@@ -2667,6 +2697,8 @@ mod test {
                                     0xbf, 0x2b, 0xf5, 0x8e, 0x0f, 0xd3,
                                 ],
                                 provisioned: false,
+                                uplink_limit_reload_rate: 1,
+                                uplink_limit_bucket_size: 2,
                             },
                         ],
                         ..Default::default()
@@ -2697,6 +2729,9 @@ mod test {
         let dp_ed = device_profile::create(device_profile::DeviceProfile {
             name: "dp-ed".into(),
             tenant_id: t.id,
+            is_relay_ed: true,
+            relay_ed_uplink_limit_bucket_size: 2,
+            relay_ed_uplink_limit_reload_rate: 1,
             ..Default::default()
         })
         .await

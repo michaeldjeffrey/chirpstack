@@ -298,6 +298,23 @@ message DeviceProfile {
     // 0 = Always send a LoRaWAN uplink
     // 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK
     uint32 relay_ed_back_off = 41;
+
+    // Relay end-device uplink limit bucket size.
+    //
+    // This field indicates the multiplier to determine the bucket size
+    // according to the following formula:
+    // BucketSize TOKEN = UplinkLimitReloadRate x UplinkLimitBucketSize
+    //
+    // Valid values (0 - 3):
+    //   0 = 1
+    //   1 = 2
+    //   2 = 4
+    //   3 = 12
+    uint32 relay_ed_uplink_limit_bucket_size = 42;
+
+    // Relay end-device uplink limit reload rate.
+    // Valid values: 0 - 63 (0..62 or 63 for no limitation).
+    uint32 relay_ed_uplink_limit_reload_rate = 43;
 }
 
 message Measurement {

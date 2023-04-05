@@ -39,6 +39,8 @@ pub struct DeviceListItem {
     pub dev_addr: Option<DevAddr>,
     pub created_at: DateTime<Utc>,
     pub name: String,
+    pub relay_ed_uplink_limit_bucket_size: i16,
+    pub relay_ed_uplink_limit_reload_rate: i16,
 }
 
 pub async fn get_relay_count(filters: &RelayFilters) -> Result<i64, Error> {
@@ -122,12 +124,18 @@ pub async fn list_devices(
             let mut c = get_db_conn()?;
             let mut q = relay_device::dsl::relay_device
                 .inner_join(device::table.on(relay_device::dsl::dev_eui.eq(device::dsl::dev_eui)))
+                .inner_join(
+                    device_profile::table
+                        .on(device::dsl::device_profile_id.eq(device_profile::dsl::id)),
+                )
                 .select((
                     relay_device::dev_eui,
                     device::join_eui,
                     device::dev_addr,
                     relay_device::created_at,
                     device::name,
+                    device_profile::relay_ed_uplink_limit_bucket_size,
+                    device_profile::relay_ed_uplink_limit_reload_rate,
                 ))
                 .into_boxed();
 

@@ -77,6 +77,8 @@ pub mod test {
                             join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                             root_wor_s_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8],
                             provisioned: false,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
                         }],
                         ..Default::default()
                     }),
@@ -86,8 +88,8 @@ pub mod test {
                     lrwn::MACCommand::UpdateUplinkListReq(lrwn::UpdateUplinkListReqPayload {
                         uplink_list_idx: 1,
                         uplink_limit: lrwn::UplinkLimitPL {
-                            reload_rate: 0,
-                            bucket_size: 0,
+                            reload_rate: 1,
+                            bucket_size: 2,
                         },
                         w_fcnt: 0,
                         dev_addr: lrwn::DevAddr::from_be_bytes([1, 2, 3, 4]),
@@ -108,6 +110,8 @@ pub mod test {
                             join_eui: vec![1, 2, 3, 4, 5, 6, 7, 8],
                             root_wor_s_key: vec![1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8],
                             provisioned: true,
+                            uplink_limit_bucket_size: 2,
+                            uplink_limit_reload_rate: 1,
                         }],
                         ..Default::default()
                     }),
