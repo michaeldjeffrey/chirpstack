@@ -62,6 +62,8 @@ pub struct DeviceProfile {
     pub relay_ed_activation_mode: lrwn::RelayModeActivation,
     pub relay_ed_smart_enable_level: i16,
     pub relay_ed_back_off: i16,
+    pub relay_ed_uplink_limit_bucket_size: i16,
+    pub relay_ed_uplink_limit_reload_rate: i16,
 }
 
 impl DeviceProfile {
@@ -121,6 +123,8 @@ impl Default for DeviceProfile {
             relay_ed_activation_mode: lrwn::RelayModeActivation::DisableRelayMode,
             relay_ed_smart_enable_level: 0,
             relay_ed_back_off: 0,
+            relay_ed_uplink_limit_bucket_size: 0,
+            relay_ed_uplink_limit_reload_rate: 0,
         }
     }
 }
@@ -247,6 +251,10 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                     device_profile::relay_ed_activation_mode.eq(&dp.relay_ed_activation_mode),
                     device_profile::relay_ed_smart_enable_level.eq(&dp.relay_ed_smart_enable_level),
                     device_profile::relay_ed_back_off.eq(&dp.relay_ed_back_off),
+                    device_profile::relay_ed_uplink_limit_bucket_size
+                        .eq(&dp.relay_ed_uplink_limit_bucket_size),
+                    device_profile::relay_ed_uplink_limit_reload_rate
+                        .eq(&dp.relay_ed_uplink_limit_reload_rate),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))

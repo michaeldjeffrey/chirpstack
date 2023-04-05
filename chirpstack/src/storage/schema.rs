@@ -117,6 +117,8 @@ diesel::table! {
         relay_ed_activation_mode -> Int2,
         relay_ed_smart_enable_level -> Int2,
         relay_ed_back_off -> Int2,
+        relay_ed_uplink_limit_bucket_size -> Int2,
+        relay_ed_uplink_limit_reload_rate -> Int2,
     }
 }
 

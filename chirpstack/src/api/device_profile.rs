@@ -100,6 +100,8 @@ impl DeviceProfileService for DeviceProfile {
             relay_ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
             relay_ed_smart_enable_level: req_dp.relay_ed_smart_enable_level as i16,
             relay_ed_back_off: req_dp.relay_ed_back_off as i16,
+            relay_ed_uplink_limit_bucket_size: req_dp.relay_ed_uplink_limit_bucket_size as i16,
+            relay_ed_uplink_limit_reload_rate: req_dp.relay_ed_uplink_limit_reload_rate as i16,
             ..Default::default()
         };
 
@@ -188,6 +190,8 @@ impl DeviceProfileService for DeviceProfile {
                 relay_ed_activation_mode: dp.relay_ed_activation_mode.to_proto().into(),
                 relay_ed_smart_enable_level: dp.relay_ed_smart_enable_level as u32,
                 relay_ed_back_off: dp.relay_ed_back_off as u32,
+                relay_ed_uplink_limit_bucket_size: dp.relay_ed_uplink_limit_bucket_size as u32,
+                relay_ed_uplink_limit_reload_rate: dp.relay_ed_uplink_limit_reload_rate as u32,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -274,6 +278,8 @@ impl DeviceProfileService for DeviceProfile {
             relay_ed_activation_mode: req_dp.relay_ed_activation_mode().from_proto(),
             relay_ed_smart_enable_level: req_dp.relay_ed_smart_enable_level as i16,
             relay_ed_back_off: req_dp.relay_ed_back_off as i16,
+            relay_ed_uplink_limit_bucket_size: req_dp.relay_ed_uplink_limit_bucket_size as i16,
+            relay_ed_uplink_limit_reload_rate: req_dp.relay_ed_uplink_limit_reload_rate as i16,
             ..Default::default()
         })
         .await

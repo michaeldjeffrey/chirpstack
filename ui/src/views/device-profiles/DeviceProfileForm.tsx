@@ -331,6 +331,8 @@ class DeviceProfileForm extends Component<IProps, IState> {
     dp.setRelayEdActivationMode(v.relayEdActivationMode);
     dp.setRelayEdSmartEnableLevel(v.relayEdSmartEnableLevel);
     dp.setRelayEdBackOff(v.relayEdBackOff);
+    dp.setRelayEdUplinkLimitReloadRate(v.relayEdUplinkLimitReloadRate);
+    dp.setRelayEdUplinkLimitBucketSize(v.relayEdUplinkLimitBucketSize);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -968,7 +970,34 @@ class DeviceProfileForm extends Component<IProps, IState> {
                     name="relayEdBackOff"
                     tooltip="This indicates how the end-device SHALL behave when it does not receive a WOR ACK frame. 0 = Always send a LoRaWAN uplink. 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK."
                   >
-                    <InputNumber min={0} max={63} />
+                    <InputNumber min={0} max={63} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+            {this.state.isRelayEd && (
+              <Row gutter={24}>
+                <Col span={12}>
+                  <Form.Item
+                    label="Uplink limit reload rate"
+                    name="relayEdUplinkLimitReloadRate"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x</Select.Option>
+                      <Select.Option value={1}>2 x</Select.Option>
+                      <Select.Option value={2}>4 x</Select.Option>
+                      <Select.Option value={3}>12 x</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    label="Uplink limit bucket size"
+                    name="relayEdUplinkLimitBucketSize"
+                    tooltip="0..62 = X tokens every hour, 63 = no limitation (forward all valid uplinks)"
+                  >
+                    <InputNumber min={0} max={63} disabled={this.props.disabled} />
                   </Form.Item>
                 </Col>
               </Row>

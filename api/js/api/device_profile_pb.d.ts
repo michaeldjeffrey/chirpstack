@@ -129,6 +129,12 @@ export class DeviceProfile extends jspb.Message {
   getRelayEdBackOff(): number;
   setRelayEdBackOff(value: number): void;
 
+  getRelayEdUplinkLimitBucketSize(): number;
+  setRelayEdUplinkLimitBucketSize(value: number): void;
+
+  getRelayEdUplinkLimitReloadRate(): number;
+  setRelayEdUplinkLimitReloadRate(value: number): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
   static toObject(includeInstance: boolean, msg: DeviceProfile): DeviceProfile.AsObject;
@@ -182,6 +188,8 @@ export namespace DeviceProfile {
     relayEdActivationMode: RelayModeActivationMap[keyof RelayModeActivationMap],
     relayEdSmartEnableLevel: number,
     relayEdBackOff: number,
+    relayEdUplinkLimitBucketSize: number,
+    relayEdUplinkLimitReloadRate: number,
   }
 }
 
