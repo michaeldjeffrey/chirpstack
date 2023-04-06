@@ -389,11 +389,11 @@ proto.api.DeviceProfile.toObject = function(includeInstance, msg) {
     relayJoinReqLimitReloadRate: jspb.Message.getFieldWithDefault(msg, 44, 0),
     relayNotifyLimitReloadRate: jspb.Message.getFieldWithDefault(msg, 45, 0),
     relayGlobalUplinkLimitReloadRate: jspb.Message.getFieldWithDefault(msg, 46, 0),
-    relayOveralLimitReloadRate: jspb.Message.getFieldWithDefault(msg, 47, 0),
+    relayOverallLimitReloadRate: jspb.Message.getFieldWithDefault(msg, 47, 0),
     relayJoinReqLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 48, 0),
     relayNotifyLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 49, 0),
     relayGlobalUplinkLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 50, 0),
-    relayOveralLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 51, 0)
+    relayOverallLimitBucketSize: jspb.Message.getFieldWithDefault(msg, 51, 0)
   };
 
   if (includeInstance) {
@@ -620,7 +620,7 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 47:
       var value = /** @type {number} */ (reader.readUint32());
-      msg.setRelayOveralLimitReloadRate(value);
+      msg.setRelayOverallLimitReloadRate(value);
       break;
     case 48:
       var value = /** @type {number} */ (reader.readUint32());
@@ -636,7 +636,7 @@ proto.api.DeviceProfile.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 51:
       var value = /** @type {number} */ (reader.readUint32());
-      msg.setRelayOveralLimitBucketSize(value);
+      msg.setRelayOverallLimitBucketSize(value);
       break;
     default:
       reader.skipField();
@@ -983,7 +983,7 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getRelayOveralLimitReloadRate();
+  f = message.getRelayOverallLimitReloadRate();
   if (f !== 0) {
     writer.writeUint32(
       47,
@@ -1011,7 +1011,7 @@ proto.api.DeviceProfile.serializeBinaryToWriter = function(message, writer) {
       f
     );
   }
-  f = message.getRelayOveralLimitBucketSize();
+  f = message.getRelayOverallLimitBucketSize();
   if (f !== 0) {
     writer.writeUint32(
       51,
@@ -1858,10 +1858,10 @@ proto.api.DeviceProfile.prototype.setRelayGlobalUplinkLimitReloadRate = function
 
 
 /**
- * optional uint32 relay_overal_limit_reload_rate = 47;
+ * optional uint32 relay_overall_limit_reload_rate = 47;
  * @return {number}
  */
-proto.api.DeviceProfile.prototype.getRelayOveralLimitReloadRate = function() {
+proto.api.DeviceProfile.prototype.getRelayOverallLimitReloadRate = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 47, 0));
 };
 
@@ -1870,7 +1870,7 @@ proto.api.DeviceProfile.prototype.getRelayOveralLimitReloadRate = function() {
  * @param {number} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setRelayOveralLimitReloadRate = function(value) {
+proto.api.DeviceProfile.prototype.setRelayOverallLimitReloadRate = function(value) {
   return jspb.Message.setProto3IntField(this, 47, value);
 };
 
@@ -1930,10 +1930,10 @@ proto.api.DeviceProfile.prototype.setRelayGlobalUplinkLimitBucketSize = function
 
 
 /**
- * optional uint32 relay_overal_limit_bucket_size = 51;
+ * optional uint32 relay_overall_limit_bucket_size = 51;
  * @return {number}
  */
-proto.api.DeviceProfile.prototype.getRelayOveralLimitBucketSize = function() {
+proto.api.DeviceProfile.prototype.getRelayOverallLimitBucketSize = function() {
   return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 51, 0));
 };
 
@@ -1942,7 +1942,7 @@ proto.api.DeviceProfile.prototype.getRelayOveralLimitBucketSize = function() {
  * @param {number} value
  * @return {!proto.api.DeviceProfile} returns this
  */
-proto.api.DeviceProfile.prototype.setRelayOveralLimitBucketSize = function(value) {
+proto.api.DeviceProfile.prototype.setRelayOverallLimitBucketSize = function(value) {
   return jspb.Message.setProto3IntField(this, 51, value);
 };
 

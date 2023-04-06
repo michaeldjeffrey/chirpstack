@@ -122,11 +122,11 @@ diesel::table! {
         relay_join_req_limit_reload_rate -> Int2,
         relay_notify_limit_reload_rate -> Int2,
         relay_global_uplink_limit_reload_rate -> Int2,
-        relay_overal_limit_reload_rate -> Int2,
+        relay_overall_limit_reload_rate -> Int2,
         relay_join_req_limit_bucket_size -> Int2,
         relay_notify_limit_bucket_size -> Int2,
         relay_global_uplink_limit_bucket_size -> Int2,
-        relay_overal_limit_bucket_size -> Int2,
+        relay_overall_limit_bucket_size -> Int2,
     }
 }
 

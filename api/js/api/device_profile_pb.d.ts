@@ -144,8 +144,8 @@ export class DeviceProfile extends jspb.Message {
   getRelayGlobalUplinkLimitReloadRate(): number;
   setRelayGlobalUplinkLimitReloadRate(value: number): void;
 
-  getRelayOveralLimitReloadRate(): number;
-  setRelayOveralLimitReloadRate(value: number): void;
+  getRelayOverallLimitReloadRate(): number;
+  setRelayOverallLimitReloadRate(value: number): void;
 
   getRelayJoinReqLimitBucketSize(): number;
   setRelayJoinReqLimitBucketSize(value: number): void;
@@ -156,8 +156,8 @@ export class DeviceProfile extends jspb.Message {
   getRelayGlobalUplinkLimitBucketSize(): number;
   setRelayGlobalUplinkLimitBucketSize(value: number): void;
 
-  getRelayOveralLimitBucketSize(): number;
-  setRelayOveralLimitBucketSize(value: number): void;
+  getRelayOverallLimitBucketSize(): number;
+  setRelayOverallLimitBucketSize(value: number): void;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): DeviceProfile.AsObject;
@@ -217,11 +217,11 @@ export namespace DeviceProfile {
     relayJoinReqLimitReloadRate: number,
     relayNotifyLimitReloadRate: number,
     relayGlobalUplinkLimitReloadRate: number,
-    relayOveralLimitReloadRate: number,
+    relayOverallLimitReloadRate: number,
     relayJoinReqLimitBucketSize: number,
     relayNotifyLimitBucketSize: number,
     relayGlobalUplinkLimitBucketSize: number,
-    relayOveralLimitBucketSize: number,
+    relayOverallLimitBucketSize: number,
   }
 }
 

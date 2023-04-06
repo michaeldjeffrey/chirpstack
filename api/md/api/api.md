@@ -2439,7 +2439,7 @@ Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
 | relay_global_uplink_limit_reload_rate | [uint32](#uint32) |  | Relay global uplink limit reload rate.
 
 Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
-| relay_overal_limit_reload_rate | [uint32](#uint32) |  | Relay overal limit reload rate.
+| relay_overall_limit_reload_rate | [uint32](#uint32) |  | Relay overall limit reload rate.
 
 Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
 | relay_join_req_limit_bucket_size | [uint32](#uint32) |  | Relay join-request limit bucket size.
@@ -2457,7 +2457,7 @@ Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
 This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
 
 Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
-| relay_overal_limit_bucket_size | [uint32](#uint32) |  | Relay overal limit bucket size.
+| relay_overall_limit_bucket_size | [uint32](#uint32) |  | Relay overall limit bucket size.
 
 This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
 

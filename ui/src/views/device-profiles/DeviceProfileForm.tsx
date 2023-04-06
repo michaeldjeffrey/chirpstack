@@ -333,6 +333,14 @@ class DeviceProfileForm extends Component<IProps, IState> {
     dp.setRelayEdBackOff(v.relayEdBackOff);
     dp.setRelayEdUplinkLimitReloadRate(v.relayEdUplinkLimitReloadRate);
     dp.setRelayEdUplinkLimitBucketSize(v.relayEdUplinkLimitBucketSize);
+    dp.setRelayJoinReqLimitReloadRate(v.relayJoinReqLimitReloadRate);
+    dp.setRelayNotifyLimitReloadRate(v.relayNotifyLimitReloadRate);
+    dp.setRelayGlobalUplinkLimitReloadRate(v.relayGlobalUplinkLimitReloadRate);
+    dp.setRelayOverallLimitReloadRate(v.relayOverallLimitReloadRate);
+    dp.setRelayJoinReqLimitBucketSize(v.relayJoinReqLimitBucketSize);
+    dp.setRelayNotifyLimitBucketSize(v.relayNotifyLimitBucketSize);
+    dp.setRelayGlobalUplinkLimitBucketSize(v.relayGlobalUplinkLimitBucketSize);
+    dp.setRelayOverallLimitBucketSize(v.relayOverallLimitBucketSize);
 
     // tags
     for (const elm of v.tagsMap) {
@@ -979,7 +987,7 @@ class DeviceProfileForm extends Component<IProps, IState> {
               <Row gutter={24}>
                 <Col span={12}>
                   <Form.Item
-                    label="Uplink limit bucket size"
+                    label="End-device uplink limit bucket size"
                     name="relayEdUplinkLimitBucketSize"
                     tooltip="Indicates the multiplier to determine the bucket size"
                   >
@@ -993,11 +1001,111 @@ class DeviceProfileForm extends Component<IProps, IState> {
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    label="Uplink limit reload rate"
+                    label="End-device uplink limit reload rate"
                     name="relayEdUplinkLimitReloadRate"
                     tooltip="0..62 = X tokens every hour, 63 = no limitation (forward all valid uplinks)"
                   >
                     <InputNumber min={0} max={63} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+            {this.state.isRelay && (
+              <Row gutter={24}>
+                <Col span={6}>
+                  <Form.Item
+                    label="Join-request limit bucket size"
+                    name="relayJoinReqLimitBucketSize"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x reload rate</Select.Option>
+                      <Select.Option value={1}>2 x reload rate</Select.Option>
+                      <Select.Option value={2}>4 x reload rate</Select.Option>
+                      <Select.Option value={3}>12 x reload rate</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Join-request limit reload rate"
+                    name="relayJoinReqLimitReloadRate"
+                    tooltip="0..126 = X tokens every hour, 127 = no limitation"
+                  >
+                    <InputNumber min={0} max={127} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Notify limit bucket size"
+                    name="relayNotifyLimitBucketSize"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x reload rate</Select.Option>
+                      <Select.Option value={1}>2 x reload rate</Select.Option>
+                      <Select.Option value={2}>4 x reload rate</Select.Option>
+                      <Select.Option value={3}>12 x reload rate</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Notify limit reload rate"
+                    name="relayNotifyLimitReloadRate"
+                    tooltip="0..126 = X tokens every hour, 127 = no limitation"
+                  >
+                    <InputNumber min={0} max={127} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            )}
+            {this.state.isRelay && (
+              <Row gutter={24}>
+                <Col span={6}>
+                  <Form.Item
+                    label="Global uplink limit bucket size"
+                    name="relayGlobalUplinkLimitBucketSize"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x reload rate</Select.Option>
+                      <Select.Option value={1}>2 x reload rate</Select.Option>
+                      <Select.Option value={2}>4 x reload rate</Select.Option>
+                      <Select.Option value={3}>12 x reload rate</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Global uplink limit reload rate"
+                    name="relayGlobalUplinkLimitReloadRate"
+                    tooltip="0..126 = X tokens every hour, 127 = no limitation"
+                  >
+                    <InputNumber min={0} max={127} disabled={this.props.disabled} />
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Overall limit bucket size"
+                    name="relayOverallLimitBucketSize"
+                    tooltip="Indicates the multiplier to determine the bucket size"
+                  >
+                    <Select disabled={this.props.disabled}>
+                      <Select.Option value={0}>1 x reload rate</Select.Option>
+                      <Select.Option value={1}>2 x reload rate</Select.Option>
+                      <Select.Option value={2}>4 x reload rate</Select.Option>
+                      <Select.Option value={3}>12 x reload rate</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={6}>
+                  <Form.Item
+                    label="Overall limit reload rate"
+                    name="relayOverallLimitReloadRate"
+                    tooltip="0..126 = X tokens every hour, 127 = no limitation"
+                  >
+                    <InputNumber min={0} max={127} disabled={this.props.disabled} />
                   </Form.Item>
                 </Col>
               </Row>

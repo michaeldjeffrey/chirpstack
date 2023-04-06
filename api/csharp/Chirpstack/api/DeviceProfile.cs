@@ -27,7 +27,7 @@ namespace Chirpstack.Api {
             "ChhhcGkvZGV2aWNlX3Byb2ZpbGUucHJvdG8SA2FwaRocZ29vZ2xlL2FwaS9h",
             "bm5vdGF0aW9ucy5wcm90bxofZ29vZ2xlL3Byb3RvYnVmL3RpbWVzdGFtcC5w",
             "cm90bxobZ29vZ2xlL3Byb3RvYnVmL2VtcHR5LnByb3RvGhNjb21tb24vY29t",
-            "bW9uLnByb3RvIsYOCg1EZXZpY2VQcm9maWxlEgoKAmlkGAEgASgJEhEKCXRl",
+            "bW9uLnByb3RvIsgOCg1EZXZpY2VQcm9maWxlEgoKAmlkGAEgASgJEhEKCXRl",
             "bmFudF9pZBgCIAEoCRIMCgRuYW1lGAMgASgJEhMKC2Rlc2NyaXB0aW9uGBog",
             "ASgJEh4KBnJlZ2lvbhgEIAEoDjIOLmNvbW1vbi5SZWdpb24SJwoLbWFjX3Zl",
             "cnNpb24YBSABKA4yEi5jb21tb24uTWFjVmVyc2lvbhI2ChNyZWdfcGFyYW1z",
@@ -61,73 +61,73 @@ namespace Chirpstack.Api {
             "a19saW1pdF9yZWxvYWRfcmF0ZRgrIAEoDRIoCiByZWxheV9qb2luX3JlcV9s",
             "aW1pdF9yZWxvYWRfcmF0ZRgsIAEoDRImCh5yZWxheV9ub3RpZnlfbGltaXRf",
             "cmVsb2FkX3JhdGUYLSABKA0SLQolcmVsYXlfZ2xvYmFsX3VwbGlua19saW1p",
-            "dF9yZWxvYWRfcmF0ZRguIAEoDRImCh5yZWxheV9vdmVyYWxfbGltaXRfcmVs",
-            "b2FkX3JhdGUYLyABKA0SKAogcmVsYXlfam9pbl9yZXFfbGltaXRfYnVja2V0",
-            "X3NpemUYMCABKA0SJgoecmVsYXlfbm90aWZ5X2xpbWl0X2J1Y2tldF9zaXpl",
-            "GDEgASgNEi0KJXJlbGF5X2dsb2JhbF91cGxpbmtfbGltaXRfYnVja2V0X3Np",
-            "emUYMiABKA0SJgoecmVsYXlfb3ZlcmFsX2xpbWl0X2J1Y2tldF9zaXplGDMg",
-            "ASgNGisKCVRhZ3NFbnRyeRILCgNrZXkYASABKAkSDQoFdmFsdWUYAiABKAk6",
-            "AjgBGkUKEU1lYXN1cmVtZW50c0VudHJ5EgsKA2tleRgBIAEoCRIfCgV2YWx1",
-            "ZRgCIAEoCzIQLmFwaS5NZWFzdXJlbWVudDoCOAEiPwoLTWVhc3VyZW1lbnQS",
-            "DAoEbmFtZRgCIAEoCRIiCgRraW5kGAMgASgOMhQuYXBpLk1lYXN1cmVtZW50",
-            "S2luZCLdAgoVRGV2aWNlUHJvZmlsZUxpc3RJdGVtEgoKAmlkGAEgASgJEi4K",
-            "CmNyZWF0ZWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1w",
-            "Ei4KCnVwZGF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0",
-            "YW1wEgwKBG5hbWUYBCABKAkSHgoGcmVnaW9uGAUgASgOMg4uY29tbW9uLlJl",
-            "Z2lvbhInCgttYWNfdmVyc2lvbhgGIAEoDjISLmNvbW1vbi5NYWNWZXJzaW9u",
-            "EjYKE3JlZ19wYXJhbXNfcmV2aXNpb24YByABKA4yGS5jb21tb24uUmVnUGFy",
-            "YW1zUmV2aXNpb24SFQoNc3VwcG9ydHNfb3RhYRgIIAEoCBIYChBzdXBwb3J0",
-            "c19jbGFzc19iGAkgASgIEhgKEHN1cHBvcnRzX2NsYXNzX2MYCiABKAgiSAoa",
-            "Q3JlYXRlRGV2aWNlUHJvZmlsZVJlcXVlc3QSKgoOZGV2aWNlX3Byb2ZpbGUY",
-            "ASABKAsyEi5hcGkuRGV2aWNlUHJvZmlsZSIpChtDcmVhdGVEZXZpY2VQcm9m",
-            "aWxlUmVzcG9uc2USCgoCaWQYASABKAkiJQoXR2V0RGV2aWNlUHJvZmlsZVJl",
-            "cXVlc3QSCgoCaWQYASABKAkipgEKGEdldERldmljZVByb2ZpbGVSZXNwb25z",
-            "ZRIqCg5kZXZpY2VfcHJvZmlsZRgBIAEoCzISLmFwaS5EZXZpY2VQcm9maWxl",
-            "Ei4KCmNyZWF0ZWRfYXQYAiABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0",
-            "YW1wEi4KCnVwZGF0ZWRfYXQYAyABKAsyGi5nb29nbGUucHJvdG9idWYuVGlt",
-            "ZXN0YW1wIkgKGlVwZGF0ZURldmljZVByb2ZpbGVSZXF1ZXN0EioKDmRldmlj",
-            "ZV9wcm9maWxlGAEgASgLMhIuYXBpLkRldmljZVByb2ZpbGUiKAoaRGVsZXRl",
-            "RGV2aWNlUHJvZmlsZVJlcXVlc3QSCgoCaWQYASABKAkiXQoZTGlzdERldmlj",
-            "ZVByb2ZpbGVzUmVxdWVzdBINCgVsaW1pdBgBIAEoDRIOCgZvZmZzZXQYAiAB",
-            "KA0SDgoGc2VhcmNoGAMgASgJEhEKCXRlbmFudF9pZBgEIAEoCSJdChpMaXN0",
-            "RGV2aWNlUHJvZmlsZXNSZXNwb25zZRITCgt0b3RhbF9jb3VudBgBIAEoDRIq",
-            "CgZyZXN1bHQYAiADKAsyGi5hcGkuRGV2aWNlUHJvZmlsZUxpc3RJdGVtImgK",
-            "Jkxpc3REZXZpY2VQcm9maWxlQWRyQWxnb3JpdGhtc1Jlc3BvbnNlEhMKC3Rv",
-            "dGFsX2NvdW50GAEgASgNEikKBnJlc3VsdBgCIAMoCzIZLmFwaS5BZHJBbGdv",
-            "cml0aG1MaXN0SXRlbSIwChRBZHJBbGdvcml0aG1MaXN0SXRlbRIKCgJpZBgB",
-            "IAEoCRIMCgRuYW1lGAIgASgJKjEKDENvZGVjUnVudGltZRIICgROT05FEAAS",
-            "DwoLQ0FZRU5ORV9MUFAQARIGCgJKUxACKlAKD01lYXN1cmVtZW50S2luZBIL",
-            "CgdVTktOT1dOEAASCwoHQ09VTlRFUhABEgwKCEFCU09MVVRFEAISCQoFR0FV",
-            "R0UQAxIKCgZTVFJJTkcQBCpVCg5DYWRQZXJpb2RpY2l0eRIJCgVTRUNfMRAA",
-            "EgoKBk1TXzUwMBABEgoKBk1TXzI1MBACEgoKBk1TXzEwMBADEgkKBU1TXzUw",
-            "EAQSCQoFTVNfMjAQBSphChFTZWNvbmRDaEFja09mZnNldBIJCgVLSFpfMBAA",
-            "EgsKB0tIWl8yMDAQARILCgdLSFpfNDAwEAISCwoHS0haXzgwMBADEgwKCEtI",
-            "Wl8xNjAwEAQSDAoIS0haXzMyMDAQBSpsChNSZWxheU1vZGVBY3RpdmF0aW9u",
-            "EhYKEkRJU0FCTEVfUkVMQVlfTU9ERRAAEhUKEUVOQUJMRV9SRUxBWV9NT0RF",
-            "EAESCwoHRFlOQU1JQxACEhkKFUVORF9ERVZJQ0VfQ09OVFJPTExFRBADMrgF",
-            "ChREZXZpY2VQcm9maWxlU2VydmljZRJsCgZDcmVhdGUSHy5hcGkuQ3JlYXRl",
-            "RGV2aWNlUHJvZmlsZVJlcXVlc3QaIC5hcGkuQ3JlYXRlRGV2aWNlUHJvZmls",
-            "ZVJlc3BvbnNlIh+C0+STAhkiFC9hcGkvZGV2aWNlLXByb2ZpbGVzOgEqEmUK",
-            "A0dldBIcLmFwaS5HZXREZXZpY2VQcm9maWxlUmVxdWVzdBodLmFwaS5HZXRE",
-            "ZXZpY2VQcm9maWxlUmVzcG9uc2UiIYLT5JMCGxIZL2FwaS9kZXZpY2UtcHJv",
-            "ZmlsZXMve2lkfRJ2CgZVcGRhdGUSHy5hcGkuVXBkYXRlRGV2aWNlUHJvZmls",
-            "ZVJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkiM4LT5JMCLRooL2Fw",
-            "aS9kZXZpY2UtcHJvZmlsZXMve2RldmljZV9wcm9maWxlLmlkfToBKhJkCgZE",
-            "ZWxldGUSHy5hcGkuRGVsZXRlRGV2aWNlUHJvZmlsZVJlcXVlc3QaFi5nb29n",
-            "bGUucHJvdG9idWYuRW1wdHkiIYLT5JMCGyoZL2FwaS9kZXZpY2UtcHJvZmls",
-            "ZXMve2lkfRJlCgRMaXN0Eh4uYXBpLkxpc3REZXZpY2VQcm9maWxlc1JlcXVl",
-            "c3QaHy5hcGkuTGlzdERldmljZVByb2ZpbGVzUmVzcG9uc2UiHILT5JMCFhIU",
-            "L2FwaS9kZXZpY2UtcHJvZmlsZXMShQEKEUxpc3RBZHJBbGdvcml0aG1zEhYu",
-            "Z29vZ2xlLnByb3RvYnVmLkVtcHR5GisuYXBpLkxpc3REZXZpY2VQcm9maWxl",
-            "QWRyQWxnb3JpdGhtc1Jlc3BvbnNlIiuC0+STAiUSIy9hcGkvZGV2aWNlLXBy",
-            "b2ZpbGVzL2Fkci1hbGdvcml0aG1zQmoKEWlvLmNoaXJwc3RhY2suYXBpQhJE",
-            "ZXZpY2VQcm9maWxlUHJvdG9QAVouZ2l0aHViLmNvbS9jaGlycHN0YWNrL2No",
-            "aXJwc3RhY2svYXBpL2dvL3Y0L2FwaaoCDkNoaXJwc3RhY2suQXBpYgZwcm90",
-            "bzM="));
+            "dF9yZWxvYWRfcmF0ZRguIAEoDRInCh9yZWxheV9vdmVyYWxsX2xpbWl0X3Jl",
+            "bG9hZF9yYXRlGC8gASgNEigKIHJlbGF5X2pvaW5fcmVxX2xpbWl0X2J1Y2tl",
+            "dF9zaXplGDAgASgNEiYKHnJlbGF5X25vdGlmeV9saW1pdF9idWNrZXRfc2l6",
+            "ZRgxIAEoDRItCiVyZWxheV9nbG9iYWxfdXBsaW5rX2xpbWl0X2J1Y2tldF9z",
+            "aXplGDIgASgNEicKH3JlbGF5X292ZXJhbGxfbGltaXRfYnVja2V0X3NpemUY",
+            "MyABKA0aKwoJVGFnc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEo",
+            "CToCOAEaRQoRTWVhc3VyZW1lbnRzRW50cnkSCwoDa2V5GAEgASgJEh8KBXZh",
+            "bHVlGAIgASgLMhAuYXBpLk1lYXN1cmVtZW50OgI4ASI/CgtNZWFzdXJlbWVu",
+            "dBIMCgRuYW1lGAIgASgJEiIKBGtpbmQYAyABKA4yFC5hcGkuTWVhc3VyZW1l",
+            "bnRLaW5kIt0CChVEZXZpY2VQcm9maWxlTGlzdEl0ZW0SCgoCaWQYASABKAkS",
+            "LgoKY3JlYXRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1lc3Rh",
+            "bXASLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l",
+            "c3RhbXASDAoEbmFtZRgEIAEoCRIeCgZyZWdpb24YBSABKA4yDi5jb21tb24u",
+            "UmVnaW9uEicKC21hY192ZXJzaW9uGAYgASgOMhIuY29tbW9uLk1hY1ZlcnNp",
+            "b24SNgoTcmVnX3BhcmFtc19yZXZpc2lvbhgHIAEoDjIZLmNvbW1vbi5SZWdQ",
+            "YXJhbXNSZXZpc2lvbhIVCg1zdXBwb3J0c19vdGFhGAggASgIEhgKEHN1cHBv",
+            "cnRzX2NsYXNzX2IYCSABKAgSGAoQc3VwcG9ydHNfY2xhc3NfYxgKIAEoCCJI",
+            "ChpDcmVhdGVEZXZpY2VQcm9maWxlUmVxdWVzdBIqCg5kZXZpY2VfcHJvZmls",
+            "ZRgBIAEoCzISLmFwaS5EZXZpY2VQcm9maWxlIikKG0NyZWF0ZURldmljZVBy",
+            "b2ZpbGVSZXNwb25zZRIKCgJpZBgBIAEoCSIlChdHZXREZXZpY2VQcm9maWxl",
+            "UmVxdWVzdBIKCgJpZBgBIAEoCSKmAQoYR2V0RGV2aWNlUHJvZmlsZVJlc3Bv",
+            "bnNlEioKDmRldmljZV9wcm9maWxlGAEgASgLMhIuYXBpLkRldmljZVByb2Zp",
+            "bGUSLgoKY3JlYXRlZF9hdBgCIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5UaW1l",
+            "c3RhbXASLgoKdXBkYXRlZF9hdBgDIAEoCzIaLmdvb2dsZS5wcm90b2J1Zi5U",
+            "aW1lc3RhbXAiSAoaVXBkYXRlRGV2aWNlUHJvZmlsZVJlcXVlc3QSKgoOZGV2",
+            "aWNlX3Byb2ZpbGUYASABKAsyEi5hcGkuRGV2aWNlUHJvZmlsZSIoChpEZWxl",
+            "dGVEZXZpY2VQcm9maWxlUmVxdWVzdBIKCgJpZBgBIAEoCSJdChlMaXN0RGV2",
+            "aWNlUHJvZmlsZXNSZXF1ZXN0Eg0KBWxpbWl0GAEgASgNEg4KBm9mZnNldBgC",
+            "IAEoDRIOCgZzZWFyY2gYAyABKAkSEQoJdGVuYW50X2lkGAQgASgJIl0KGkxp",
+            "c3REZXZpY2VQcm9maWxlc1Jlc3BvbnNlEhMKC3RvdGFsX2NvdW50GAEgASgN",
+            "EioKBnJlc3VsdBgCIAMoCzIaLmFwaS5EZXZpY2VQcm9maWxlTGlzdEl0ZW0i",
+            "aAomTGlzdERldmljZVByb2ZpbGVBZHJBbGdvcml0aG1zUmVzcG9uc2USEwoL",
+            "dG90YWxfY291bnQYASABKA0SKQoGcmVzdWx0GAIgAygLMhkuYXBpLkFkckFs",
+            "Z29yaXRobUxpc3RJdGVtIjAKFEFkckFsZ29yaXRobUxpc3RJdGVtEgoKAmlk",
+            "GAEgASgJEgwKBG5hbWUYAiABKAkqMQoMQ29kZWNSdW50aW1lEggKBE5PTkUQ",
+            "ABIPCgtDQVlFTk5FX0xQUBABEgYKAkpTEAIqUAoPTWVhc3VyZW1lbnRLaW5k",
+            "EgsKB1VOS05PV04QABILCgdDT1VOVEVSEAESDAoIQUJTT0xVVEUQAhIJCgVH",
+            "QVVHRRADEgoKBlNUUklORxAEKlUKDkNhZFBlcmlvZGljaXR5EgkKBVNFQ18x",
+            "EAASCgoGTVNfNTAwEAESCgoGTVNfMjUwEAISCgoGTVNfMTAwEAMSCQoFTVNf",
+            "NTAQBBIJCgVNU18yMBAFKmEKEVNlY29uZENoQWNrT2Zmc2V0EgkKBUtIWl8w",
+            "EAASCwoHS0haXzIwMBABEgsKB0tIWl80MDAQAhILCgdLSFpfODAwEAMSDAoI",
+            "S0haXzE2MDAQBBIMCghLSFpfMzIwMBAFKmwKE1JlbGF5TW9kZUFjdGl2YXRp",
+            "b24SFgoSRElTQUJMRV9SRUxBWV9NT0RFEAASFQoRRU5BQkxFX1JFTEFZX01P",
+            "REUQARILCgdEWU5BTUlDEAISGQoVRU5EX0RFVklDRV9DT05UUk9MTEVEEAMy",
+            "uAUKFERldmljZVByb2ZpbGVTZXJ2aWNlEmwKBkNyZWF0ZRIfLmFwaS5DcmVh",
+            "dGVEZXZpY2VQcm9maWxlUmVxdWVzdBogLmFwaS5DcmVhdGVEZXZpY2VQcm9m",
+            "aWxlUmVzcG9uc2UiH4LT5JMCGSIUL2FwaS9kZXZpY2UtcHJvZmlsZXM6ASoS",
+            "ZQoDR2V0EhwuYXBpLkdldERldmljZVByb2ZpbGVSZXF1ZXN0Gh0uYXBpLkdl",
+            "dERldmljZVByb2ZpbGVSZXNwb25zZSIhgtPkkwIbEhkvYXBpL2RldmljZS1w",
+            "cm9maWxlcy97aWR9EnYKBlVwZGF0ZRIfLmFwaS5VcGRhdGVEZXZpY2VQcm9m",
+            "aWxlUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eSIzgtPkkwItGigv",
+            "YXBpL2RldmljZS1wcm9maWxlcy97ZGV2aWNlX3Byb2ZpbGUuaWR9OgEqEmQK",
+            "BkRlbGV0ZRIfLmFwaS5EZWxldGVEZXZpY2VQcm9maWxlUmVxdWVzdBoWLmdv",
+            "b2dsZS5wcm90b2J1Zi5FbXB0eSIhgtPkkwIbKhkvYXBpL2RldmljZS1wcm9m",
+            "aWxlcy97aWR9EmUKBExpc3QSHi5hcGkuTGlzdERldmljZVByb2ZpbGVzUmVx",
+            "dWVzdBofLmFwaS5MaXN0RGV2aWNlUHJvZmlsZXNSZXNwb25zZSIcgtPkkwIW",
+            "EhQvYXBpL2RldmljZS1wcm9maWxlcxKFAQoRTGlzdEFkckFsZ29yaXRobXMS",
+            "Fi5nb29nbGUucHJvdG9idWYuRW1wdHkaKy5hcGkuTGlzdERldmljZVByb2Zp",
+            "bGVBZHJBbGdvcml0aG1zUmVzcG9uc2UiK4LT5JMCJRIjL2FwaS9kZXZpY2Ut",
+            "cHJvZmlsZXMvYWRyLWFsZ29yaXRobXNCagoRaW8uY2hpcnBzdGFjay5hcGlC",
+            "EkRldmljZVByb2ZpbGVQcm90b1ABWi5naXRodWIuY29tL2NoaXJwc3RhY2sv",
+            "Y2hpcnBzdGFjay9hcGkvZ28vdjQvYXBpqgIOQ2hpcnBzdGFjay5BcGliBnBy",
+            "b3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Google.Api.AnnotationsReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.EmptyReflection.Descriptor, global::Chirpstack.Common.CommonReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Api.CodecRuntime), typeof(global::Chirpstack.Api.MeasurementKind), typeof(global::Chirpstack.Api.CadPeriodicity), typeof(global::Chirpstack.Api.SecondChAckOffset), typeof(global::Chirpstack.Api.RelayModeActivation), }, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfile), global::Chirpstack.Api.DeviceProfile.Parser, new[]{ "Id", "TenantId", "Name", "Description", "Region", "MacVersion", "RegParamsRevision", "AdrAlgorithmId", "PayloadCodecRuntime", "PayloadCodecScript", "FlushQueueOnActivate", "UplinkInterval", "DeviceStatusReqInterval", "SupportsOtaa", "SupportsClassB", "SupportsClassC", "ClassBTimeout", "ClassBPingSlotNbK", "ClassBPingSlotDr", "ClassBPingSlotFreq", "ClassCTimeout", "AbpRx1Delay", "AbpRx1DrOffset", "AbpRx2Dr", "AbpRx2Freq", "Tags", "Measurements", "AutoDetectMeasurements", "RegionConfigId", "IsRelay", "IsRelayEd", "RelayEdRelayOnly", "RelayEnabled", "RelayCadPeriodicity", "RelayDefaultChannelIndex", "RelaySecondChannelFreq", "RelaySecondChannelDr", "RelaySecondChannelAckOffset", "RelayEdActivationMode", "RelayEdSmartEnableLevel", "RelayEdBackOff", "RelayEdUplinkLimitBucketSize", "RelayEdUplinkLimitReloadRate", "RelayJoinReqLimitReloadRate", "RelayNotifyLimitReloadRate", "RelayGlobalUplinkLimitReloadRate", "RelayOveralLimitReloadRate", "RelayJoinReqLimitBucketSize", "RelayNotifyLimitBucketSize", "RelayGlobalUplinkLimitBucketSize", "RelayOveralLimitBucketSize" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
+            new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfile), global::Chirpstack.Api.DeviceProfile.Parser, new[]{ "Id", "TenantId", "Name", "Description", "Region", "MacVersion", "RegParamsRevision", "AdrAlgorithmId", "PayloadCodecRuntime", "PayloadCodecScript", "FlushQueueOnActivate", "UplinkInterval", "DeviceStatusReqInterval", "SupportsOtaa", "SupportsClassB", "SupportsClassC", "ClassBTimeout", "ClassBPingSlotNbK", "ClassBPingSlotDr", "ClassBPingSlotFreq", "ClassCTimeout", "AbpRx1Delay", "AbpRx1DrOffset", "AbpRx2Dr", "AbpRx2Freq", "Tags", "Measurements", "AutoDetectMeasurements", "RegionConfigId", "IsRelay", "IsRelayEd", "RelayEdRelayOnly", "RelayEnabled", "RelayCadPeriodicity", "RelayDefaultChannelIndex", "RelaySecondChannelFreq", "RelaySecondChannelDr", "RelaySecondChannelAckOffset", "RelayEdActivationMode", "RelayEdSmartEnableLevel", "RelayEdBackOff", "RelayEdUplinkLimitBucketSize", "RelayEdUplinkLimitReloadRate", "RelayJoinReqLimitReloadRate", "RelayNotifyLimitReloadRate", "RelayGlobalUplinkLimitReloadRate", "RelayOverallLimitReloadRate", "RelayJoinReqLimitBucketSize", "RelayNotifyLimitBucketSize", "RelayGlobalUplinkLimitBucketSize", "RelayOverallLimitBucketSize" }, null, null, null, new pbr::GeneratedClrTypeInfo[] { null, null, }),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.Measurement), global::Chirpstack.Api.Measurement.Parser, new[]{ "Name", "Kind" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.DeviceProfileListItem), global::Chirpstack.Api.DeviceProfileListItem.Parser, new[]{ "Id", "CreatedAt", "UpdatedAt", "Name", "Region", "MacVersion", "RegParamsRevision", "SupportsOtaa", "SupportsClassB", "SupportsClassC" }, null, null, null, null),
             new pbr::GeneratedClrTypeInfo(typeof(global::Chirpstack.Api.CreateDeviceProfileRequest), global::Chirpstack.Api.CreateDeviceProfileRequest.Parser, new[]{ "DeviceProfile" }, null, null, null, null),
@@ -340,11 +340,11 @@ namespace Chirpstack.Api {
       relayJoinReqLimitReloadRate_ = other.relayJoinReqLimitReloadRate_;
       relayNotifyLimitReloadRate_ = other.relayNotifyLimitReloadRate_;
       relayGlobalUplinkLimitReloadRate_ = other.relayGlobalUplinkLimitReloadRate_;
-      relayOveralLimitReloadRate_ = other.relayOveralLimitReloadRate_;
+      relayOverallLimitReloadRate_ = other.relayOverallLimitReloadRate_;
       relayJoinReqLimitBucketSize_ = other.relayJoinReqLimitBucketSize_;
       relayNotifyLimitBucketSize_ = other.relayNotifyLimitBucketSize_;
       relayGlobalUplinkLimitBucketSize_ = other.relayGlobalUplinkLimitBucketSize_;
-      relayOveralLimitBucketSize_ = other.relayOveralLimitBucketSize_;
+      relayOverallLimitBucketSize_ = other.relayOverallLimitBucketSize_;
       _unknownFields = pb::UnknownFieldSet.Clone(other._unknownFields);
     }
 
@@ -1100,11 +1100,11 @@ namespace Chirpstack.Api {
       }
     }
 
-    /// <summary>Field number for the "relay_overal_limit_reload_rate" field.</summary>
-    public const int RelayOveralLimitReloadRateFieldNumber = 47;
-    private uint relayOveralLimitReloadRate_;
+    /// <summary>Field number for the "relay_overall_limit_reload_rate" field.</summary>
+    public const int RelayOverallLimitReloadRateFieldNumber = 47;
+    private uint relayOverallLimitReloadRate_;
     /// <summary>
-    /// Relay overal limit reload rate.
+    /// Relay overall limit reload rate.
     ///
     /// Valid values:
     ///   * 0 - 126 = X tokens every hour
@@ -1112,10 +1112,10 @@ namespace Chirpstack.Api {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint RelayOveralLimitReloadRate {
-      get { return relayOveralLimitReloadRate_; }
+    public uint RelayOverallLimitReloadRate {
+      get { return relayOverallLimitReloadRate_; }
       set {
-        relayOveralLimitReloadRate_ = value;
+        relayOverallLimitReloadRate_ = value;
       }
     }
 
@@ -1194,11 +1194,11 @@ namespace Chirpstack.Api {
       }
     }
 
-    /// <summary>Field number for the "relay_overal_limit_bucket_size" field.</summary>
-    public const int RelayOveralLimitBucketSizeFieldNumber = 51;
-    private uint relayOveralLimitBucketSize_;
+    /// <summary>Field number for the "relay_overall_limit_bucket_size" field.</summary>
+    public const int RelayOverallLimitBucketSizeFieldNumber = 51;
+    private uint relayOverallLimitBucketSize_;
     /// <summary>
-    /// Relay overal limit bucket size.
+    /// Relay overall limit bucket size.
     ///
     /// This field indicates the multiplier to determine the bucket size
     /// according to the following formula:
@@ -1212,10 +1212,10 @@ namespace Chirpstack.Api {
     /// </summary>
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
-    public uint RelayOveralLimitBucketSize {
-      get { return relayOveralLimitBucketSize_; }
+    public uint RelayOverallLimitBucketSize {
+      get { return relayOverallLimitBucketSize_; }
       set {
-        relayOveralLimitBucketSize_ = value;
+        relayOverallLimitBucketSize_ = value;
       }
     }
 
@@ -1280,11 +1280,11 @@ namespace Chirpstack.Api {
       if (RelayJoinReqLimitReloadRate != other.RelayJoinReqLimitReloadRate) return false;
       if (RelayNotifyLimitReloadRate != other.RelayNotifyLimitReloadRate) return false;
       if (RelayGlobalUplinkLimitReloadRate != other.RelayGlobalUplinkLimitReloadRate) return false;
-      if (RelayOveralLimitReloadRate != other.RelayOveralLimitReloadRate) return false;
+      if (RelayOverallLimitReloadRate != other.RelayOverallLimitReloadRate) return false;
       if (RelayJoinReqLimitBucketSize != other.RelayJoinReqLimitBucketSize) return false;
       if (RelayNotifyLimitBucketSize != other.RelayNotifyLimitBucketSize) return false;
       if (RelayGlobalUplinkLimitBucketSize != other.RelayGlobalUplinkLimitBucketSize) return false;
-      if (RelayOveralLimitBucketSize != other.RelayOveralLimitBucketSize) return false;
+      if (RelayOverallLimitBucketSize != other.RelayOverallLimitBucketSize) return false;
       return Equals(_unknownFields, other._unknownFields);
     }
 
@@ -1338,11 +1338,11 @@ namespace Chirpstack.Api {
       if (RelayJoinReqLimitReloadRate != 0) hash ^= RelayJoinReqLimitReloadRate.GetHashCode();
       if (RelayNotifyLimitReloadRate != 0) hash ^= RelayNotifyLimitReloadRate.GetHashCode();
       if (RelayGlobalUplinkLimitReloadRate != 0) hash ^= RelayGlobalUplinkLimitReloadRate.GetHashCode();
-      if (RelayOveralLimitReloadRate != 0) hash ^= RelayOveralLimitReloadRate.GetHashCode();
+      if (RelayOverallLimitReloadRate != 0) hash ^= RelayOverallLimitReloadRate.GetHashCode();
       if (RelayJoinReqLimitBucketSize != 0) hash ^= RelayJoinReqLimitBucketSize.GetHashCode();
       if (RelayNotifyLimitBucketSize != 0) hash ^= RelayNotifyLimitBucketSize.GetHashCode();
       if (RelayGlobalUplinkLimitBucketSize != 0) hash ^= RelayGlobalUplinkLimitBucketSize.GetHashCode();
-      if (RelayOveralLimitBucketSize != 0) hash ^= RelayOveralLimitBucketSize.GetHashCode();
+      if (RelayOverallLimitBucketSize != 0) hash ^= RelayOverallLimitBucketSize.GetHashCode();
       if (_unknownFields != null) {
         hash ^= _unknownFields.GetHashCode();
       }
@@ -1539,9 +1539,9 @@ namespace Chirpstack.Api {
         output.WriteRawTag(240, 2);
         output.WriteUInt32(RelayGlobalUplinkLimitReloadRate);
       }
-      if (RelayOveralLimitReloadRate != 0) {
+      if (RelayOverallLimitReloadRate != 0) {
         output.WriteRawTag(248, 2);
-        output.WriteUInt32(RelayOveralLimitReloadRate);
+        output.WriteUInt32(RelayOverallLimitReloadRate);
       }
       if (RelayJoinReqLimitBucketSize != 0) {
         output.WriteRawTag(128, 3);
@@ -1555,9 +1555,9 @@ namespace Chirpstack.Api {
         output.WriteRawTag(144, 3);
         output.WriteUInt32(RelayGlobalUplinkLimitBucketSize);
       }
-      if (RelayOveralLimitBucketSize != 0) {
+      if (RelayOverallLimitBucketSize != 0) {
         output.WriteRawTag(152, 3);
-        output.WriteUInt32(RelayOveralLimitBucketSize);
+        output.WriteUInt32(RelayOverallLimitBucketSize);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(output);
@@ -1747,9 +1747,9 @@ namespace Chirpstack.Api {
         output.WriteRawTag(240, 2);
         output.WriteUInt32(RelayGlobalUplinkLimitReloadRate);
       }
-      if (RelayOveralLimitReloadRate != 0) {
+      if (RelayOverallLimitReloadRate != 0) {
         output.WriteRawTag(248, 2);
-        output.WriteUInt32(RelayOveralLimitReloadRate);
+        output.WriteUInt32(RelayOverallLimitReloadRate);
       }
       if (RelayJoinReqLimitBucketSize != 0) {
         output.WriteRawTag(128, 3);
@@ -1763,9 +1763,9 @@ namespace Chirpstack.Api {
         output.WriteRawTag(144, 3);
         output.WriteUInt32(RelayGlobalUplinkLimitBucketSize);
       }
-      if (RelayOveralLimitBucketSize != 0) {
+      if (RelayOverallLimitBucketSize != 0) {
         output.WriteRawTag(152, 3);
-        output.WriteUInt32(RelayOveralLimitBucketSize);
+        output.WriteUInt32(RelayOverallLimitBucketSize);
       }
       if (_unknownFields != null) {
         _unknownFields.WriteTo(ref output);
@@ -1911,8 +1911,8 @@ namespace Chirpstack.Api {
       if (RelayGlobalUplinkLimitReloadRate != 0) {
         size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayGlobalUplinkLimitReloadRate);
       }
-      if (RelayOveralLimitReloadRate != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayOveralLimitReloadRate);
+      if (RelayOverallLimitReloadRate != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayOverallLimitReloadRate);
       }
       if (RelayJoinReqLimitBucketSize != 0) {
         size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayJoinReqLimitBucketSize);
@@ -1923,8 +1923,8 @@ namespace Chirpstack.Api {
       if (RelayGlobalUplinkLimitBucketSize != 0) {
         size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayGlobalUplinkLimitBucketSize);
       }
-      if (RelayOveralLimitBucketSize != 0) {
-        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayOveralLimitBucketSize);
+      if (RelayOverallLimitBucketSize != 0) {
+        size += 2 + pb::CodedOutputStream.ComputeUInt32Size(RelayOverallLimitBucketSize);
       }
       if (_unknownFields != null) {
         size += _unknownFields.CalculateSize();
@@ -2072,8 +2072,8 @@ namespace Chirpstack.Api {
       if (other.RelayGlobalUplinkLimitReloadRate != 0) {
         RelayGlobalUplinkLimitReloadRate = other.RelayGlobalUplinkLimitReloadRate;
       }
-      if (other.RelayOveralLimitReloadRate != 0) {
-        RelayOveralLimitReloadRate = other.RelayOveralLimitReloadRate;
+      if (other.RelayOverallLimitReloadRate != 0) {
+        RelayOverallLimitReloadRate = other.RelayOverallLimitReloadRate;
       }
       if (other.RelayJoinReqLimitBucketSize != 0) {
         RelayJoinReqLimitBucketSize = other.RelayJoinReqLimitBucketSize;
@@ -2084,8 +2084,8 @@ namespace Chirpstack.Api {
       if (other.RelayGlobalUplinkLimitBucketSize != 0) {
         RelayGlobalUplinkLimitBucketSize = other.RelayGlobalUplinkLimitBucketSize;
       }
-      if (other.RelayOveralLimitBucketSize != 0) {
-        RelayOveralLimitBucketSize = other.RelayOveralLimitBucketSize;
+      if (other.RelayOverallLimitBucketSize != 0) {
+        RelayOverallLimitBucketSize = other.RelayOverallLimitBucketSize;
       }
       _unknownFields = pb::UnknownFieldSet.MergeFrom(_unknownFields, other._unknownFields);
     }
@@ -2287,7 +2287,7 @@ namespace Chirpstack.Api {
             break;
           }
           case 376: {
-            RelayOveralLimitReloadRate = input.ReadUInt32();
+            RelayOverallLimitReloadRate = input.ReadUInt32();
             break;
           }
           case 384: {
@@ -2303,7 +2303,7 @@ namespace Chirpstack.Api {
             break;
           }
           case 408: {
-            RelayOveralLimitBucketSize = input.ReadUInt32();
+            RelayOverallLimitBucketSize = input.ReadUInt32();
             break;
           }
         }
@@ -2506,7 +2506,7 @@ namespace Chirpstack.Api {
             break;
           }
           case 376: {
-            RelayOveralLimitReloadRate = input.ReadUInt32();
+            RelayOverallLimitReloadRate = input.ReadUInt32();
             break;
           }
           case 384: {
@@ -2522,7 +2522,7 @@ namespace Chirpstack.Api {
             break;
           }
           case 408: {
-            RelayOveralLimitBucketSize = input.ReadUInt32();
+            RelayOverallLimitBucketSize = input.ReadUInt32();
             break;
           }
         }
