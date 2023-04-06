@@ -64,6 +64,14 @@ pub struct DeviceProfile {
     pub relay_ed_back_off: i16,
     pub relay_ed_uplink_limit_bucket_size: i16,
     pub relay_ed_uplink_limit_reload_rate: i16,
+    pub relay_join_req_limit_reload_rate: i16,
+    pub relay_notify_limit_reload_rate: i16,
+    pub relay_global_uplink_limit_reload_rate: i16,
+    pub relay_overal_limit_reload_rate: i16,
+    pub relay_join_req_limit_bucket_size: i16,
+    pub relay_notify_limit_bucket_size: i16,
+    pub relay_global_uplink_limit_bucket_size: i16,
+    pub relay_overal_limit_bucket_size: i16,
 }
 
 impl DeviceProfile {
@@ -125,6 +133,14 @@ impl Default for DeviceProfile {
             relay_ed_back_off: 0,
             relay_ed_uplink_limit_bucket_size: 0,
             relay_ed_uplink_limit_reload_rate: 0,
+            relay_join_req_limit_reload_rate: 0,
+            relay_notify_limit_reload_rate: 0,
+            relay_global_uplink_limit_reload_rate: 0,
+            relay_overal_limit_reload_rate: 0,
+            relay_join_req_limit_bucket_size: 0,
+            relay_notify_limit_bucket_size: 0,
+            relay_global_uplink_limit_bucket_size: 0,
+            relay_overal_limit_bucket_size: 0,
         }
     }
 }
@@ -255,6 +271,22 @@ pub async fn update(dp: DeviceProfile) -> Result<DeviceProfile, Error> {
                         .eq(&dp.relay_ed_uplink_limit_bucket_size),
                     device_profile::relay_ed_uplink_limit_reload_rate
                         .eq(&dp.relay_ed_uplink_limit_reload_rate),
+                    device_profile::relay_join_req_limit_reload_rate
+                        .eq(&dp.relay_join_req_limit_reload_rate),
+                    device_profile::relay_notify_limit_reload_rate
+                        .eq(&dp.relay_notify_limit_reload_rate),
+                    device_profile::relay_global_uplink_limit_reload_rate
+                        .eq(&dp.relay_global_uplink_limit_reload_rate),
+                    device_profile::relay_overal_limit_reload_rate
+                        .eq(&dp.relay_overal_limit_reload_rate),
+                    device_profile::relay_join_req_limit_bucket_size
+                        .eq(&dp.relay_join_req_limit_bucket_size),
+                    device_profile::relay_notify_limit_bucket_size
+                        .eq(&dp.relay_notify_limit_bucket_size),
+                    device_profile::relay_global_uplink_limit_bucket_size
+                        .eq(&dp.relay_global_uplink_limit_bucket_size),
+                    device_profile::relay_overal_limit_bucket_size
+                        .eq(&dp.relay_overal_limit_bucket_size),
                 ))
                 .get_result(&mut c)
                 .map_err(|e| error::Error::from_diesel(e, dp.id.to_string()))

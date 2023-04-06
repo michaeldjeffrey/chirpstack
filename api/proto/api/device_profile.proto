@@ -303,7 +303,7 @@ message DeviceProfile {
     //
     // This field indicates the multiplier to determine the bucket size
     // according to the following formula:
-    // BucketSize TOKEN = UplinkLimitReloadRate x UplinkLimitBucketSize
+    // BucketSize TOKEN = _reload_rate x _bucket_size
     //
     // Valid values (0 - 3):
     //   0 = 1
@@ -313,8 +313,91 @@ message DeviceProfile {
     uint32 relay_ed_uplink_limit_bucket_size = 42;
 
     // Relay end-device uplink limit reload rate.
-    // Valid values: 0 - 63 (0..62 or 63 for no limitation).
+    //
+    // Valid values:
+    //   * 0 - 62 = X tokens every hour
+    //   * 63     = no limitation
     uint32 relay_ed_uplink_limit_reload_rate = 43;
+
+    // Relay join-request limit reload rate.
+    //
+    // Valid values:
+    //   * 0 - 126 = X tokens every hour
+    //   * 127     = no limitation
+    uint32 relay_join_req_limit_reload_rate = 44;
+
+    // Relay notify limit reload rate.
+    //
+    // Valid values:
+    //   * 0 - 126 = X tokens every hour
+    //   * 127     = no limitation
+    uint32 relay_notify_limit_reload_rate = 45;
+
+    // Relay global uplink limit reload rate.
+    //
+    // Valid values:
+    //   * 0 - 126 = X tokens every hour
+    //   * 127     = no limitation
+    uint32 relay_global_uplink_limit_reload_rate = 46;
+
+    // Relay overal limit reload rate.
+    //
+    // Valid values:
+    //   * 0 - 126 = X tokens every hour
+    //   * 127     = no limitation
+    uint32 relay_overal_limit_reload_rate = 47;
+
+    // Relay join-request limit bucket size.
+    //
+    // This field indicates the multiplier to determine the bucket size
+    // according to the following formula:
+    // BucketSize TOKEN = _reload_rate x _bucket_size
+    //
+    // Valid values (0 - 3):
+    //   0 = 1
+    //   1 = 2
+    //   2 = 4
+    //   3 = 12
+    uint32 relay_join_req_limit_bucket_size = 48;
+
+    // Relay notify limit bucket size.
+    //
+    // This field indicates the multiplier to determine the bucket size
+    // according to the following formula:
+    // BucketSize TOKEN = _reload_rate x _bucket_size
+    //
+    // Valid values (0 - 3):
+    //   0 = 1
+    //   1 = 2
+    //   2 = 4
+    //   3 = 12
+    uint32 relay_notify_limit_bucket_size = 49;
+
+    // Relay globak uplink limit bucket size.
+    //
+    // This field indicates the multiplier to determine the bucket size
+    // according to the following formula:
+    // BucketSize TOKEN = _reload_rate x _bucket_size
+    //
+    // Valid values (0 - 3):
+    //   0 = 1
+    //   1 = 2
+    //   2 = 4
+    //   3 = 12
+    uint32 relay_global_uplink_limit_bucket_size = 50;
+
+    // Relay overal limit bucket size.
+    //
+    // This field indicates the multiplier to determine the bucket size
+    // according to the following formula:
+    // BucketSize TOKEN = _reload_rate x _bucket_size
+    //
+    // Valid values (0 - 3):
+    //   0 = 1
+    //   1 = 2
+    //   2 = 4
+    //   3 = 12
+    uint32 relay_overal_limit_bucket_size = 51;
 }
 
 message Measurement {

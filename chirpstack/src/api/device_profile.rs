@@ -102,6 +102,16 @@ impl DeviceProfileService for DeviceProfile {
             relay_ed_back_off: req_dp.relay_ed_back_off as i16,
             relay_ed_uplink_limit_bucket_size: req_dp.relay_ed_uplink_limit_bucket_size as i16,
             relay_ed_uplink_limit_reload_rate: req_dp.relay_ed_uplink_limit_reload_rate as i16,
+            relay_join_req_limit_reload_rate: req_dp.relay_join_req_limit_reload_rate as i16,
+            relay_notify_limit_reload_rate: req_dp.relay_notify_limit_reload_rate as i16,
+            relay_global_uplink_limit_reload_rate: req_dp.relay_global_uplink_limit_reload_rate
+                as i16,
+            relay_overal_limit_reload_rate: req_dp.relay_overal_limit_reload_rate as i16,
+            relay_join_req_limit_bucket_size: req_dp.relay_join_req_limit_bucket_size as i16,
+            relay_notify_limit_bucket_size: req_dp.relay_notify_limit_bucket_size as i16,
+            relay_global_uplink_limit_bucket_size: req_dp.relay_global_uplink_limit_bucket_size
+                as i16,
+            relay_overal_limit_bucket_size: req_dp.relay_overal_limit_bucket_size as i16,
             ..Default::default()
         };
 
@@ -192,6 +202,16 @@ impl DeviceProfileService for DeviceProfile {
                 relay_ed_back_off: dp.relay_ed_back_off as u32,
                 relay_ed_uplink_limit_bucket_size: dp.relay_ed_uplink_limit_bucket_size as u32,
                 relay_ed_uplink_limit_reload_rate: dp.relay_ed_uplink_limit_reload_rate as u32,
+                relay_join_req_limit_reload_rate: dp.relay_join_req_limit_reload_rate as u32,
+                relay_notify_limit_reload_rate: dp.relay_notify_limit_reload_rate as u32,
+                relay_global_uplink_limit_reload_rate: dp.relay_global_uplink_limit_reload_rate
+                    as u32,
+                relay_overal_limit_reload_rate: dp.relay_overal_limit_reload_rate as u32,
+                relay_join_req_limit_bucket_size: dp.relay_join_req_limit_bucket_size as u32,
+                relay_notify_limit_bucket_size: dp.relay_notify_limit_bucket_size as u32,
+                relay_global_uplink_limit_bucket_size: dp.relay_global_uplink_limit_bucket_size
+                    as u32,
+                relay_overal_limit_bucket_size: dp.relay_overal_limit_bucket_size as u32,
             }),
             created_at: Some(helpers::datetime_to_prost_timestamp(&dp.created_at)),
             updated_at: Some(helpers::datetime_to_prost_timestamp(&dp.updated_at)),
@@ -280,6 +300,16 @@ impl DeviceProfileService for DeviceProfile {
             relay_ed_back_off: req_dp.relay_ed_back_off as i16,
             relay_ed_uplink_limit_bucket_size: req_dp.relay_ed_uplink_limit_bucket_size as i16,
             relay_ed_uplink_limit_reload_rate: req_dp.relay_ed_uplink_limit_reload_rate as i16,
+            relay_join_req_limit_reload_rate: req_dp.relay_join_req_limit_reload_rate as i16,
+            relay_notify_limit_reload_rate: req_dp.relay_notify_limit_reload_rate as i16,
+            relay_global_uplink_limit_reload_rate: req_dp.relay_global_uplink_limit_reload_rate
+                as i16,
+            relay_overal_limit_reload_rate: req_dp.relay_overal_limit_reload_rate as i16,
+            relay_join_req_limit_bucket_size: req_dp.relay_join_req_limit_bucket_size as i16,
+            relay_notify_limit_bucket_size: req_dp.relay_notify_limit_bucket_size as i16,
+            relay_global_uplink_limit_bucket_size: req_dp.relay_global_uplink_limit_bucket_size
+                as i16,
+            relay_overal_limit_bucket_size: req_dp.relay_overal_limit_bucket_size as i16,
             ..Default::default()
         })
         .await

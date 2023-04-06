@@ -61,7 +61,7 @@ class DeleteDeviceProfileRequest(_message.Message):
     def __init__(self, id: _Optional[str] = ...) -> None: ...
 
 class DeviceProfile(_message.Message):
-    __slots__ = ["abp_rx1_delay", "abp_rx1_dr_offset", "abp_rx2_dr", "abp_rx2_freq", "adr_algorithm_id", "auto_detect_measurements", "class_b_ping_slot_dr", "class_b_ping_slot_freq", "class_b_ping_slot_nb_k", "class_b_timeout", "class_c_timeout", "description", "device_status_req_interval", "flush_queue_on_activate", "id", "is_relay", "is_relay_ed", "mac_version", "measurements", "name", "payload_codec_runtime", "payload_codec_script", "reg_params_revision", "region", "region_config_id", "relay_cad_periodicity", "relay_default_channel_index", "relay_ed_activation_mode", "relay_ed_back_off", "relay_ed_relay_only", "relay_ed_smart_enable_level", "relay_ed_uplink_limit_bucket_size", "relay_ed_uplink_limit_reload_rate", "relay_enabled", "relay_second_channel_ack_offset", "relay_second_channel_dr", "relay_second_channel_freq", "supports_class_b", "supports_class_c", "supports_otaa", "tags", "tenant_id", "uplink_interval"]
+    __slots__ = ["abp_rx1_delay", "abp_rx1_dr_offset", "abp_rx2_dr", "abp_rx2_freq", "adr_algorithm_id", "auto_detect_measurements", "class_b_ping_slot_dr", "class_b_ping_slot_freq", "class_b_ping_slot_nb_k", "class_b_timeout", "class_c_timeout", "description", "device_status_req_interval", "flush_queue_on_activate", "id", "is_relay", "is_relay_ed", "mac_version", "measurements", "name", "payload_codec_runtime", "payload_codec_script", "reg_params_revision", "region", "region_config_id", "relay_cad_periodicity", "relay_default_channel_index", "relay_ed_activation_mode", "relay_ed_back_off", "relay_ed_relay_only", "relay_ed_smart_enable_level", "relay_ed_uplink_limit_bucket_size", "relay_ed_uplink_limit_reload_rate", "relay_enabled", "relay_global_uplink_limit_bucket_size", "relay_global_uplink_limit_reload_rate", "relay_join_req_limit_bucket_size", "relay_join_req_limit_reload_rate", "relay_notify_limit_bucket_size", "relay_notify_limit_reload_rate", "relay_overal_limit_bucket_size", "relay_overal_limit_reload_rate", "relay_second_channel_ack_offset", "relay_second_channel_dr", "relay_second_channel_freq", "supports_class_b", "supports_class_c", "supports_otaa", "tags", "tenant_id", "uplink_interval"]
     class MeasurementsEntry(_message.Message):
         __slots__ = ["key", "value"]
         KEY_FIELD_NUMBER: _ClassVar[int]
@@ -110,6 +110,14 @@ class DeviceProfile(_message.Message):
     RELAY_ED_UPLINK_LIMIT_BUCKET_SIZE_FIELD_NUMBER: _ClassVar[int]
     RELAY_ED_UPLINK_LIMIT_RELOAD_RATE_FIELD_NUMBER: _ClassVar[int]
     RELAY_ENABLED_FIELD_NUMBER: _ClassVar[int]
+    RELAY_GLOBAL_UPLINK_LIMIT_BUCKET_SIZE_FIELD_NUMBER: _ClassVar[int]
+    RELAY_GLOBAL_UPLINK_LIMIT_RELOAD_RATE_FIELD_NUMBER: _ClassVar[int]
+    RELAY_JOIN_REQ_LIMIT_BUCKET_SIZE_FIELD_NUMBER: _ClassVar[int]
+    RELAY_JOIN_REQ_LIMIT_RELOAD_RATE_FIELD_NUMBER: _ClassVar[int]
+    RELAY_NOTIFY_LIMIT_BUCKET_SIZE_FIELD_NUMBER: _ClassVar[int]
+    RELAY_NOTIFY_LIMIT_RELOAD_RATE_FIELD_NUMBER: _ClassVar[int]
+    RELAY_OVERAL_LIMIT_BUCKET_SIZE_FIELD_NUMBER: _ClassVar[int]
+    RELAY_OVERAL_LIMIT_RELOAD_RATE_FIELD_NUMBER: _ClassVar[int]
     RELAY_SECOND_CHANNEL_ACK_OFFSET_FIELD_NUMBER: _ClassVar[int]
     RELAY_SECOND_CHANNEL_DR_FIELD_NUMBER: _ClassVar[int]
     RELAY_SECOND_CHANNEL_FREQ_FIELD_NUMBER: _ClassVar[int]
@@ -153,6 +161,14 @@ class DeviceProfile(_message.Message):
     relay_ed_uplink_limit_bucket_size: int
     relay_ed_uplink_limit_reload_rate: int
     relay_enabled: bool
+    relay_global_uplink_limit_bucket_size: int
+    relay_global_uplink_limit_reload_rate: int
+    relay_join_req_limit_bucket_size: int
+    relay_join_req_limit_reload_rate: int
+    relay_notify_limit_bucket_size: int
+    relay_notify_limit_reload_rate: int
+    relay_overal_limit_bucket_size: int
+    relay_overal_limit_reload_rate: int
     relay_second_channel_ack_offset: SecondChAckOffset
     relay_second_channel_dr: int
     relay_second_channel_freq: int
@@ -162,7 +178,7 @@ class DeviceProfile(_message.Message):
     tags: _containers.ScalarMap[str, str]
     tenant_id: str
     uplink_interval: int
-    def __init__(self, id: _Optional[str] = ..., tenant_id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mac_version: _Optional[_Union[_common_pb2.MacVersion, str]] = ..., reg_params_revision: _Optional[_Union[_common_pb2.RegParamsRevision, str]] = ..., adr_algorithm_id: _Optional[str] = ..., payload_codec_runtime: _Optional[_Union[CodecRuntime, str]] = ..., payload_codec_script: _Optional[str] = ..., flush_queue_on_activate: bool = ..., uplink_interval: _Optional[int] = ..., device_status_req_interval: _Optional[int] = ..., supports_otaa: bool = ..., supports_class_b: bool = ..., supports_class_c: bool = ..., class_b_timeout: _Optional[int] = ..., class_b_ping_slot_nb_k: _Optional[int] = ..., class_b_ping_slot_dr: _Optional[int] = ..., class_b_ping_slot_freq: _Optional[int] = ..., class_c_timeout: _Optional[int] = ..., abp_rx1_delay: _Optional[int] = ..., abp_rx1_dr_offset: _Optional[int] = ..., abp_rx2_dr: _Optional[int] = ..., abp_rx2_freq: _Optional[int] = ..., tags: _Optional[_Mapping[str, str]] = ..., measurements: _Optional[_Mapping[str, Measurement]] = ..., auto_detect_measurements: bool = ..., region_config_id: _Optional[str] = ..., is_relay: bool = ..., is_relay_ed: bool = ..., relay_ed_relay_only: bool = ..., relay_enabled: bool = ..., relay_cad_periodicity: _Optional[_Union[CadPeriodicity, str]] = ..., relay_default_channel_index: _Optional[int] = ..., relay_second_channel_freq: _Optional[int] = ..., relay_second_channel_dr: _Optional[int] = ..., relay_second_channel_ack_offset: _Optional[_Union[SecondChAckOffset, str]] = ..., relay_ed_activation_mode: _Optional[_Union[RelayModeActivation, str]] = ..., relay_ed_smart_enable_level: _Optional[int] = ..., relay_ed_back_off: _Optional[int] = ..., relay_ed_uplink_limit_bucket_size: _Optional[int] = ..., relay_ed_uplink_limit_reload_rate: _Optional[int] = ...) -> None: ...
+    def __init__(self, id: _Optional[str] = ..., tenant_id: _Optional[str] = ..., name: _Optional[str] = ..., description: _Optional[str] = ..., region: _Optional[_Union[_common_pb2.Region, str]] = ..., mac_version: _Optional[_Union[_common_pb2.MacVersion, str]] = ..., reg_params_revision: _Optional[_Union[_common_pb2.RegParamsRevision, str]] = ..., adr_algorithm_id: _Optional[str] = ..., payload_codec_runtime: _Optional[_Union[CodecRuntime, str]] = ..., payload_codec_script: _Optional[str] = ..., flush_queue_on_activate: bool = ..., uplink_interval: _Optional[int] = ..., device_status_req_interval: _Optional[int] = ..., supports_otaa: bool = ..., supports_class_b: bool = ..., supports_class_c: bool = ..., class_b_timeout: _Optional[int] = ..., class_b_ping_slot_nb_k: _Optional[int] = ..., class_b_ping_slot_dr: _Optional[int] = ..., class_b_ping_slot_freq: _Optional[int] = ..., class_c_timeout: _Optional[int] = ..., abp_rx1_delay: _Optional[int] = ..., abp_rx1_dr_offset: _Optional[int] = ..., abp_rx2_dr: _Optional[int] = ..., abp_rx2_freq: _Optional[int] = ..., tags: _Optional[_Mapping[str, str]] = ..., measurements: _Optional[_Mapping[str, Measurement]] = ..., auto_detect_measurements: bool = ..., region_config_id: _Optional[str] = ..., is_relay: bool = ..., is_relay_ed: bool = ..., relay_ed_relay_only: bool = ..., relay_enabled: bool = ..., relay_cad_periodicity: _Optional[_Union[CadPeriodicity, str]] = ..., relay_default_channel_index: _Optional[int] = ..., relay_second_channel_freq: _Optional[int] = ..., relay_second_channel_dr: _Optional[int] = ..., relay_second_channel_ack_offset: _Optional[_Union[SecondChAckOffset, str]] = ..., relay_ed_activation_mode: _Optional[_Union[RelayModeActivation, str]] = ..., relay_ed_smart_enable_level: _Optional[int] = ..., relay_ed_back_off: _Optional[int] = ..., relay_ed_uplink_limit_bucket_size: _Optional[int] = ..., relay_ed_uplink_limit_reload_rate: _Optional[int] = ..., relay_join_req_limit_reload_rate: _Optional[int] = ..., relay_notify_limit_reload_rate: _Optional[int] = ..., relay_global_uplink_limit_reload_rate: _Optional[int] = ..., relay_overal_limit_reload_rate: _Optional[int] = ..., relay_join_req_limit_bucket_size: _Optional[int] = ..., relay_notify_limit_bucket_size: _Optional[int] = ..., relay_global_uplink_limit_bucket_size: _Optional[int] = ..., relay_overal_limit_bucket_size: _Optional[int] = ...) -> None: ...
 
 class DeviceProfileListItem(_message.Message):
     __slots__ = ["created_at", "id", "mac_version", "name", "reg_params_revision", "region", "supports_class_b", "supports_class_c", "supports_otaa", "updated_at"]

@@ -2424,10 +2424,44 @@ The actual number of ping-slots per beacon period equals to 2^k. |
 | relay_ed_back_off | [uint32](#uint32) |  | Relay end-device back-off (in case it does not receive WOR ACK frame). 0 = Always send a LoRaWAN uplink 1..63 = Send a LoRaWAN uplink after X WOR frames without a WOR ACK |
 | relay_ed_uplink_limit_bucket_size | [uint32](#uint32) |  | Relay end-device uplink limit bucket size.
 
-This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = UplinkLimitReloadRate x UplinkLimitBucketSize
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
 
 Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
-| relay_ed_uplink_limit_reload_rate | [uint32](#uint32) |  | Relay end-device uplink limit reload rate. Valid values: 0 - 63 (0..62 or 63 for no limitation). |
+| relay_ed_uplink_limit_reload_rate | [uint32](#uint32) |  | Relay end-device uplink limit reload rate.
+
+Valid values: * 0 - 62 = X tokens every hour * 63 = no limitation |
+| relay_join_req_limit_reload_rate | [uint32](#uint32) |  | Relay join-request limit reload rate.
+
+Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
+| relay_notify_limit_reload_rate | [uint32](#uint32) |  | Relay notify limit reload rate.
+
+Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
+| relay_global_uplink_limit_reload_rate | [uint32](#uint32) |  | Relay global uplink limit reload rate.
+
+Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
+| relay_overal_limit_reload_rate | [uint32](#uint32) |  | Relay overal limit reload rate.
+
+Valid values: * 0 - 126 = X tokens every hour * 127 = no limitation |
+| relay_join_req_limit_bucket_size | [uint32](#uint32) |  | Relay join-request limit bucket size.
+
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
+
+Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
+| relay_notify_limit_bucket_size | [uint32](#uint32) |  | Relay notify limit bucket size.
+
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
+
+Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
+| relay_global_uplink_limit_bucket_size | [uint32](#uint32) |  | Relay globak uplink limit bucket size.
+
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
+
+Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
+| relay_overal_limit_bucket_size | [uint32](#uint32) |  | Relay overal limit bucket size.
+
+This field indicates the multiplier to determine the bucket size according to the following formula: BucketSize TOKEN = _reload_rate x _bucket_size
+
+Valid values (0 - 3): 0 = 1 1 = 2 2 = 4 3 = 12 |
 
 
 

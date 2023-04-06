@@ -12,7 +12,15 @@ alter table device_profile
     add column relay_ed_smart_enable_level smallint not null default 0,
     add column relay_ed_back_off smallint not null default 0,
     add column relay_ed_uplink_limit_bucket_size smallint not null default 0,
-    add column relay_ed_uplink_limit_reload_rate smallint not null default 0;
+    add column relay_ed_uplink_limit_reload_rate smallint not null default 0,
+    add column relay_join_req_limit_reload_rate smallint not null default 0,
+    add column relay_notify_limit_reload_rate smallint not null default 0,
+    add column relay_global_uplink_limit_reload_rate smallint not null default 0,
+    add column relay_overal_limit_reload_rate smallint not null default 0,
+    add column relay_join_req_limit_bucket_size smallint not null default 0,
+    add column relay_notify_limit_bucket_size smallint not null default 0,
+    add column relay_global_uplink_limit_bucket_size smallint not null default 0,
+    add column relay_overal_limit_bucket_size smallint not null default 0;
 
 alter table device_profile
     alter column is_relay drop default,
@@ -28,7 +36,15 @@ alter table device_profile
     alter column relay_ed_smart_enable_level drop default,
     alter column relay_ed_back_off drop default,
     alter column relay_ed_uplink_limit_bucket_size drop default,
-    alter column relay_ed_uplink_limit_reload_rate drop default;
+    alter column relay_ed_uplink_limit_reload_rate drop default,
+    alter column relay_join_req_limit_reload_rate drop default,
+    alter column relay_notify_limit_reload_rate drop default,
+    alter column relay_global_uplink_limit_reload_rate drop default,
+    alter column relay_overal_limit_reload_rate drop default,
+    alter column relay_join_req_limit_bucket_size drop default,
+    alter column relay_notify_limit_bucket_size drop default,
+    alter column relay_global_uplink_limit_bucket_size drop default,
+    alter column relay_overal_limit_bucket_size drop default;
 
 create table relay_device (
     relay_dev_eui bytea not null references device on delete cascade,
