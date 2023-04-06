@@ -192,6 +192,30 @@ message Relay {
 
     // End-device back-off.
     uint32 ed_back_off = 11;
+
+    // Join-request limit reload rate.
+    uint32 join_req_limit_reload_rate = 12;
+
+    // Notify limit reload rate.
+    uint32 notify_limit_reload_rate = 13;
+
+    // Global uplink limit reload rate.
+    uint32 global_uplink_limit_reload_rate = 14;
+
+    // Overall limit reload rate.
+    uint32 overall_limit_reload_rate = 15;
+
+    // Join-request limit bucket size.
+    uint32 join_req_limit_bucket_size = 16;
+
+    // Notify limit bucket size.
+    uint32 notify_limit_bucket_size = 17;
+
+    // Global uplink limit bucket size.
+    uint32 global_uplink_limit_bucket_size = 18;
+
+    // Overall limit bucket size.
+    uint32 overall_limit_bucket_size = 19;
 }
 
 message RelayDevice {

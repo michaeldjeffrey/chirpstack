@@ -21,9 +21,9 @@ alter table device_profile
     drop column relay_join_req_limit_reload_rate,
     drop column relay_notify_limit_reload_rate,
     drop column relay_global_uplink_limit_reload_rate,
-    drop column relay_overal_limit_reload_rate,
+    drop column relay_overall_limit_reload_rate,
     drop column relay_join_req_limit_bucket_size,
     drop column relay_notify_limit_bucket_size,
     drop column relay_global_uplink_limit_bucket_size,
-    drop column relay_overal_limit_bucket_size;
+    drop column relay_overall_limit_bucket_size;
 
