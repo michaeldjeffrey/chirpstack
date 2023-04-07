@@ -9,6 +9,7 @@ use crate::uplink::UplinkFrameSet;
 use chirpstack_api::internal;
 use lrwn::EUI64;
 
+pub mod configure_fwd_limit;
 pub mod dev_status;
 pub mod device_mode_ind;
 pub mod device_time;
@@ -155,6 +156,9 @@ async fn handle(
         lrwn::CID::EndDeviceConfAns => end_device_conf::handle(dev, ds, block, pending_block),
         lrwn::CID::FilterListAns => filter_list::handle(dev, ds, block, pending_block),
         lrwn::CID::UpdateUplinkListAns => update_uplink_list::handle(dev, ds, block, pending_block),
+        lrwn::CID::ConfigureFwdLimitAns => {
+            configure_fwd_limit::handle(dev, ds, block, pending_block)
+        }
         _ => {
             error!(cid = %cid, "Unexpected CID");
             // Return OK, we don't want to break out of the uplink handling.

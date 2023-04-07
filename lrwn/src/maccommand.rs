@@ -2296,7 +2296,7 @@ impl FwdLimitReloadRatePL {
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct FwdLimitLoadCapacityPL {
-    pub overal_limit_size: u8,
+    pub overall_limit_size: u8,
     pub global_uplink_limit_size: u8,
     pub notify_limit_size: u8,
     pub join_req_limit_size: u8,
@@ -2305,7 +2305,7 @@ pub struct FwdLimitLoadCapacityPL {
 impl FwdLimitLoadCapacityPL {
     pub fn from_u8(v: u8) -> Self {
         FwdLimitLoadCapacityPL {
-            overal_limit_size: v & 0x03,
+            overall_limit_size: v & 0x03,
             global_uplink_limit_size: (v & 0x0c) >> 2,
             notify_limit_size: (v & 0x30) >> 4,
             join_req_limit_size: (v & 0xc0) >> 6,
@@ -2313,8 +2313,8 @@ impl FwdLimitLoadCapacityPL {
     }
 
     pub fn to_u8(&self) -> Result<u8> {
-        if self.overal_limit_size > 3 {
-            return Err(anyhow!("max overal_limit_size is 3"));
+        if self.overall_limit_size > 3 {
+            return Err(anyhow!("max overall_limit_size is 3"));
         }
         if self.global_uplink_limit_size > 3 {
             return Err(anyhow!("max global_uplink_limit_size is 3"));
@@ -2326,7 +2326,7 @@ impl FwdLimitLoadCapacityPL {
             return Err(anyhow!("max join_req_limit_size is 3"));
         }
 
-        Ok(self.overal_limit_size
+        Ok(self.overall_limit_size
             | (self.global_uplink_limit_size << 2)
             | (self.notify_limit_size << 4)
             | (self.join_req_limit_size << 6))
@@ -3037,7 +3037,7 @@ mod test {
                         reset_limit_counter: ResetLimitCounter::NoChange,
                     },
                     load_capacity: FwdLimitLoadCapacityPL {
-                        overal_limit_size: 2,
+                        overall_limit_size: 2,
                         global_uplink_limit_size: 2,
                         notify_limit_size: 1,
                         join_req_limit_size: 3,

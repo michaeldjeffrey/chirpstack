@@ -1567,7 +1567,7 @@ impl Data {
                         reset_limit_counter: lrwn::ResetLimitCounter::NoChange,
                     },
                     load_capacity: lrwn::FwdLimitLoadCapacityPL {
-                        overal_limit_size: self.device_profile.relay_overall_limit_bucket_size
+                        overall_limit_size: self.device_profile.relay_overall_limit_bucket_size
                             as u8,
                         global_uplink_limit_size: self
                             .device_profile
@@ -3555,7 +3555,7 @@ mod test {
                             join_req_limit_size: 0,
                             notify_limit_size: 1,
                             global_uplink_limit_size: 2,
-                            overal_limit_size: 3,
+                            overall_limit_size: 3,
                         },
                     }),
                 ])],
