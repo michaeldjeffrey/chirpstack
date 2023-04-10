@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use anyhow::{Context, Result};
 use chrono::{DateTime, Local, Utc};
-use tracing::{error, info, span, trace, Instrument, Level};
+use tracing::{error, info, span, trace, warn, Instrument, Level};
 
 use lrwn::{
     keys, AES128Key, CFList, DLSettings, DevAddr, JoinAcceptPayload, JoinRequestPayload, JoinType,
@@ -358,12 +358,13 @@ impl JoinRequest {
         Ok(())
     }
 
-    fn abort_on_relay_only_comm(&self) -> Result<()> {
+    fn abort_on_relay_only_comm(&self) -> Result<(), Error> {
         // In case the relay context is not set and relay_ed_relay_only is set, abort.
         if !self.relay_context.is_some()
             && self.device_profile.as_ref().unwrap().relay_ed_relay_only
         {
-            return Err(anyhow!("Only communication through relay is allowed"));
+            warn!(dev_eui = %self.device.as_ref().unwrap().dev_eui, "Only communication through relay is allowed");
+            return Err(Error::Abort);
         }
         Ok(())
     }

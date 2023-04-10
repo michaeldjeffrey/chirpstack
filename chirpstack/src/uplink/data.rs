@@ -474,7 +474,7 @@ impl Data {
                 .await
                 .context("Savel device-session")?;
 
-            info!(dev_eui = %device.dev_eui, "Only communication through relay is allowed");
+            warn!(dev_eui = %device.dev_eui, "Only communication through relay is allowed");
 
             return Err(Error::Abort);
         }
