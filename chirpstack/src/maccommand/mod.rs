@@ -18,6 +18,7 @@ pub mod filter_list;
 pub mod link_adr;
 pub mod link_check;
 pub mod new_channel;
+pub mod notify_new_end_device;
 pub mod ping_slot_channel;
 pub mod ping_slot_info;
 pub mod rejoin_param_setup;
@@ -158,6 +159,9 @@ async fn handle(
         lrwn::CID::UpdateUplinkListAns => update_uplink_list::handle(dev, ds, block, pending_block),
         lrwn::CID::ConfigureFwdLimitAns => {
             configure_fwd_limit::handle(dev, ds, block, pending_block)
+        }
+        lrwn::CID::NotifyNewEndDeviceReq => {
+            notify_new_end_device::handle(tenant, dp, app, dev, block).await
         }
         _ => {
             error!(cid = %cid, "Unexpected CID");

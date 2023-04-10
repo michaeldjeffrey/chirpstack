@@ -505,6 +505,7 @@ export interface LogCodeMap {
   UPLINK_MIC: 6;
   UPLINK_F_CNT_RETRANSMISSION: 7;
   DOWNLINK_GATEWAY: 8;
+  RELAY_NEW_END_DEVICE: 9;
 }
 
 export const LogCode: LogCodeMap;

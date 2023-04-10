@@ -2364,8 +2364,8 @@ impl PayloadCodec for ConfigureFwdLimitReqPayload {
 
 #[derive(Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct PowerLevel {
-    wor_snr: isize,
-    wor_rssi: isize,
+    pub wor_snr: isize,
+    pub wor_rssi: isize,
 }
 
 impl PowerLevel {

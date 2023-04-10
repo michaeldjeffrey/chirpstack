@@ -52,6 +52,9 @@ enum LogCode {
 
     // Downlink gateway error.
     DOWNLINK_GATEWAY = 8;
+
+    // Relay new end-device.
+    RELAY_NEW_END_DEVICE = 9;
 }
 
 // Device information.

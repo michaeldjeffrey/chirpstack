@@ -78,14 +78,15 @@ namespace Chirpstack.Integration {
             "ASgJEg8KB2Rldl9ldWkYAiABKAkSEQoJY29uZmlybWVkGAMgASgIEg4KBmZf",
             "cG9ydBgEIAEoDRIMCgRkYXRhGAUgASgMEicKBm9iamVjdBgGIAEoCzIXLmdv",
             "b2dsZS5wcm90b2J1Zi5TdHJ1Y3QqLAoITG9nTGV2ZWwSCAoESU5GTxAAEgsK",
-            "B1dBUk5JTkcQARIJCgVFUlJPUhACKsABCgdMb2dDb2RlEgsKB1VOS05PV04Q",
+            "B1dBUk5JTkcQARIJCgVFUlJPUhACKtoBCgdMb2dDb2RlEgsKB1VOS05PV04Q",
             "ABIZChVET1dOTElOS19QQVlMT0FEX1NJWkUQARIQCgxVUExJTktfQ09ERUMQ",
             "AhISCg5ET1dOTElOS19DT0RFQxADEggKBE9UQUEQBBIWChJVUExJTktfRl9D",
             "TlRfUkVTRVQQBRIOCgpVUExJTktfTUlDEAYSHwobVVBMSU5LX0ZfQ05UX1JF",
-            "VFJBTlNNSVNTSU9OEAcSFAoQRE9XTkxJTktfR0FURVdBWRAIQoEBCh1pby5j",
-            "aGlycHN0YWNrLmFwaS5pbnRlZ3JhdGlvbkIQSW50ZWdyYXRpb25Qcm90b1AB",
-            "WjNnaXRodWIuY29tL2Jyb2NhYXIvY2hpcnBzdGFjay9hcGkvZ28vdjQvaW50",
-            "ZWdyYXRpb26qAhZDaGlycHN0YWNrLkludGVncmF0aW9uYgZwcm90bzM="));
+            "VFJBTlNNSVNTSU9OEAcSFAoQRE9XTkxJTktfR0FURVdBWRAIEhgKFFJFTEFZ",
+            "X05FV19FTkRfREVWSUNFEAlCgQEKHWlvLmNoaXJwc3RhY2suYXBpLmludGVn",
+            "cmF0aW9uQhBJbnRlZ3JhdGlvblByb3RvUAFaM2dpdGh1Yi5jb20vYnJvY2Fh",
+            "ci9jaGlycHN0YWNrL2FwaS9nby92NC9pbnRlZ3JhdGlvbqoCFkNoaXJwc3Rh",
+            "Y2suSW50ZWdyYXRpb25iBnByb3RvMw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { global::Chirpstack.Common.CommonReflection.Descriptor, global::Chirpstack.Gateway.GwReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.TimestampReflection.Descriptor, global::Google.Protobuf.WellKnownTypes.StructReflection.Descriptor, },
           new pbr::GeneratedClrTypeInfo(new[] {typeof(global::Chirpstack.Integration.LogLevel), typeof(global::Chirpstack.Integration.LogCode), }, null, new pbr::GeneratedClrTypeInfo[] {
@@ -158,6 +159,10 @@ namespace Chirpstack.Integration {
     /// Downlink gateway error.
     /// </summary>
     [pbr::OriginalName("DOWNLINK_GATEWAY")] DownlinkGateway = 8,
+    /// <summary>
+    /// Relay new end-device.
+    /// </summary>
+    [pbr::OriginalName("RELAY_NEW_END_DEVICE")] RelayNewEndDevice = 9,
   }
 
   #endregion
