@@ -13,6 +13,7 @@ use lrwn::region::{CommonName, MacVersion, Revision};
 use super::error::Error;
 use super::schema::device_profile;
 use super::{error, fields, get_db_conn};
+use crate::api::helpers::ToProto;
 use crate::codec::Codec;
 use chirpstack_api::internal;
 
@@ -147,23 +148,30 @@ impl Default for DeviceProfile {
 
 impl DeviceProfile {
     pub fn reset_session_to_boot_params(&self, ds: &mut internal::DeviceSession) {
-        if self.supports_otaa {
-            return;
-        }
-
-        ds.tx_power_index = 0;
-        ds.min_supported_tx_power_index = 0;
-        ds.max_supported_tx_power_index = 0;
-        ds.extra_uplink_channels = HashMap::new();
-        ds.rx1_delay = self.abp_rx1_delay as u32;
-        ds.rx1_dr_offset = self.abp_rx1_dr_offset as u32;
-        ds.rx2_dr = self.abp_rx2_dr as u32;
-        ds.rx2_frequency = self.abp_rx2_freq as u32;
-        ds.enabled_uplink_channel_indices = Vec::new();
+        ds.mac_version = self.mac_version.to_proto().into();
         ds.class_b_ping_slot_dr = self.class_b_ping_slot_dr as u32;
         ds.class_b_ping_slot_freq = self.class_b_ping_slot_freq as u32;
         ds.class_b_ping_slot_nb = 1 << self.class_b_ping_slot_nb_k as u32;
         ds.nb_trans = 1;
+
+        if self.is_relay_ed {
+            ds.relay = Some(internal::Relay {
+                ed_relay_only: self.relay_ed_relay_only,
+                ..Default::default()
+            });
+        }
+
+        if !self.supports_otaa {
+            ds.tx_power_index = 0;
+            ds.min_supported_tx_power_index = 0;
+            ds.max_supported_tx_power_index = 0;
+            ds.extra_uplink_channels = HashMap::new();
+            ds.rx1_delay = self.abp_rx1_delay as u32;
+            ds.rx1_dr_offset = self.abp_rx1_dr_offset as u32;
+            ds.rx2_dr = self.abp_rx2_dr as u32;
+            ds.rx2_frequency = self.abp_rx2_freq as u32;
+            ds.enabled_uplink_channel_indices = Vec::new();
+        }
     }
 }
 

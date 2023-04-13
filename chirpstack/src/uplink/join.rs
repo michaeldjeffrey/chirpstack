@@ -17,7 +17,6 @@ use super::{
     UplinkFrameSet,
 };
 use crate::api::backend::get_async_receiver;
-use crate::api::helpers::ToProto;
 use crate::backend::{joinserver, keywrap, roaming};
 use crate::storage::device_session;
 use crate::storage::{
@@ -748,15 +747,10 @@ impl JoinRequest {
             dev_eui: device.dev_eui.to_be_bytes().to_vec(),
             dev_addr: self.dev_addr.unwrap().to_be_bytes().to_vec(),
             join_eui: join_request.join_eui.to_be_bytes().to_vec(),
-            mac_version: device_profile.mac_version.to_proto().into(),
             f_nwk_s_int_key: self.f_nwk_s_int_key.as_ref().unwrap().to_vec(),
             s_nwk_s_int_key: self.s_nwk_s_int_key.as_ref().unwrap().to_vec(),
             nwk_s_enc_key: self.nwk_s_enc_key.as_ref().unwrap().to_vec(),
             app_s_key: self.app_s_key.clone(),
-            f_cnt_up: 0,
-            n_f_cnt_down: 0,
-            a_f_cnt_down: 0,
-            conf_f_cnt: 0,
             rx1_delay: region_network.rx1_delay.into(),
             rx1_dr_offset: region_network.rx1_dr_offset.into(),
             rx2_dr: region_network.rx2_dr.into(),
@@ -766,13 +760,11 @@ impl JoinRequest {
                 .iter()
                 .map(|i| *i as u32)
                 .collect(),
-            class_b_ping_slot_dr: device_profile.class_b_ping_slot_dr as u32,
-            class_b_ping_slot_freq: device_profile.class_b_ping_slot_freq as u32,
-            class_b_ping_slot_nb: 1 << device_profile.class_b_ping_slot_nb_k as u32,
-            nb_trans: 1,
             skip_f_cnt_check: device.skip_fcnt_check,
             ..Default::default()
         };
+
+        device_profile.reset_session_to_boot_params(&mut ds);
 
         if let Some(CFList::Channels(channels)) =
             region_conf.get_cf_list(device_profile.mac_version)

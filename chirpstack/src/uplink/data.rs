@@ -112,7 +112,6 @@ impl Data {
         ctx.get_application().await?;
         ctx.get_tenant().await?;
         ctx.abort_on_device_is_disabled().await?;
-        ctx.abort_on_relay_only_comm().await?;
         ctx.set_device_info()?;
         ctx.set_device_gateway_rx_info()?;
         ctx.handle_retransmission_reset().await?;
@@ -234,6 +233,7 @@ impl Data {
         };
 
         match device_session::get_for_phypayload_and_incr_f_cnt_up(
+            false,
             &mut self.phy_payload,
             self.uplink_frame_set.dr,
             self.uplink_frame_set.ch as u8,
@@ -300,7 +300,7 @@ impl Data {
             dr,
         )? as u8;
 
-        match device_session::get_for_phypayload_and_incr_f_cnt_up(&mut self.phy_payload, dr, ch)
+        match device_session::get_for_phypayload_and_incr_f_cnt_up(true, &mut self.phy_payload, dr, ch)
             .await
         {
             Ok(v) => match v {
@@ -457,27 +457,6 @@ impl Data {
             return Err(Error::Abort);
         }
 
-        Ok(())
-    }
-
-    async fn abort_on_relay_only_comm(&self) -> Result<(), Error> {
-        let device = self.device.as_ref().unwrap();
-
-        // In case the relay context is not set and relay_ed_relay_only is set, abort.
-        if !self.relay_context.is_some()
-            && self.device_profile.as_ref().unwrap().relay_ed_relay_only
-        {
-            // Restore the device-session in case the device is disabled.
-            // This is because during the fcnt validation, we immediately store the
-            // device-session with incremented fcnt to avoid race conditions.
-            device_session::save(self.device_session.as_ref().unwrap())
-                .await
-                .context("Savel device-session")?;
-
-            warn!(dev_eui = %device.dev_eui, "Only communication through relay is allowed");
-
-            return Err(Error::Abort);
-        }
         Ok(())
     }
 
