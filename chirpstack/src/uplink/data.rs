@@ -187,6 +187,7 @@ impl Data {
         ctx.handle_retransmission_reset().await?;
         ctx.set_device_lock().await?;
         ctx.decrypt_f_opts_mac_commands()?;
+        ctx.decrypt_frm_payload()?;
         ctx.set_adr()?;
         ctx.set_uplink_data_rate_relayed().await?;
         ctx.set_enabled_class().await?;
@@ -300,8 +301,13 @@ impl Data {
             dr,
         )? as u8;
 
-        match device_session::get_for_phypayload_and_incr_f_cnt_up(true, &mut self.phy_payload, dr, ch)
-            .await
+        match device_session::get_for_phypayload_and_incr_f_cnt_up(
+            true,
+            &mut self.phy_payload,
+            dr,
+            ch,
+        )
+        .await
         {
             Ok(v) => match v {
                 device_session::ValidationStatus::Ok(f_cnt, ds) => {
