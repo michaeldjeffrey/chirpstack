@@ -243,11 +243,12 @@ impl Data {
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
             ctx.wrap_phy_payloads_in_forward_downlink_req()?;
+            ctx.save_downlink_frame().await?;
             ctx.save_device_session().await?;
             ctx.send_downlink_frame().await?;
         }
 
-        unimplemented!()
+        Ok(())
     }
 
     async fn _handle_schedule_next_queue_item(dev: device::Device) -> Result<()> {
