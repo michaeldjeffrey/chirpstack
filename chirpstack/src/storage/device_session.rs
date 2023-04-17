@@ -190,7 +190,7 @@ pub async fn get_for_phypayload_and_incr_f_cnt_up(
             };
 
             if let Some(relay) = &ds.relay {
-                if relayed && relay.ed_relay_only {
+                if !relayed && relay.ed_relay_only {
                     warn!(
                         dev_eui = hex::encode(ds.dev_eui),
                         "Only communication through relay is allowed"
