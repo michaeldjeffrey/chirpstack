@@ -350,6 +350,12 @@ message DownlinkFrame {
 
   // NFCntDown (for decrypting mac-commands).
   uint32 n_f_cnt_down = 10;
+
+  // AFCntDown (for decrypting FRMPayload in case of Relay).
+  uint32 a_f_cnt_down = 11;
+
+  // DevEUI of relayed device.
+  bytes dev_eui_relayed = 12;
 }
 
 message LoraCloudGeolocBuffer {

@@ -95,8 +95,8 @@ impl JoinAccept<'_> {
         ctx.select_downlink_gateway()?;
         ctx.set_tx_info()?;
         ctx.set_downlink_frame()?;
-        ctx.send_join_accept_response().await?;
         ctx.save_downlink_frame().await?;
+        ctx.send_join_accept_response().await?;
 
         Ok(())
     }
@@ -553,6 +553,8 @@ impl JoinAccept<'_> {
             downlink_id: self.downlink_frame.downlink_id,
             downlink_frame: Some(self.downlink_frame.clone()),
             nwk_s_enc_key: relay_ctx.device_session.nwk_s_enc_key.clone(),
+            a_f_cnt_down: relay_ctx.device_session.get_a_f_cnt_down(),
+            n_f_cnt_down: relay_ctx.device_session.n_f_cnt_down,
             ..Default::default()
         };
 

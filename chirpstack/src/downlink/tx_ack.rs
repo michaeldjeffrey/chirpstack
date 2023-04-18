@@ -22,11 +22,17 @@ pub struct TxAck {
     downlink_frame: Option<internal::DownlinkFrame>,
     downlink_frame_item: Option<gw::DownlinkFrameItem>,
     phy_payload: Option<PhyPayload>,
+    phy_payload_relayed: Option<PhyPayload>,
     device_session: Option<internal::DeviceSession>,
+    device_session_relayed: Option<internal::DeviceSession>,
     tenant: Option<tenant::Tenant>,
+    tenant_relayed: Option<tenant::Tenant>,
     application: Option<application::Application>,
+    application_relayed: Option<application::Application>,
     device_profile: Option<device_profile::DeviceProfile>,
+    device_profile_relayed: Option<device_profile::DeviceProfile>,
     device: Option<device::Device>,
+    device_relayed: Option<device::Device>,
     device_queue_item: Option<device_queue::DeviceQueueItem>,
 }
 
@@ -59,16 +65,26 @@ impl TxAck {
             downlink_frame: None,
             downlink_frame_item: None,
             phy_payload: None,
+            phy_payload_relayed: None,
             device_session: None,
+            device_session_relayed: None,
             tenant: None,
+            tenant_relayed: None,
             application: None,
+            application_relayed: None,
             device_profile: None,
+            device_profile_relayed: None,
             device: None,
+            device_relayed: None,
             device_queue_item: None,
         };
 
         ctx.get_downlink_frame().await?;
         ctx.decode_phy_payload()?;
+
+        if ctx.is_relay_payload() {
+            return ctx._handle_relayed().await;
+        }
 
         if ctx.is_error() {
             if ctx.is_application_payload() || ctx.is_mac_only_downlink() {
@@ -83,7 +99,7 @@ impl TxAck {
                 ctx.delete_multicast_group_queue_item().await?;
             }
         } else {
-            if ctx.is_application_payload() && !ctx.is_relay_payload() {
+            if ctx.is_application_payload() {
                 ctx.get_device().await?;
                 ctx.get_device_profile().await?;
                 ctx.get_application().await?;
@@ -104,12 +120,6 @@ impl TxAck {
                 ctx.send_tx_ack_event().await?;
             }
 
-            if ctx.is_relay_payload() {
-                ctx.get_device_session().await?;
-                ctx.increment_a_f_cnt_down()?;
-                ctx.save_device_session().await?;
-            }
-
             if ctx.is_mac_only_downlink() {
                 ctx.get_device_session().await?;
                 ctx.increment_n_f_cnt_down()?;
@@ -123,6 +133,54 @@ impl TxAck {
             // log downlink frame and meta-data.
             ctx.log_downlink_frame().await?;
             ctx.log_downlink_meta().await?;
+        }
+
+        Ok(())
+    }
+
+    async fn _handle_relayed(&mut self) -> Result<()> {
+        self.get_phy_payload_relayed()?;
+
+        if self.is_error() {
+            // We log the tx ack error under the relay as this is the device to which the downlink
+            // is sent.
+            self.get_device().await?;
+            self.get_device_profile().await?;
+            self.get_application().await?;
+            self.get_tenant().await?;
+            self.log_tx_ack_error().await?;
+        } else {
+            // First handle the relay frame-counter increment.
+            self.get_device_session().await?;
+            self.increment_a_f_cnt_down()?;
+            self.save_device_session().await?;
+
+            // Handle end-device frame-counter increment + queue item.
+            if self.is_application_payload_relayed() {
+                self.get_device_session_relayed().await?;
+                self.get_device_queue_item().await?;
+                if self.is_unconfirmed_downlink_relayed() {
+                    self.delete_device_queue_item().await?;
+                }
+
+                if self.is_confirmed_downlink_relayed() {
+                    self.set_device_queue_item_pending().await?;
+                    self.set_device_session_conf_f_cnt_relayed()?;
+                }
+
+                self.increment_a_f_cnt_down_relayed()?;
+                self.save_device_session_relayed().await?;
+            } else if self.is_mac_only_downlink_relayed() {
+                self.get_device_session_relayed().await?;
+                self.increment_n_f_cnt_down_relayed()?;
+                self.save_device_session_relayed().await?;
+            }
+
+            // Log downlink frame and meta-data.
+            // This will log the downlink under the relay as this is the device to which the
+            // downlink is sent.
+            self.log_downlink_frame().await?;
+            self.log_downlink_meta().await?;
         }
 
         Ok(())
@@ -168,6 +226,14 @@ impl TxAck {
         Ok(())
     }
 
+    async fn get_device_session_relayed(&mut self) -> Result<()> {
+        trace!("Getting relayed device-session");
+        let dev_eui = EUI64::from_slice(&self.downlink_frame.as_ref().unwrap().dev_eui_relayed)?;
+        self.device_session_relayed = Some(device_session::get(&dev_eui).await?);
+
+        Ok(())
+    }
+
     async fn get_device(&mut self) -> Result<()> {
         trace!("Getting device");
         let dev_eui = EUI64::from_slice(&self.downlink_frame.as_ref().unwrap().dev_eui)?;
@@ -175,10 +241,25 @@ impl TxAck {
         Ok(())
     }
 
+    async fn get_device_relayed(&mut self) -> Result<()> {
+        trace!("Getting relayed device");
+        let dev_eui = EUI64::from_slice(&self.downlink_frame.as_ref().unwrap().dev_eui_relayed)?;
+        self.device_relayed = Some(device::get(&dev_eui).await?);
+        Ok(())
+    }
+
     async fn get_device_profile(&mut self) -> Result<()> {
-        trace!("Get device-profile");
+        trace!("Getting device-profile");
         self.device_profile =
             Some(device_profile::get(&self.device.as_ref().unwrap().device_profile_id).await?);
+        Ok(())
+    }
+
+    async fn get_device_profile_relayed(&mut self) -> Result<()> {
+        trace!("Getting relayed device-profile");
+        self.device_profile_relayed = Some(
+            device_profile::get(&self.device_relayed.as_ref().unwrap().device_profile_id).await?,
+        );
         Ok(())
     }
 
@@ -189,9 +270,23 @@ impl TxAck {
         Ok(())
     }
 
+    async fn get_application_relayed(&mut self) -> Result<()> {
+        trace!("Getting relayed application");
+        self.application_relayed =
+            Some(application::get(&self.device_relayed.as_ref().unwrap().application_id).await?);
+        Ok(())
+    }
+
     async fn get_tenant(&mut self) -> Result<()> {
         trace!("Getting tenant");
         self.tenant = Some(tenant::get(&self.application.as_ref().unwrap().tenant_id).await?);
+        Ok(())
+    }
+
+    async fn get_tenant_relayed(&mut self) -> Result<()> {
+        trace!("Getting relayed tenant");
+        self.tenant_relayed =
+            Some(tenant::get(&self.application_relayed.as_ref().unwrap().tenant_id).await?);
         Ok(())
     }
 
@@ -265,16 +360,37 @@ impl TxAck {
         Ok(())
     }
 
+    fn set_device_session_conf_f_cnt_relayed(&mut self) -> Result<()> {
+        trace!("Setting relayed device-session conf_f_cnt");
+
+        let mut ds = self.device_session_relayed.as_mut().unwrap();
+        let qi = self.device_queue_item.as_ref().unwrap();
+
+        ds.conf_f_cnt = match qi.f_cnt_down {
+            Some(v) => v as u32,
+            None => {
+                error!("Expected device queue-item f_cnt_down to be set");
+                0
+            }
+        };
+
+        Ok(())
+    }
+
     fn increment_a_f_cnt_down(&mut self) -> Result<()> {
         trace!("Incrementing a_f_cnt_down");
 
-        let mut ds = self.device_session.as_mut().unwrap();
+        let ds = self.device_session.as_mut().unwrap();
+        ds.set_a_f_cnt_down(ds.get_a_f_cnt_down() + 1);
 
-        if ds.mac_version().to_string().starts_with("1.0") {
-            ds.n_f_cnt_down += 1;
-        } else {
-            ds.a_f_cnt_down += 1;
-        }
+        Ok(())
+    }
+
+    fn increment_a_f_cnt_down_relayed(&mut self) -> Result<()> {
+        trace!("Incrementing relayed a_f_cnt_down");
+
+        let ds = self.device_session_relayed.as_mut().unwrap();
+        ds.set_a_f_cnt_down(ds.get_a_f_cnt_down() + 1);
 
         Ok(())
     }
@@ -288,9 +404,24 @@ impl TxAck {
         Ok(())
     }
 
+    fn increment_n_f_cnt_down_relayed(&mut self) -> Result<()> {
+        trace!("Incrementing relayed n_f_cnt_down");
+
+        let mut ds = self.device_session.as_mut().unwrap();
+        ds.n_f_cnt_down += 1;
+
+        Ok(())
+    }
+
     async fn save_device_session(&self) -> Result<()> {
         trace!("Saving device-session");
         device_session::save(self.device_session.as_ref().unwrap()).await?;
+        Ok(())
+    }
+
+    async fn save_device_session_relayed(&self) -> Result<()> {
+        trace!("Saving relayed device-session");
+        device_session::save(self.device_session_relayed.as_ref().unwrap()).await?;
         Ok(())
     }
 
@@ -386,6 +517,29 @@ impl TxAck {
         Ok(())
     }
 
+    fn get_phy_payload_relayed(&mut self) -> Result<()> {
+        trace!("Getting relayed PhyPayload");
+        let df = self.downlink_frame.as_ref().unwrap();
+
+        let mut phy = self.phy_payload.as_ref().unwrap().clone();
+        let nwk_s_enc_key = AES128Key::from_slice(&df.nwk_s_enc_key)?;
+
+        // We need to set the full AFCntDown to decrypt the FRMPayload holding the
+        // ForwardDownlinkReq.
+        if let Payload::MACPayload(pl) = &mut phy.payload {
+            pl.fhdr.f_cnt = df.a_f_cnt_down;
+        }
+        phy.decrypt_frm_payload(&nwk_s_enc_key)?;
+
+        if let Payload::MACPayload(pl) = phy.payload {
+            if let Some(lrwn::FRMPayload::ForwardDownlinkReq(pl)) = pl.frm_payload {
+                self.phy_payload_relayed = Some(*pl.payload);
+            }
+        }
+
+        Ok(())
+    }
+
     async fn log_downlink_frame(&mut self) -> Result<()> {
         trace!("Logging downlink frame");
         let df = self.downlink_frame.as_ref().unwrap();
@@ -440,10 +594,14 @@ impl TxAck {
 
         let nwk_s_enc_key = AES128Key::from_slice(&df.nwk_s_enc_key)?;
 
+        // Set the full frame-counter value.
+        // This is needed to decrypt the mac-commands and / or FrmPayload (in case of Relay).
         if let Payload::MACPayload(pl) = &mut phy.payload {
             if pl.f_port.unwrap_or(0) == 0 {
                 // We need to set the full NFcntDown to decrypt the mac-commands.
                 pl.fhdr.f_cnt = df.n_f_cnt_down;
+            } else {
+                pl.fhdr.f_cnt = df.a_f_cnt_down;
             }
         }
 
@@ -539,6 +697,8 @@ impl TxAck {
         self.downlink_tx_ack_status != gw::TxAckStatus::Ok
     }
 
+    // Returns true if the downlink_frame is associated to a dev_eui and if the f_port > 0.
+    // In the case the downlink is multicast, the f_port > 0, but the dev_eui is not set.
     fn is_application_payload(&self) -> bool {
         if self.downlink_frame.as_ref().unwrap().dev_eui.is_empty() {
             return false;
@@ -549,6 +709,20 @@ impl TxAck {
                 return true;
             }
         }
+        false
+    }
+
+    fn is_application_payload_relayed(&self) -> bool {
+        if self.downlink_frame.as_ref().unwrap().dev_eui.is_empty() {
+            return false;
+        }
+
+        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload_relayed.as_ref().unwrap().payload {
+            if pl.f_port.unwrap_or(0) != 0 {
+                return true;
+            }
+        }
+
         false
     }
 
@@ -574,6 +748,19 @@ impl TxAck {
         false
     }
 
+    fn is_mac_only_downlink_relayed(&self) -> bool {
+        if self.downlink_frame.as_ref().unwrap().dev_eui.is_empty() {
+            return false;
+        }
+
+        if let lrwn::Payload::MACPayload(pl) = &self.phy_payload_relayed.as_ref().unwrap().payload {
+            if pl.f_port.unwrap_or(0) == 0 {
+                return true;
+            }
+        }
+        false
+    }
+
     fn is_multicast_downlink(&self) -> bool {
         let df = self.downlink_frame.as_ref().unwrap();
         if !df.multicast_group_id.is_empty() && !df.multicast_group_queue_item_id.is_empty() {
@@ -589,8 +776,25 @@ impl TxAck {
         false
     }
 
+    fn is_unconfirmed_downlink_relayed(&self) -> bool {
+        if self.phy_payload_relayed.as_ref().unwrap().mhdr.m_type
+            == lrwn::MType::UnconfirmedDataDown
+        {
+            return true;
+        }
+        false
+    }
+
     fn is_confirmed_downlink(&self) -> bool {
         if self.phy_payload.as_ref().unwrap().mhdr.m_type == lrwn::MType::ConfirmedDataDown {
+            return true;
+        }
+        false
+    }
+
+    fn is_confirmed_downlink_relayed(&self) -> bool {
+        if self.phy_payload_relayed.as_ref().unwrap().mhdr.m_type == lrwn::MType::ConfirmedDataDown
+        {
             return true;
         }
         false

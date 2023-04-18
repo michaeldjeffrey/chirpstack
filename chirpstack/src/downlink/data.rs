@@ -243,7 +243,7 @@ impl Data {
         if ctx._something_to_send() {
             ctx.set_phy_payloads()?;
             ctx.wrap_phy_payloads_in_forward_downlink_req()?;
-            ctx.save_downlink_frame().await?;
+            ctx.save_downlink_frame_relayed().await?;
             ctx.save_device_session().await?;
             ctx.send_downlink_frame().await?;
         }
@@ -305,8 +305,6 @@ impl Data {
             ctx.update_device_queue_item().await?;
             ctx.save_downlink_frame().await?;
             ctx.send_downlink_frame().await?;
-            ctx.update_device_queue_item().await?;
-            ctx.save_downlink_frame_relayed().await?;
         }
 
         Ok(())
@@ -647,16 +645,7 @@ impl Data {
                     if qi.data.len() <= item.remaining_payload_size {
                         // Set the device-queue item.
                         mac_pl.f_port = Some(qi.f_port as u8);
-                        mac_pl.fhdr.f_cnt = if self
-                            .device_session
-                            .mac_version()
-                            .to_string()
-                            .starts_with("1.0")
-                        {
-                            self.device_session.n_f_cnt_down
-                        } else {
-                            self.device_session.a_f_cnt_down
-                        };
+                        mac_pl.fhdr.f_cnt = self.device_session.get_a_f_cnt_down();
                         mac_pl.frm_payload = Some(lrwn::FRMPayload::Raw(qi.data.clone()));
 
                         if qi.confirmed {
@@ -742,16 +731,7 @@ impl Data {
                 payload: lrwn::Payload::MACPayload(lrwn::MACPayload {
                     fhdr: lrwn::FHDR {
                         devaddr: lrwn::DevAddr::from_slice(&relay_ctx.device_session.dev_addr)?,
-                        f_cnt: if relay_ctx
-                            .device_session
-                            .mac_version()
-                            .to_string()
-                            .starts_with("1.0")
-                        {
-                            relay_ctx.device_session.n_f_cnt_down
-                        } else {
-                            relay_ctx.device_session.a_f_cnt_down
-                        },
+                        f_cnt: relay_ctx.device_session.get_a_f_cnt_down(),
                         f_ctrl: lrwn::FCtrl {
                             adr: !self.network_conf.adr_disabled,
                             ack: relay_ctx.must_ack,
@@ -831,6 +811,7 @@ impl Data {
             nwk_s_enc_key: self.device_session.nwk_s_enc_key.clone(),
             downlink_frame: Some(self.downlink_frame.clone()),
             n_f_cnt_down: self.device_session.n_f_cnt_down,
+            a_f_cnt_down: self.device_session.get_a_f_cnt_down(),
             ..Default::default()
         })
         .await
@@ -847,18 +828,15 @@ impl Data {
         downlink_frame::save(&internal::DownlinkFrame {
             downlink_id: self.downlink_frame.downlink_id,
             dev_eui: relay_ctx.device.dev_eui.to_vec(),
+            dev_eui_relayed: self.device.dev_eui.to_vec(),
             device_queue_item_id: match &self.device_queue_item {
                 Some(qi) => qi.id.as_bytes().to_vec(),
                 None => vec![],
             },
-            encrypted_fopts: relay_ctx
-                .device_session
-                .mac_version()
-                .to_string()
-                .starts_with("1.1"),
             nwk_s_enc_key: relay_ctx.device_session.nwk_s_enc_key.clone(),
             downlink_frame: Some(self.downlink_frame.clone()),
             n_f_cnt_down: relay_ctx.device_session.n_f_cnt_down,
+            a_f_cnt_down: relay_ctx.device_session.get_a_f_cnt_down(),
             ..Default::default()
         })
         .await?;
