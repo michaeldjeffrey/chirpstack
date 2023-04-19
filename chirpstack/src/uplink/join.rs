@@ -113,10 +113,10 @@ impl JoinRequest {
         ctx.set_device_info()?;
         ctx.filter_rx_info_by_tenant()?;
         ctx.filter_rx_info_by_region_config_id()?;
-        ctx.log_uplink_frame_set().await?;
         ctx.abort_on_device_is_disabled()?;
-        ctx.abort_on_otaa_is_disabled()?;
         ctx.abort_on_relay_only_comm()?;
+        ctx.log_uplink_frame_set().await?;
+        ctx.abort_on_otaa_is_disabled()?;
         ctx.get_random_dev_addr()?;
         if ctx.js_client.is_some() {
             // Using join-server
