@@ -170,6 +170,13 @@ impl TxAck {
 
                 self.increment_a_f_cnt_down_relayed()?;
                 self.save_device_session_relayed().await?;
+
+                // Log tx ack event.
+                self.get_device_relayed().await?;
+                self.get_device_profile_relayed().await?;
+                self.get_application_relayed().await?;
+                self.get_tenant_relayed().await?;
+                self.send_tx_ack_event_relayed().await?;
             } else if self.is_mac_only_downlink_relayed() {
                 self.get_device_session_relayed().await?;
                 self.increment_n_f_cnt_down_relayed()?;
@@ -407,7 +414,7 @@ impl TxAck {
     fn increment_n_f_cnt_down_relayed(&mut self) -> Result<()> {
         trace!("Incrementing relayed n_f_cnt_down");
 
-        let mut ds = self.device_session.as_mut().unwrap();
+        let mut ds = self.device_session_relayed.as_mut().unwrap();
         ds.n_f_cnt_down += 1;
 
         Ok(())
@@ -467,6 +474,54 @@ impl TxAck {
         let app = self.application.as_ref().unwrap();
         let dp = self.device_profile.as_ref().unwrap();
         let dev = self.device.as_ref().unwrap();
+        let qi = self.device_queue_item.as_ref().unwrap();
+
+        let mut tags = (*dp.tags).clone();
+        tags.extend((*dev.tags).clone());
+
+        let downlink_id = self.downlink_frame.as_ref().unwrap().downlink_id;
+        let gateway_id = self
+            .downlink_frame
+            .as_ref()
+            .unwrap()
+            .downlink_frame
+            .as_ref()
+            .unwrap()
+            .gateway_id
+            .clone();
+
+        let pl = integration_pb::TxAckEvent {
+            downlink_id,
+            time: Some(Utc::now().into()),
+            device_info: Some(integration_pb::DeviceInfo {
+                tenant_id: tenant.id.to_string(),
+                tenant_name: tenant.name.clone(),
+                application_id: app.id.to_string(),
+                application_name: app.name.to_string(),
+                device_profile_id: dp.id.to_string(),
+                device_profile_name: dp.name.clone(),
+                device_name: dev.name.clone(),
+                dev_eui: dev.dev_eui.to_string(),
+                tags,
+            }),
+            queue_item_id: qi.id.to_string(),
+            f_cnt_down: qi.f_cnt_down.unwrap_or(0) as u32,
+            gateway_id,
+            tx_info: self.downlink_frame_item.as_ref().unwrap().tx_info.clone(),
+        };
+
+        integration::txack_event(app.id, &dev.variables, &pl).await;
+
+        Ok(())
+    }
+
+    async fn send_tx_ack_event_relayed(&self) -> Result<()> {
+        trace!("Sending relayed tx ack event");
+
+        let tenant = self.tenant_relayed.as_ref().unwrap();
+        let app = self.application_relayed.as_ref().unwrap();
+        let dp = self.device_profile_relayed.as_ref().unwrap();
+        let dev = self.device_relayed.as_ref().unwrap();
         let qi = self.device_queue_item.as_ref().unwrap();
 
         let mut tags = (*dp.tags).clone();
