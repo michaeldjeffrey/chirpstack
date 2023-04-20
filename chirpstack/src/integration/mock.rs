@@ -109,6 +109,10 @@ impl IntegrationTrait for Integration {
 }
 
 pub async fn get_uplink_event() -> Option<integration::UplinkEvent> {
+    if UPLINK_EVENTS.read().await.is_empty() {
+        return None;
+    }
+
     UPLINK_EVENTS
         .write()
         .await
