@@ -2593,7 +2593,7 @@ mod test {
                         },
                         dev_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
                         w_fcnt: 0,
-                        root_wor_s_key: AES128Key::from_be_bytes([
+                        root_wor_s_key: AES128Key::from_bytes([
                             0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf, 0x2b,
                             0xf5, 0x8e, 0x0f, 0xd3,
                         ]),
@@ -2650,7 +2650,7 @@ mod test {
                         },
                         dev_addr: DevAddr::from_be_bytes([2, 2, 3, 4]),
                         w_fcnt: 0,
-                        root_wor_s_key: AES128Key::from_be_bytes([
+                        root_wor_s_key: AES128Key::from_bytes([
                             0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf, 0x2b,
                             0xf5, 0x8e, 0x0f, 0xd3,
                         ]),
@@ -2713,7 +2713,7 @@ mod test {
                         },
                         dev_addr: DevAddr::from_be_bytes([2, 2, 3, 4]),
                         w_fcnt: 0,
-                        root_wor_s_key: AES128Key::from_be_bytes([
+                        root_wor_s_key: AES128Key::from_bytes([
                             0x47, 0x71, 0x18, 0x16, 0xe9, 0x1d, 0x6f, 0xf0, 0x59, 0xbb, 0xbf, 0x2b,
                             0xf5, 0x8e, 0x0f, 0xd3,
                         ]),

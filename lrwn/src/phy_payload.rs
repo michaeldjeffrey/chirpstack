@@ -707,7 +707,7 @@ impl PhyPayload {
                 return Err(anyhow!("plaintext must be a multiple of 16 bytes"));
             }
 
-            let key_bytes = key.to_be_bytes();
+            let key_bytes = key.to_bytes();
             let key = GenericArray::from_slice(&key_bytes);
             let cipher = Aes128::new(key);
 
@@ -752,7 +752,7 @@ impl PhyPayload {
                 return Err(anyhow!("ciphertext must be a multiple of 16 bytes"));
             }
 
-            let key_bytes = key.to_be_bytes();
+            let key_bytes = key.to_bytes();
             let key = GenericArray::from_slice(&key_bytes);
             let cipher = Aes128::new(key);
 
@@ -936,7 +936,7 @@ impl PhyPayload {
             b1[3] = tx_dr;
             b1[4] = tx_ch;
 
-            let mut mac = Cmac::<Aes128>::new_from_slice(&s_nwk_s_int_key.to_be_bytes()).unwrap();
+            let mut mac = Cmac::<Aes128>::new_from_slice(&s_nwk_s_int_key.to_bytes()).unwrap();
             mac.update(&b1);
             mac.update(&mic_bytes);
 
@@ -945,7 +945,7 @@ impl PhyPayload {
                 return Err(anyhow!("cmac_s is less than 4 bytes"));
             }
 
-            let mut mac = Cmac::<Aes128>::new_from_slice(&f_nwk_s_int_key.to_be_bytes()).unwrap();
+            let mut mac = Cmac::<Aes128>::new_from_slice(&f_nwk_s_int_key.to_bytes()).unwrap();
             mac.update(&b0);
             mac.update(&mic_bytes);
 
@@ -998,7 +998,7 @@ impl PhyPayload {
             b0[10..14].clone_from_slice(&pl.fhdr.f_cnt.to_le_bytes());
             b0[15] = mic_bytes.len() as u8;
 
-            let mut mac = Cmac::<Aes128>::new_from_slice(&s_nwk_s_int_key.to_be_bytes()).unwrap();
+            let mut mac = Cmac::<Aes128>::new_from_slice(&s_nwk_s_int_key.to_bytes()).unwrap();
             mac.update(&b0);
             mac.update(&mic_bytes);
 
@@ -1022,7 +1022,7 @@ impl PhyPayload {
         mic_bytes.extend_from_slice(&self.mhdr.to_le_bytes());
         mic_bytes.extend_from_slice(&self.payload.to_vec()?);
 
-        let mut mac = Cmac::<Aes128>::new_from_slice(&key.to_be_bytes()).unwrap();
+        let mut mac = Cmac::<Aes128>::new_from_slice(&key.to_bytes()).unwrap();
         mac.update(&mic_bytes);
 
         let hash = mac.finalize().into_bytes();
@@ -1063,7 +1063,7 @@ impl PhyPayload {
             // JoinNonce | NetID | DevAddr | DLSettings | RxDelay | CFList
             mic_bytes.extend_from_slice(&pl.to_vec()?);
 
-            let mut mac = Cmac::<Aes128>::new_from_slice(&key.to_be_bytes()).unwrap();
+            let mut mac = Cmac::<Aes128>::new_from_slice(&key.to_bytes()).unwrap();
             mac.update(&mic_bytes);
 
             let hash = mac.finalize().into_bytes();
@@ -1101,7 +1101,7 @@ pub fn encrypt_f_opts(
         return Err(anyhow!("max size of f_opts is 15 bytes"));
     }
 
-    let key_bytes = nwk_s_enc_key.to_be_bytes();
+    let key_bytes = nwk_s_enc_key.to_bytes();
     let key = GenericArray::from_slice(&key_bytes);
     let cipher = Aes128::new(key);
 
@@ -1151,7 +1151,7 @@ pub fn encrypt_frm_payload(
         data.append(&mut vec![0; 16 - (data.len() % 16)]);
     }
 
-    let key_bytes = key.to_be_bytes();
+    let key_bytes = key.to_bytes();
     let key = GenericArray::from_slice(&key_bytes);
     let cipher = Aes128::new(key);
 

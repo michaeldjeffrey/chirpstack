@@ -764,12 +764,8 @@ pub mod test {
             name: "test-mg".into(),
             region: CommonName::EU868,
             mc_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
-            mc_nwk_s_key: AES128Key::from_be_bytes([
-                1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
-            ]),
-            mc_app_s_key: AES128Key::from_be_bytes([
-                2, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
-            ]),
+            mc_nwk_s_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
+            mc_app_s_key: AES128Key::from_bytes([2, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
             f_cnt: 10,
             group_type: "C".into(),
             dr: 1,
@@ -907,9 +903,7 @@ pub mod test {
             name: "test-mg".into(),
             region: CommonName::EU868,
             mc_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
-            mc_nwk_s_key: AES128Key::from_be_bytes([
-                1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
-            ]),
+            mc_nwk_s_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
             f_cnt: 10,
             group_type: "C".into(),
             dr: 1,
@@ -967,9 +961,7 @@ pub mod test {
             name: "test-mg".into(),
             region: CommonName::EU868,
             mc_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
-            mc_nwk_s_key: AES128Key::from_be_bytes([
-                1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
-            ]),
+            mc_nwk_s_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
             f_cnt: 10,
             group_type: "C".into(),
             dr: 1,
@@ -1027,9 +1019,7 @@ pub mod test {
             name: "test-mg".into(),
             region: CommonName::EU868,
             mc_addr: DevAddr::from_be_bytes([1, 2, 3, 4]),
-            mc_nwk_s_key: AES128Key::from_be_bytes([
-                1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
-            ]),
+            mc_nwk_s_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
             f_cnt: 10,
             group_type: "C".into(),
             dr: 1,

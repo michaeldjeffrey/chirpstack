@@ -90,7 +90,7 @@ async fn test_lorawan_10() {
 
     let dk_dev = device_keys::create(device_keys::DeviceKeys {
         dev_eui: dev.dev_eui.clone(),
-        nwk_key: AES128Key::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
+        nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8]),
         ..Default::default()
     })
     .await

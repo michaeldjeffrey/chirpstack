@@ -97,7 +97,7 @@ async fn test_gateway_filtering() {
 
     let dk = device_keys::create(device_keys::DeviceKeys {
         dev_eui: dev.dev_eui.clone(),
-        nwk_key: AES128Key::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
+        nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
         dev_nonces: vec![Some(258)],
         ..Default::default()
     })
@@ -269,7 +269,7 @@ async fn test_lorawan_10() {
 
     let dk = device_keys::create(device_keys::DeviceKeys {
         dev_eui: dev.dev_eui.clone(),
-        nwk_key: AES128Key::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
+        nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
         dev_nonces: vec![Some(258)],
         ..Default::default()
     })
@@ -923,8 +923,8 @@ async fn test_lorawan_11() {
 
     let dk = device_keys::create(device_keys::DeviceKeys {
         dev_eui: dev.dev_eui.clone(),
-        nwk_key: AES128Key::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
-        app_key: AES128Key::from_be_bytes([16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]),
+        nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
+        app_key: AES128Key::from_bytes([16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]),
         dev_nonces: vec![Some(258)],
         ..Default::default()
     })

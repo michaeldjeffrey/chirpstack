@@ -2151,7 +2151,7 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
                 bb.copy_from_slice(&b[6..10]);
                 bb
             }),
-            root_wor_s_key: crate::AES128Key::from_le_bytes({
+            root_wor_s_key: crate::AES128Key::from_bytes({
                 let mut bb = [0; 16];
                 bb.copy_from_slice(&b[10..26]);
                 bb
@@ -2169,7 +2169,7 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
         b[1] = self.uplink_limit.to_u8()?;
         b[2..6].copy_from_slice(&self.dev_addr.to_le_bytes());
         b[6..10].copy_from_slice(&self.w_fcnt.to_le_bytes());
-        b[10..26].copy_from_slice(&self.root_wor_s_key.to_le_bytes());
+        b[10..26].copy_from_slice(&self.root_wor_s_key.to_bytes());
         Ok(b)
     }
 }
@@ -2994,13 +2994,13 @@ mod test {
                     },
                     dev_addr: crate::DevAddr::from_be_bytes([1, 2, 3, 4]),
                     w_fcnt: 128,
-                    root_wor_s_key: crate::AES128Key::from_be_bytes([
+                    root_wor_s_key: crate::AES128Key::from_bytes([
                         1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6, 7, 8,
                     ]),
                 }),
                 bytes: vec![
-                    67, 3, 188, 4, 3, 2, 1, 128, 0, 0, 0, 8, 7, 6, 5, 4, 3, 2, 1, 8, 7, 6, 5, 4, 3,
-                    2, 1,
+                    67, 3, 188, 4, 3, 2, 1, 128, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 1, 2, 3, 4, 5, 6,
+                    7, 8,
                 ],
             },
             MacTest {

@@ -30,24 +30,12 @@ impl AES128Key {
         Ok(AES128Key(bb))
     }
 
-    pub fn from_be_bytes(b: [u8; 16]) -> Self {
+    pub fn from_bytes(b: [u8; 16]) -> Self {
         AES128Key(b)
     }
 
-    pub fn to_be_bytes(&self) -> [u8; 16] {
+    pub fn to_bytes(&self) -> [u8; 16] {
         self.0
-    }
-
-    pub fn from_le_bytes(b: [u8; 16]) -> Self {
-        let mut b = b;
-        b.reverse();
-        AES128Key(b)
-    }
-
-    pub fn to_le_bytes(&self) -> [u8; 16] {
-        let mut b = self.0;
-        b.reverse();
-        b
     }
 
     pub fn to_vec(&self) -> Vec<u8> {
@@ -135,7 +123,7 @@ where
 {
     fn to_sql<'b>(&self, out: &mut serialize::Output<'b, '_, diesel::pg::Pg>) -> serialize::Result {
         <[u8] as serialize::ToSql<Binary, diesel::pg::Pg>>::to_sql(
-            &self.to_be_bytes(),
+            &self.to_bytes(),
             &mut out.reborrow(),
         )
     }
@@ -147,7 +135,7 @@ mod tests {
 
     #[test]
     fn test_to_string() {
-        let key = AES128Key::from_be_bytes([
+        let key = AES128Key::from_bytes([
             0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
             0x07, 0x08,
         ]);
@@ -156,7 +144,7 @@ mod tests {
 
     #[test]
     fn test_from_str() {
-        let key = AES128Key::from_be_bytes([
+        let key = AES128Key::from_bytes([
             0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
             0x07, 0x08,
         ]);

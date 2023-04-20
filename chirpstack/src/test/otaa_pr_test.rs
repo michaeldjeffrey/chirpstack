@@ -306,7 +306,7 @@ async fn test_sns() {
 
     let dk = device_keys::create(device_keys::DeviceKeys {
         dev_eui: dev.dev_eui.clone(),
-        nwk_key: AES128Key::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
+        nwk_key: AES128Key::from_bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]),
         dev_nonces: vec![],
         ..Default::default()
     })
