@@ -143,9 +143,7 @@ pub fn no_uplink_event() -> Validator {
         Box::pin(async move {
             // Integration events are handled async.
             sleep(Duration::from_millis(100)).await;
-
-            let mock_events = mock::get_uplink_events().await;
-            assert_eq!(0, mock_events.len());
+            assert!(mock::get_uplink_event().await.is_none());
         })
     })
 }
@@ -157,15 +155,14 @@ pub fn uplink_event(up: integration_pb::UplinkEvent) -> Validator {
             // Integration events are handled async.
             sleep(Duration::from_millis(100)).await;
 
-            let mut mock_events = mock::get_uplink_events().await;
-            assert_eq!(1, mock_events.len());
+            let mut event = mock::get_uplink_event().await.unwrap();
 
-            assert_ne!("", mock_events[0].deduplication_id);
-            assert_ne!(None, mock_events[0].time);
+            assert_ne!("", event.deduplication_id);
+            assert_ne!(None, event.time);
 
-            mock_events[0].deduplication_id = "".into();
-            mock_events[0].time = None;
-            assert_eq!(up, mock_events[0]);
+            event.deduplication_id = "".into();
+            event.time = None;
+            assert_eq!(up, event);
         })
     })
 }

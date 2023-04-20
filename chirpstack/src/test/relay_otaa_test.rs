@@ -1,5 +1,3 @@
-use std::future::Future;
-use std::pin::Pin;
 use std::time::Duration;
 
 use uuid::Uuid;
@@ -11,8 +9,6 @@ use crate::storage::{
 use crate::{gateway::backend as gateway_backend, integration, test, uplink};
 use chirpstack_api::{common, gw, internal};
 use lrwn::{AES128Key, EUI64};
-
-type Function = Box<dyn Fn() -> Pin<Box<dyn Future<Output = ()>>>>;
 
 struct Test {
     name: String,
