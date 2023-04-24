@@ -43,6 +43,7 @@ pub struct JoinRequest {
     device_keys: Option<device_keys::DeviceKeys>,
     dev_addr: Option<DevAddr>,
     device_info: Option<integration_pb::DeviceInfo>,
+    relay_rx_info: Option<integration_pb::UplinkRelayRxInfo>,
     f_nwk_s_int_key: Option<AES128Key>,
     s_nwk_s_int_key: Option<AES128Key>,
     nwk_s_enc_key: Option<AES128Key>,
@@ -98,6 +99,7 @@ impl JoinRequest {
             dev_addr: None,
             join_accept: None,
             device_info: None,
+            relay_rx_info: None,
             f_nwk_s_int_key: None,
             s_nwk_s_int_key: None,
             nwk_s_enc_key: None,
@@ -155,6 +157,7 @@ impl JoinRequest {
             dev_addr: None,
             join_accept: None,
             device_info: None,
+            relay_rx_info: None,
             f_nwk_s_int_key: None,
             s_nwk_s_int_key: None,
             nwk_s_enc_key: None,
@@ -168,6 +171,7 @@ impl JoinRequest {
         ctx.get_tenant().await?;
         ctx.get_device_profile().await?;
         ctx.set_device_info()?;
+        ctx.set_relay_rx_info()?;
         ctx.abort_on_device_is_disabled()?;
         ctx.abort_on_otaa_is_disabled()?;
         ctx.abort_on_relay_only_comm()?;
@@ -312,6 +316,21 @@ impl JoinRequest {
             dev_eui: dev.dev_eui.to_string(),
             tags,
         });
+        Ok(())
+    }
+
+    fn set_relay_rx_info(&mut self) -> Result<()> {
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        self.relay_rx_info = Some(integration_pb::UplinkRelayRxInfo {
+            dev_eui: relay_ctx.device.dev_eui.to_string(),
+            frequency: relay_ctx.req.frequency,
+            dr: relay_ctx.req.metadata.dr as u32,
+            snr: relay_ctx.req.metadata.snr as i32,
+            rssi: relay_ctx.req.metadata.rssi as i32,
+            wor_channel: relay_ctx.req.metadata.wor_channel as u32,
+        });
+
         Ok(())
     }
 
@@ -897,6 +916,7 @@ impl JoinRequest {
             deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
             time: Some(ts.into()),
             device_info: self.device_info.clone(),
+            relay_rx_info: self.relay_rx_info.clone(),
             dev_addr: self.dev_addr.as_ref().unwrap().to_string(),
         };
 

@@ -415,6 +415,14 @@ async fn test_lorawan_10() {
                     data: vec![1, 2, 3, 4],
                     rx_info: vec![rx_info.clone()],
                     tx_info: Some(tx_info.clone()),
+                    relay_rx_info: Some(integration_pb::UplinkRelayRxInfo {
+                        dev_eui: "0101010101010101".into(),
+                        frequency: 868100000,
+                        dr: 5,
+                        snr: 10,
+                        rssi: -100,
+                        wor_channel: 0,
+                    }),
                     ..Default::default()
                 }),
                 assert::no_downlink_frame(),
@@ -472,6 +480,14 @@ async fn test_lorawan_10() {
                     data: vec![1, 2, 3, 4],
                     rx_info: vec![rx_info.clone()],
                     tx_info: Some(tx_info.clone()),
+                    relay_rx_info: Some(integration_pb::UplinkRelayRxInfo {
+                        dev_eui: "0101010101010101".into(),
+                        frequency: 868100000,
+                        dr: 5,
+                        snr: 10,
+                        rssi: -100,
+                        wor_channel: 0,
+                    }),
                     ..Default::default()
                 }),
                 assert::downlink_frame(gw::DownlinkFrame {

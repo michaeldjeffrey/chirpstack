@@ -41,6 +41,7 @@ pub struct Data {
     device_profile: Option<device_profile::DeviceProfile>,
     application: Option<application::Application>,
     device_info: Option<integration_pb::DeviceInfo>,
+    relay_rx_info: Option<integration_pb::UplinkRelayRxInfo>,
     uplink_event: Option<integration_pb::UplinkEvent>,
     must_send_downlink: bool,
     downlink_mac_commands: Vec<lrwn::MACCommandSet>,
@@ -99,6 +100,7 @@ impl Data {
             device_profile: None,
             application: None,
             device_info: None,
+            relay_rx_info: None,
             uplink_event: None,
             must_send_downlink: false,
             downlink_mac_commands: Vec::new(),
@@ -172,6 +174,7 @@ impl Data {
             device_profile: None,
             application: None,
             device_info: None,
+            relay_rx_info: None,
             uplink_event: None,
             must_send_downlink: false,
             downlink_mac_commands: Vec::new(),
@@ -184,6 +187,7 @@ impl Data {
         ctx.get_tenant().await?;
         ctx.abort_on_device_is_disabled().await?;
         ctx.set_device_info()?;
+        ctx.set_relay_rx_info()?;
         ctx.handle_retransmission_reset().await?;
         ctx.set_device_lock().await?;
         ctx.decrypt_f_opts_mac_commands()?;
@@ -397,6 +401,21 @@ impl Data {
             device_name: dev.name.clone(),
             dev_eui: dev.dev_eui.to_string(),
             tags,
+        });
+
+        Ok(())
+    }
+
+    fn set_relay_rx_info(&mut self) -> Result<()> {
+        let relay_ctx = self.relay_context.as_ref().unwrap();
+
+        self.relay_rx_info = Some(integration_pb::UplinkRelayRxInfo {
+            dev_eui: relay_ctx.device.dev_eui.to_string(),
+            frequency: relay_ctx.req.frequency,
+            dr: relay_ctx.req.metadata.dr as u32,
+            snr: relay_ctx.req.metadata.snr as i32,
+            rssi: relay_ctx.req.metadata.rssi as i32,
+            wor_channel: relay_ctx.req.metadata.wor_channel as u32,
         });
 
         Ok(())
@@ -926,6 +945,7 @@ impl Data {
             deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
             time: Some(ts.into()),
             device_info: self.device_info.clone(),
+            relay_rx_info: self.relay_rx_info.clone(),
             dev_addr: mac.fhdr.devaddr.to_string(),
             adr: mac.fhdr.f_ctrl.adr,
             dr: self.uplink_frame_set.dr as u32,

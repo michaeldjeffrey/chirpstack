@@ -677,6 +677,7 @@ impl JoinRequest {
             deduplication_id: self.uplink_frame_set.uplink_set_id.to_string(),
             time: Some(ts.into()),
             device_info: self.device_info.clone(),
+            relay_rx_info: None,
             dev_addr: self.dev_addr.as_ref().unwrap().to_string(),
         };
 
