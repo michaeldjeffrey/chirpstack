@@ -519,6 +519,7 @@ impl Data {
             self._update_relay_conf().await?;
             self._update_filter_list().await?;
             self._update_uplink_list().await?;
+            self._request_ctrl_uplink_list().await?;
             self._configure_fwd_limit_req().await?;
         }
 
@@ -1409,7 +1410,7 @@ impl Data {
                                                 as u8,
                                         },
                                         dev_addr: dev_addr,
-                                        w_fcnt: 0,
+                                        w_fcnt: ds.relay.map(|v| v.w_f_cnt).unwrap_or(0),
                                         root_wor_s_key: root_wor_s_key,
                                     },
                                 ),
@@ -1465,7 +1466,7 @@ impl Data {
                                     reload_rate: device.relay_ed_uplink_limit_reload_rate as u8,
                                 },
                                 dev_addr: dev_addr,
-                                w_fcnt: 0,
+                                w_fcnt: ds.relay.map(|v| v.w_f_cnt).unwrap_or(0),
                                 root_wor_s_key: root_wor_s_key,
                             },
                         )]);
@@ -1489,6 +1490,7 @@ impl Data {
                             uplink_limit_reload_rate: device.relay_ed_uplink_limit_reload_rate
                                 as u32,
                             provisioned: false,
+                            w_f_cnt_last_request: Some(Utc::now().into()),
                         },
                     );
 
@@ -1498,6 +1500,74 @@ impl Data {
                     return Ok(());
                 }
             }
+        }
+
+        Ok(())
+    }
+
+    async fn _request_ctrl_uplink_list(&mut self) -> Result<()> {
+        trace!("Requesting CtrlUplinkList to sync WFCnt");
+
+        let max_count = 3;
+        let mut counter = 0;
+        let mut commands: Vec<lrwn::MACCommand> = vec![];
+
+        // Get the current relay state.
+        let mut relay = if let Some(r) = &self.device_session.relay {
+            r.clone()
+        } else {
+            internal::Relay::default()
+        };
+
+        for rd in &mut relay.devices {
+            match &rd.w_f_cnt_last_request {
+                Some(v) => {
+                    let last_req: DateTime<Utc> = v.clone().try_into()?;
+                    if last_req
+                        < Utc::now()
+                            .checked_sub_signed(chrono::Duration::hours(24))
+                            .unwrap()
+                    {
+                        if counter < max_count {
+                            counter += 1;
+                            commands.push(lrwn::MACCommand::CtrlUplinkListReq(
+                                lrwn::CtrlUplinkListReqPayload {
+                                    ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                                        uplink_list_idx: rd.index as u8,
+                                        ctrl_uplink_action: 0,
+                                    },
+                                },
+                            ));
+
+                            rd.w_f_cnt_last_request = Some(Utc::now().into());
+                        }
+                    }
+                }
+                None => {
+                    if counter < max_count {
+                        counter += 1;
+                        commands.push(lrwn::MACCommand::CtrlUplinkListReq(
+                            lrwn::CtrlUplinkListReqPayload {
+                                ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                                    uplink_list_idx: rd.index as u8,
+                                    ctrl_uplink_action: 0,
+                                },
+                            },
+                        ));
+
+                        rd.w_f_cnt_last_request = Some(Utc::now().into());
+                    }
+                }
+            }
+        }
+
+        self.device_session.relay = Some(relay);
+
+        if !commands.is_empty() {
+            let set = lrwn::MACCommandSet::new(commands);
+            mac_command::set_pending(&self.device.dev_eui, lrwn::CID::CtrlUplinkListReq, &set)
+                .await?;
+            self.mac_commands.push(set);
         }
 
         Ok(())
@@ -2548,6 +2618,7 @@ mod test {
                             provisioned: true,
                             uplink_limit_bucket_size: 2,
                             uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
                         }],
                         ..Default::default()
                     }),
@@ -2569,6 +2640,7 @@ mod test {
                             provisioned: true,
                             uplink_limit_bucket_size: 2,
                             uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
                         }],
                         ..Default::default()
                     }),
@@ -2613,6 +2685,7 @@ mod test {
                             provisioned: false,
                             uplink_limit_reload_rate: 1,
                             uplink_limit_bucket_size: 2,
+                            w_f_cnt_last_request: None,
                         }],
                         ..Default::default()
                     }),
@@ -2632,6 +2705,7 @@ mod test {
                             provisioned: true,
                             uplink_limit_bucket_size: 2,
                             uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
                         }],
                         ..Default::default()
                     }),
@@ -2670,6 +2744,7 @@ mod test {
                             provisioned: false,
                             uplink_limit_reload_rate: 1,
                             uplink_limit_bucket_size: 2,
+                            w_f_cnt_last_request: None,
                         }],
                         ..Default::default()
                     }),
@@ -2689,6 +2764,7 @@ mod test {
                             provisioned: true,
                             uplink_limit_bucket_size: 2,
                             uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
                         }],
                         ..Default::default()
                     }),
@@ -2731,6 +2807,7 @@ mod test {
                                 provisioned: true,
                                 uplink_limit_reload_rate: 1,
                                 uplink_limit_bucket_size: 2,
+                                w_f_cnt_last_request: None,
                             },
                             internal::RelayDevice {
                                 index: 0,
@@ -2744,6 +2821,7 @@ mod test {
                                 provisioned: false,
                                 uplink_limit_reload_rate: 1,
                                 uplink_limit_bucket_size: 2,
+                                w_f_cnt_last_request: None,
                             },
                         ],
                         ..Default::default()
@@ -3569,6 +3647,166 @@ mod test {
             };
 
             ctx._configure_fwd_limit_req().await.unwrap();
+
+            assert_eq!(test.expected_mac_commands, ctx.mac_commands);
+        }
+    }
+
+    #[tokio::test]
+    async fn test_request_ctrl_uplink_list() {
+        struct Test {
+            name: String,
+            device_session: internal::DeviceSession,
+            expected_mac_commands: Vec<lrwn::MACCommandSet>,
+        }
+
+        let tests = vec![
+            Test {
+                name: "w_f_cnt has been recently requested".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            w_f_cnt_last_request: Some(Utc::now().into()),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![],
+            },
+            Test {
+                name: "w_f_cnt has never been requested".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            w_f_cnt_last_request: None,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 1,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                ])],
+            },
+            Test {
+                name: "w_f_cnt has been requested two days ago".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![internal::RelayDevice {
+                            index: 1,
+                            w_f_cnt_last_request: Some(
+                                Utc::now()
+                                    .checked_sub_signed(chrono::Duration::hours(48))
+                                    .unwrap()
+                                    .into(),
+                            ),
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 1,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                ])],
+            },
+            Test {
+                name: "more than three devices have outdated w_f_cnt".into(),
+                device_session: internal::DeviceSession {
+                    relay: Some(internal::Relay {
+                        devices: vec![
+                            internal::RelayDevice {
+                                index: 1,
+                                w_f_cnt_last_request: None,
+                                ..Default::default()
+                            },
+                            internal::RelayDevice {
+                                index: 2,
+                                w_f_cnt_last_request: None,
+                                ..Default::default()
+                            },
+                            internal::RelayDevice {
+                                index: 3,
+                                w_f_cnt_last_request: None,
+                                ..Default::default()
+                            },
+                            internal::RelayDevice {
+                                index: 4,
+                                w_f_cnt_last_request: None,
+                                ..Default::default()
+                            },
+                        ],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                },
+                expected_mac_commands: vec![lrwn::MACCommandSet::new(vec![
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 1,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 2,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                    lrwn::MACCommand::CtrlUplinkListReq(lrwn::CtrlUplinkListReqPayload {
+                        ctrl_uplink_action: lrwn::CtrlUplinkActionPL {
+                            uplink_list_idx: 3,
+                            ctrl_uplink_action: 0,
+                        },
+                    }),
+                    // The 4th is truncated
+                ])],
+            },
+        ];
+
+        let _guard = test::prepare().await;
+
+        for test in &tests {
+            println!("> {}", test.name);
+
+            let mut ctx = Data {
+                relay_context: None,
+                uplink_frame_set: None,
+                tenant: tenant::Tenant::default(),
+                application: application::Application::default(),
+                device_profile: device_profile::DeviceProfile::default(),
+                device: device::Device::default(),
+                device_session: test.device_session.clone(),
+                network_conf: config::get_region_network("eu868").unwrap(),
+                region_conf: region::get("eu868").unwrap(),
+                must_send: false,
+                must_ack: false,
+                mac_commands: vec![],
+                device_gateway_rx_info: None,
+                downlink_gateway: None,
+                downlink_frame: Default::default(),
+                downlink_frame_items: vec![],
+                immediately: false,
+                device_queue_item: None,
+                more_device_queue_items: false,
+            };
+
+            ctx._request_ctrl_uplink_list().await.unwrap();
 
             assert_eq!(test.expected_mac_commands, ctx.mac_commands);
         }

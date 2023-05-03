@@ -10,6 +10,7 @@ use chirpstack_api::internal;
 use lrwn::EUI64;
 
 pub mod configure_fwd_limit;
+pub mod ctrl_uplink_list;
 pub mod dev_status;
 pub mod device_mode_ind;
 pub mod device_time;
@@ -162,6 +163,9 @@ async fn handle(
         }
         lrwn::CID::NotifyNewEndDeviceReq => {
             notify_new_end_device::handle(tenant, dp, app, dev, block).await
+        }
+        lrwn::CID::CtrlUplinkListAns => {
+            ctrl_uplink_list::handle(dev, ds, block, pending_block).await
         }
         _ => {
             error!(cid = %cid, "Unexpected CID");

@@ -28,7 +28,7 @@ pub fn handle(
         for rd in &mut relay.devices {
             if req_pl.uplink_list_idx as u32 == rd.index {
                 info!(
-                    update_list_idx = req_pl.uplink_list_idx,
+                    uplink_list_idx = req_pl.uplink_list_idx,
                     dev_addr = %req_pl.dev_addr,
                     "UpdateUplinkListReq acknowledged"
                 );
@@ -79,6 +79,7 @@ pub mod test {
                             provisioned: false,
                             uplink_limit_bucket_size: 2,
                             uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
                         }],
                         ..Default::default()
                     }),
@@ -112,6 +113,7 @@ pub mod test {
                             provisioned: true,
                             uplink_limit_bucket_size: 2,
                             uplink_limit_reload_rate: 1,
+                            w_f_cnt_last_request: None,
                         }],
                         ..Default::default()
                     }),

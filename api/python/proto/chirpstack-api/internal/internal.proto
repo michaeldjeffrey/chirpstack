@@ -222,6 +222,11 @@ message Relay {
   // This is stored in the device-session as we need to validate on retrieving
   // the device-session.
   bool ed_relay_only = 20;
+
+  // End-device WFCnt.
+  // This holds the last known WFCnt value. ChirpStack will periodically read
+  // this value from the Relay.
+  uint32 w_f_cnt = 21;
 }
 
 message RelayDevice {
@@ -249,6 +254,10 @@ message RelayDevice {
 
   // Uplink limit reload rate.
   uint32 uplink_limit_reload_rate = 8;
+
+  // Timestamp of the last WFCnt request.
+  // Note that ChirpStack periodically requests the WFCnt from the relay.
+  google.protobuf.Timestamp w_f_cnt_last_request = 9;
 }
 
 message RelayFilter {
