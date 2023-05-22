@@ -1,10 +1,12 @@
 use anyhow::Result;
+#[cfg(feature = "serde")]
 use serde::Serialize;
 
 use crate::helpers::{decode_freq, encode_freq};
 use crate::phy_payload::PhyPayload;
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct UplinkMetadata {
     pub dr: u8,
     pub snr: isize,
@@ -56,7 +58,8 @@ impl UplinkMetadata {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ForwardUplinkReq {
     pub metadata: UplinkMetadata,
     pub frequency: u32,
@@ -85,7 +88,8 @@ impl ForwardUplinkReq {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ForwardDownlinkReq {
     pub payload: Box<PhyPayload>,
 }

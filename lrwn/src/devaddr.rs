@@ -2,8 +2,17 @@ use std::fmt;
 use std::str::FromStr;
 
 use anyhow::Result;
-use serde::de::{self, Visitor};
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+#[cfg(feature = "diesel")]
+use diesel::{
+    backend::{self, Backend},
+    deserialize, serialize,
+    sql_types::Binary,
+};
+#[cfg(feature = "serde")]
+use serde::{
+    de::{self, Visitor},
+    Deserialize, Deserializer, Serialize, Serializer,
+};
 
 use super::netid::NetID;
 use crate::Error;
@@ -58,6 +67,7 @@ impl FromStr for DevAddrPrefix {
     }
 }
 
+#[cfg(feature = "serde")]
 impl Serialize for DevAddrPrefix {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -67,6 +77,7 @@ impl Serialize for DevAddrPrefix {
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for DevAddrPrefix {
     fn deserialize<D>(deserialize: D) -> Result<DevAddrPrefix, D::Error>
     where
@@ -76,8 +87,10 @@ impl<'de> Deserialize<'de> for DevAddrPrefix {
     }
 }
 
+#[cfg(feature = "serde")]
 struct DevAddrPrefixVisitor;
 
+#[cfg(feature = "serde")]
 impl<'de> Visitor<'de> for DevAddrPrefixVisitor {
     type Value = DevAddrPrefix;
 
@@ -93,8 +106,9 @@ impl<'de> Visitor<'de> for DevAddrPrefixVisitor {
     }
 }
 
-#[derive(PartialEq, Eq, Copy, Clone, AsExpression, FromSqlRow, Default)]
-#[diesel(sql_type = diesel::sql_types::Binary)]
+#[derive(PartialEq, Eq, Copy, Clone, Default)]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow))]
+#[cfg_attr(feature = "diesel", diesel(sql_type = diesel::sql_types::Binary))]
 pub struct DevAddr([u8; 4]);
 
 impl DevAddr {
@@ -145,18 +159,18 @@ impl DevAddr {
         *self == dev_addr
     }
 
-    pub fn netid_type(&self) -> u8 {
+    pub fn netid_type(&self) -> Result<u8> {
         for i in (0..=7).rev() {
             if self.0[0] & (1 << i) == 0 {
-                return 7 - i;
+                return Ok(7 - i);
             }
         }
 
-        panic!("netid_type bug");
+        Err(anyhow!("Invalid type prefix value"))
     }
 
-    pub fn nwkid(&self) -> Vec<u8> {
-        match self.netid_type() {
+    pub fn nwkid(&self) -> Result<Vec<u8>> {
+        Ok(match self.netid_type()? {
             0 => self.get_nwkid(1, 6),
             1 => self.get_nwkid(2, 6),
             2 => self.get_nwkid(3, 9),
@@ -166,7 +180,7 @@ impl DevAddr {
             6 => self.get_nwkid(7, 15),
             7 => self.get_nwkid(8, 17),
             _ => vec![],
-        }
+        })
     }
 
     pub fn set_dev_addr_prefix(&mut self, prefix: DevAddrPrefix) {
@@ -226,6 +240,7 @@ impl FromStr for DevAddr {
     }
 }
 
+#[cfg(feature = "serde")]
 impl Serialize for DevAddr {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -235,10 +250,7 @@ impl Serialize for DevAddr {
     }
 }
 
-use diesel::backend::{self, Backend};
-use diesel::sql_types::Binary;
-use diesel::{deserialize, serialize};
-
+#[cfg(feature = "diesel")]
 impl<DB> deserialize::FromSql<Binary, DB> for DevAddr
 where
     DB: Backend,
@@ -257,6 +269,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl serialize::ToSql<Binary, diesel::pg::Pg> for DevAddr
 where
     [u8]: serialize::ToSql<Binary, diesel::pg::Pg>,
@@ -321,14 +334,14 @@ mod tests {
     #[test]
     fn test_dev_addr_netid_type() {
         for tst in tests() {
-            assert_eq!(tst.netid_type, tst.devaddr.netid_type());
+            assert_eq!(tst.netid_type, tst.devaddr.netid_type().unwrap());
         }
     }
 
     #[test]
     fn test_dev_addr_nwkid() {
         for tst in tests() {
-            assert_eq!(tst.nwkid, tst.devaddr.nwkid());
+            assert_eq!(tst.nwkid, tst.devaddr.nwkid().unwrap());
         }
     }
 

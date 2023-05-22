@@ -4,9 +4,13 @@ use std::ops::{Deref, DerefMut};
 use std::time::Duration;
 
 use anyhow::Result;
-use diesel::backend::{self, Backend};
-use diesel::sql_types::SmallInt;
-use diesel::{deserialize, serialize};
+#[cfg(feature = "diesel")]
+use diesel::{
+    backend::{self, Backend},
+    deserialize, serialize,
+    sql_types::SmallInt,
+};
+#[cfg(feature = "serde")]
 use serde::Serialize;
 
 use crate::cflist::ChMask;
@@ -18,7 +22,8 @@ pub trait PayloadCodec<Struct = Self> {
     fn encode(&self) -> Result<Vec<u8>>;
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum CID {
     // LoRaWAN
     ResetInd,
@@ -185,7 +190,8 @@ impl CID {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum MACCommand {
     // LoRaWAN
     ResetInd(ResetIndPayload),
@@ -304,7 +310,8 @@ impl MACCommand {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum Version {
     LoRaWAN1_1,
 }
@@ -332,13 +339,15 @@ impl fmt::Display for Version {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum DwellTime {
     NoLimit,
     Limit400ms,
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum DeviceModeClass {
     ClassA,
     ClassC,
@@ -376,7 +385,8 @@ impl fmt::Display for DeviceModeClass {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct MACCommandSet(Vec<MACCommand>);
 
 impl Deref for MACCommandSet {
@@ -789,7 +799,8 @@ impl MACCommandSet {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ResetIndPayload {
     pub dev_lorawan_version: Version,
 }
@@ -809,7 +820,8 @@ impl PayloadCodec for ResetIndPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ResetConfPayload {
     pub serv_lorawan_version: Version,
 }
@@ -829,7 +841,8 @@ impl PayloadCodec for ResetConfPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct LinkCheckAnsPayload {
     pub margin: u8,
     pub gw_cnt: u8,
@@ -851,7 +864,8 @@ impl PayloadCodec for LinkCheckAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct LinkADRReqPayload {
     pub dr: u8,
     pub tx_power: u8,
@@ -891,7 +905,8 @@ impl PayloadCodec for LinkADRReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Redundancy {
     pub ch_mask_cntl: u8,
     pub nb_rep: u8,
@@ -917,7 +932,8 @@ impl Redundancy {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct LinkADRAnsPayload {
     pub ch_mask_ack: bool,
     pub dr_ack: bool,
@@ -953,7 +969,8 @@ impl PayloadCodec for LinkADRAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DutyCycleReqPayload {
     pub max_duty_cycle: u8,
 }
@@ -977,7 +994,8 @@ impl PayloadCodec for DutyCycleReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RxParamSetupReqPayload {
     pub frequency: u32,
     pub dl_settings: DLSettings,
@@ -1002,7 +1020,8 @@ impl PayloadCodec for RxParamSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RxParamSetupAnsPayload {
     pub channel_ack: bool,
     pub rx2_dr_ack: bool,
@@ -1036,7 +1055,8 @@ impl PayloadCodec for RxParamSetupAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DevStatusAnsPayload {
     pub battery: u8,
     pub margin: i8,
@@ -1077,7 +1097,8 @@ impl PayloadCodec for DevStatusAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct NewChannelReqPayload {
     pub ch_index: u8,
     pub freq: u32,
@@ -1108,7 +1129,8 @@ impl PayloadCodec for NewChannelReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct NewChannelAnsPayload {
     pub channel_freq_ok: bool,
     pub dr_range_ok: bool,
@@ -1137,7 +1159,8 @@ impl PayloadCodec for NewChannelAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RxTimingSetupReqPayload {
     pub delay: u8,
 }
@@ -1158,7 +1181,8 @@ impl PayloadCodec for RxTimingSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct TxParamSetupReqPayload {
     pub uplink_dwell_time: DwellTime,
     pub downlink_dwell_time: DwellTime,
@@ -1206,7 +1230,8 @@ impl PayloadCodec for TxParamSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DlChannelReqPayload {
     pub ch_index: u8,
     pub freq: u32,
@@ -1231,7 +1256,8 @@ impl PayloadCodec for DlChannelReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DlChannelAnsPayload {
     pub uplink_freq_exists: bool,
     pub channel_freq_ok: bool,
@@ -1262,7 +1288,8 @@ impl PayloadCodec for DlChannelAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RekeyConfPayload {
     pub serv_lorawan_version: Version,
 }
@@ -1282,7 +1309,8 @@ impl PayloadCodec for RekeyConfPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RekeyIndPayload {
     pub dev_lorawan_version: Version,
 }
@@ -1302,7 +1330,8 @@ impl PayloadCodec for RekeyIndPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ADRParamSetupReqPayload {
     pub adr_param: ADRParam,
 }
@@ -1322,7 +1351,8 @@ impl PayloadCodec for ADRParamSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ADRParam {
     pub limit_exp: u8,
     pub delay_exp: u8,
@@ -1348,7 +1378,8 @@ impl ADRParam {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DeviceTimeAnsPayload {
     pub time_since_gps_epoch: Duration,
 }
@@ -1379,7 +1410,8 @@ impl PayloadCodec for DeviceTimeAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ForceRejoinReqPayload {
     pub period: u8,
     pub max_retries: u8,
@@ -1421,7 +1453,8 @@ impl PayloadCodec for ForceRejoinReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RejoinParamSetupReqPayload {
     pub max_time_n: u8,
     pub max_count_n: u8,
@@ -1450,7 +1483,8 @@ impl PayloadCodec for RejoinParamSetupReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RejoinParamSetupAnsPayload {
     pub time_ok: bool,
 }
@@ -1474,7 +1508,8 @@ impl PayloadCodec for RejoinParamSetupAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct PingSlotInfoReqPayload {
     pub periodicity: u8,
 }
@@ -1498,7 +1533,8 @@ impl PayloadCodec for PingSlotInfoReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct PingSlotChannelReqPayload {
     pub freq: u32,
     pub dr: u8,
@@ -1523,7 +1559,8 @@ impl PayloadCodec for PingSlotChannelReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct PingSlotChannelAnsPayload {
     pub dr_ok: bool,
     pub channel_freq_ok: bool,
@@ -1552,7 +1589,8 @@ impl PayloadCodec for PingSlotChannelAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct BeaconFreqReqPayload {
     pub freq: u32,
 }
@@ -1572,7 +1610,8 @@ impl PayloadCodec for BeaconFreqReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct BeaconFreqAnsPayload {
     beacon_freq_ok: bool,
 }
@@ -1596,7 +1635,8 @@ impl PayloadCodec for BeaconFreqAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DeviceModeIndPayload {
     pub class: DeviceModeClass,
 }
@@ -1616,7 +1656,8 @@ impl PayloadCodec for DeviceModeIndPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DeviceModeConfPayload {
     pub class: DeviceModeClass,
 }
@@ -1636,7 +1677,8 @@ impl PayloadCodec for DeviceModeConfPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ChannelSettingsRelay {
     pub start_stop: u8,
     pub cad_periodicity: u8,
@@ -1688,7 +1730,8 @@ impl ChannelSettingsRelay {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RelayConfReqPayload {
     pub channel_settings_relay: ChannelSettingsRelay,
     pub second_ch_freq: u32,
@@ -1713,7 +1756,8 @@ impl PayloadCodec for RelayConfReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RelayConfAnsPayload {
     pub second_ch_freq_ack: bool,
     pub second_ch_ack_offset_ack: bool,
@@ -1769,8 +1813,9 @@ impl PayloadCodec for RelayConfAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy, AsExpression, FromSqlRow)]
-#[diesel(sql_type = diesel::sql_types::SmallInt)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(feature = "diesel", derive(AsExpression, FromSqlRow), diesel(sql_type = diesel::sql_types::SmallInt))]
 pub enum RelayModeActivation {
     DisableRelayMode,
     EnableRelayMode,
@@ -1801,7 +1846,8 @@ impl RelayModeActivation {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum ResetLimitCounter {
     TokenCounterToZero,
     TokenCounterToReloadRate,
@@ -1832,6 +1878,7 @@ impl ResetLimitCounter {
     }
 }
 
+#[cfg(feature = "diesel")]
 impl<DB> deserialize::FromSql<SmallInt, DB> for RelayModeActivation
 where
     DB: Backend,
@@ -1843,6 +1890,7 @@ where
     }
 }
 
+#[cfg(feature = "diesel")]
 impl serialize::ToSql<SmallInt, diesel::pg::Pg> for RelayModeActivation
 where
     i16: serialize::ToSql<SmallInt, diesel::pg::Pg>,
@@ -1853,7 +1901,8 @@ where
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ActivationRelayMode {
     pub relay_mode_activation: RelayModeActivation,
     pub smart_enable_level: u8,
@@ -1876,7 +1925,8 @@ impl ActivationRelayMode {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ChannelSettingsED {
     pub second_ch_ack_offset: u8,
     pub second_ch_dr: u8,
@@ -1915,7 +1965,8 @@ impl ChannelSettingsED {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct EndDeviceConfReqPayload {
     pub activation_relay_mode: ActivationRelayMode,
     pub channel_settings_ed: ChannelSettingsED,
@@ -1943,7 +1994,8 @@ impl PayloadCodec for EndDeviceConfReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct EndDeviceConfAnsPayload {
     pub second_ch_freq_ack: bool,
     pub second_ch_dr_ack: bool,
@@ -1984,7 +2036,8 @@ impl PayloadCodec for EndDeviceConfAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum FilterListAction {
     NoRule,
     Forward,
@@ -2012,7 +2065,8 @@ impl FilterListAction {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct FilterListReqPayload {
     pub filter_list_idx: u8,
     pub filter_list_action: FilterListAction,
@@ -2062,7 +2116,8 @@ impl PayloadCodec for FilterListReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct FilterListAnsPayload {
     pub filter_list_action_ack: bool,
     pub filter_list_len_ack: bool,
@@ -2098,7 +2153,8 @@ impl PayloadCodec for FilterListAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct UplinkLimitPL {
     pub reload_rate: u8,
     pub bucket_size: u8,
@@ -2124,7 +2180,8 @@ impl UplinkLimitPL {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct UpdateUplinkListReqPayload {
     pub uplink_list_idx: u8,
     pub uplink_limit: UplinkLimitPL,
@@ -2174,7 +2231,8 @@ impl PayloadCodec for UpdateUplinkListReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct CtrlUplinkActionPL {
     pub uplink_list_idx: u8,
     pub ctrl_uplink_action: u8,
@@ -2200,7 +2258,8 @@ impl CtrlUplinkActionPL {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct CtrlUplinkListReqPayload {
     pub ctrl_uplink_action: CtrlUplinkActionPL,
 }
@@ -2220,7 +2279,8 @@ impl PayloadCodec for CtrlUplinkListReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct CtrlUplinkListAnsPayload {
     pub uplink_list_idx_ack: bool,
     pub w_fcnt: u32,
@@ -2251,7 +2311,8 @@ impl PayloadCodec for CtrlUplinkListAnsPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct FwdLimitReloadRatePL {
     pub overall_reload_rate: u8,
     pub global_uplink_reload_rate: u8,
@@ -2294,7 +2355,8 @@ impl FwdLimitReloadRatePL {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct FwdLimitLoadCapacityPL {
     pub overall_limit_size: u8,
     pub global_uplink_limit_size: u8,
@@ -2333,7 +2395,8 @@ impl FwdLimitLoadCapacityPL {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ConfigureFwdLimitReqPayload {
     pub reload_rate: FwdLimitReloadRatePL,
     pub load_capacity: FwdLimitLoadCapacityPL,
@@ -2362,7 +2425,8 @@ impl PayloadCodec for ConfigureFwdLimitReqPayload {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct PowerLevel {
     pub wor_snr: isize,
     pub wor_rssi: isize,
@@ -2402,7 +2466,8 @@ impl PowerLevel {
     }
 }
 
-#[derive(Serialize, Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct NotifyNewEndDeviceReqPayload {
     pub dev_addr: crate::DevAddr,
     pub power_level: PowerLevel,

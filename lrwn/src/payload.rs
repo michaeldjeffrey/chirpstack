@@ -1,4 +1,5 @@
 use anyhow::Result;
+#[cfg(feature = "serde")]
 use serde::{Serialize, Serializer};
 
 use crate::cflist::CFList;
@@ -22,6 +23,7 @@ pub enum Payload {
     Raw(Vec<u8>),
 }
 
+#[cfg(feature = "serde")]
 impl Serialize for Payload {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -38,7 +40,8 @@ impl Serialize for Payload {
     }
 }
 
-#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum JoinType {
     Join,
     RejoinType0,
@@ -86,7 +89,8 @@ impl Payload {
     }
 }
 
-#[derive(Serialize, PartialEq, Eq, Debug, Copy, Clone)]
+#[derive(PartialEq, Eq, Debug, Copy, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct JoinRequestPayload {
     pub join_eui: EUI64,
     pub dev_eui: EUI64,
@@ -121,7 +125,8 @@ impl JoinRequestPayload {
     }
 }
 
-#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct JoinAcceptPayload {
     pub join_nonce: u32, // the actual max value is (2^24 -1)
     pub home_netid: NetID,
@@ -194,6 +199,7 @@ pub enum FRMPayload {
     ForwardDownlinkReq(ForwardDownlinkReq),
 }
 
+#[cfg(feature = "serde")]
 impl Serialize for FRMPayload {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -223,7 +229,8 @@ impl FRMPayload {
     }
 }
 
-#[derive(Serialize, PartialEq, Eq, Debug, Clone, Default)]
+#[derive(PartialEq, Eq, Debug, Clone, Default)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct MACPayload {
     pub fhdr: FHDR,
     pub f_port: Option<u8>,
@@ -298,7 +305,8 @@ impl MACPayload {
     }
 }
 
-#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RejoinRequestType02Payload {
     pub rejoin_type: JoinType,
     pub netid: NetID,
@@ -354,7 +362,8 @@ impl RejoinRequestType02Payload {
     }
 }
 
-#[derive(Serialize, PartialEq, Eq, Debug, Clone)]
+#[derive(PartialEq, Eq, Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct RejoinRequestType1Payload {
     pub rejoin_type: JoinType,
     pub join_eui: EUI64,
