@@ -52,6 +52,7 @@ pub struct JoinRequest {
     s_nwk_s_int_key: Option<AES128Key>,
     nwk_s_enc_key: Option<AES128Key>,
     app_s_key: Option<common::KeyEnvelope>,
+    js_session_key_id: Vec<u8>,
 }
 
 impl JoinRequest {
@@ -108,6 +109,7 @@ impl JoinRequest {
             s_nwk_s_int_key: None,
             nwk_s_enc_key: None,
             app_s_key: None,
+            js_session_key_id: vec![],
         };
 
         ctx.get_join_request_payload()?;
@@ -165,6 +167,7 @@ impl JoinRequest {
             s_nwk_s_int_key: None,
             nwk_s_enc_key: None,
             app_s_key: None,
+            js_session_key_id: vec![],
         };
 
         ctx.get_join_request_payload_relayed()?;
@@ -570,6 +573,7 @@ impl JoinRequest {
                 aes_key: v.aes_key.clone(),
             });
         }
+        self.js_session_key_id = join_ans_pl.session_key_id.clone();
 
         if let Some(v) = &join_ans_pl.nwk_s_key {
             let key = keywrap::unwrap(v).context("Unwrap nwk_s_key")?;
@@ -775,6 +779,7 @@ impl JoinRequest {
             s_nwk_s_int_key: self.s_nwk_s_int_key.as_ref().unwrap().to_vec(),
             nwk_s_enc_key: self.nwk_s_enc_key.as_ref().unwrap().to_vec(),
             app_s_key: self.app_s_key.clone(),
+            js_session_key_id: self.js_session_key_id.clone(),
             rx1_delay: region_network.rx1_delay.into(),
             rx1_dr_offset: region_network.rx1_dr_offset.into(),
             rx2_dr: region_network.rx2_dr.into(),
@@ -927,6 +932,26 @@ impl JoinRequest {
             device_info: self.device_info.clone(),
             relay_rx_info: self.relay_rx_info.clone(),
             dev_addr: self.dev_addr.as_ref().unwrap().to_string(),
+            join_server_context: if !self.js_session_key_id.is_empty() {
+                Some(integration_pb::JoinServerContext {
+                    app_s_key: None,
+                    session_key_id: hex::encode(&self.js_session_key_id),
+                })
+            } else if let Some(app_s_key) = &self.app_s_key {
+                if app_s_key.kek_label.is_empty() {
+                    None
+                } else {
+                    Some(integration_pb::JoinServerContext {
+                        app_s_key: Some(common::KeyEnvelope {
+                            kek_label: app_s_key.kek_label.clone(),
+                            aes_key: app_s_key.aes_key.clone(),
+                        }),
+                        session_key_id: "".into(),
+                    })
+                }
+            } else {
+                None
+            },
         };
 
         integration::join_event(app.id, &dev.variables, &pl).await;

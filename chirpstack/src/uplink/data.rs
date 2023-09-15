@@ -959,6 +959,7 @@ impl Data {
             object: None,
             rx_info: self.uplink_frame_set.rx_info_set.clone(),
             tx_info: Some(self.uplink_frame_set.tx_info.clone()),
+            join_server_context: None, // TODO
         };
 
         pl.object = match codec::binary_to_struct(
