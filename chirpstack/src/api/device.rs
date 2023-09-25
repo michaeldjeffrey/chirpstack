@@ -1040,6 +1040,12 @@ impl DeviceService for Device {
             dev_eui,
             f_port: req_qi.f_port as i16,
             confirmed: req_qi.confirmed,
+            is_encrypted: req_qi.is_encrypted,
+            f_cnt_down: if req_qi.is_encrypted {
+                Some(req_qi.f_cnt_down.into())
+            } else {
+                None
+            },
             data,
             ..Default::default()
         };
@@ -1112,10 +1118,8 @@ impl DeviceService for Device {
                     data: qi.data.clone(),
                     object: None,
                     is_pending: qi.is_pending,
-                    f_cnt_down: match qi.f_cnt_down {
-                        None => 0,
-                        Some(v) => v as u32,
-                    },
+                    f_cnt_down: qi.f_cnt_down.unwrap_or(0) as u32,
+                    is_encrypted: qi.is_encrypted,
                 })
                 .collect(),
         });
@@ -1455,6 +1459,22 @@ pub mod test {
         );
         let _ = service.enqueue(enqueue_req).await.unwrap();
 
+        let enqueue_req = get_request(
+            &u.id,
+            api::EnqueueDeviceQueueItemRequest {
+                queue_item: Some(api::DeviceQueueItem {
+                    dev_eui: "0102030405060708".into(),
+                    confirmed: true,
+                    f_port: 2,
+                    f_cnt_down: 10,
+                    data: vec![1, 2, 3],
+                    is_encrypted: true,
+                    ..Default::default()
+                }),
+            },
+        );
+        let _ = service.enqueue(enqueue_req).await.unwrap();
+
         // get queue
         let get_queue_req = get_request(
             &u.id,
@@ -1465,9 +1485,14 @@ pub mod test {
         );
         let get_queue_resp = service.get_queue(get_queue_req).await.unwrap();
         let get_queue_resp = get_queue_resp.get_ref();
-        assert_eq!(1, get_queue_resp.total_count);
-        assert_eq!(1, get_queue_resp.result.len());
+        assert_eq!(2, get_queue_resp.total_count);
+        assert_eq!(2, get_queue_resp.result.len());
         assert_eq!(vec![3, 2, 1], get_queue_resp.result[0].data);
+        assert_eq!(false, get_queue_resp.result[0].is_encrypted);
+        assert_eq!(0, get_queue_resp.result[0].f_cnt_down);
+        assert_eq!(vec![1, 2, 3], get_queue_resp.result[0].data);
+        assert_eq!(true, get_queue_resp.result[1].is_encrypted);
+        assert_eq!(10, get_queue_resp.result[1].f_cnt_down);
 
         // flush queue
         let flush_queue_req = get_request(

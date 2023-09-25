@@ -22,6 +22,7 @@ pub struct DeviceQueueItem {
     pub is_pending: bool,
     pub f_cnt_down: Option<i64>,
     pub timeout_after: Option<DateTime<Utc>>,
+    pub is_encrypted: bool,
 }
 
 impl DeviceQueueItem {
@@ -29,6 +30,12 @@ impl DeviceQueueItem {
         if self.f_port == 0 || self.f_port > 255 {
             return Err(Error::Validation(
                 "FPort must be between 1 - 255".to_string(),
+            ));
+        }
+
+        if self.is_encrypted && self.f_cnt_down.is_none() {
+            return Err(Error::Validation(
+                "FCntDown must be set for encrypted queue-items".to_string(),
             ));
         }
 
@@ -50,6 +57,7 @@ impl Default for DeviceQueueItem {
             is_pending: false,
             f_cnt_down: None,
             timeout_after: None,
+            is_encrypted: false,
         }
     }
 }
