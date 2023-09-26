@@ -695,7 +695,10 @@ impl Data {
                     if qi.data.len() <= item.remaining_payload_size {
                         // Set the device-queue item.
                         mac_pl.f_port = Some(qi.f_port as u8);
-                        mac_pl.fhdr.f_cnt = self.device_session.get_a_f_cnt_down();
+                        mac_pl.fhdr.f_cnt = match qi.is_encrypted {
+                            true => qi.f_cnt_down.unwrap_or_default() as u32,
+                            false => self.device_session.get_a_f_cnt_down(),
+                        };
                         mac_pl.frm_payload = Some(lrwn::FRMPayload::Raw(qi.data.clone()));
 
                         if qi.confirmed {
@@ -866,7 +869,13 @@ impl Data {
             nwk_s_enc_key: self.device_session.nwk_s_enc_key.clone(),
             downlink_frame: Some(self.downlink_frame.clone()),
             n_f_cnt_down: self.device_session.n_f_cnt_down,
-            a_f_cnt_down: self.device_session.get_a_f_cnt_down(),
+            a_f_cnt_down: match &self.device_queue_item {
+                Some(v) => match v.is_encrypted {
+                    true => v.f_cnt_down.unwrap_or_default() as u32,
+                    false => self.device_session.get_a_f_cnt_down(),
+                },
+                None => self.device_session.get_a_f_cnt_down(),
+            },
             ..Default::default()
         })
         .await
