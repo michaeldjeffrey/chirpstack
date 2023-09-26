@@ -1,6 +1,6 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
-use diesel::prelude::*;
+use diesel::{dsl, prelude::*};
 use tokio::task;
 use tracing::info;
 use uuid::Uuid;
@@ -219,6 +219,19 @@ pub async fn get_pending_for_dev_eui(dev_eui: &EUI64) -> Result<DeviceQueueItem,
     .await?
 }
 
+pub async fn get_max_f_cnt_down(dev_eui: EUI64) -> Result<Option<i64>, Error> {
+    task::spawn_blocking({
+        move || -> Result<Option<i64>, Error> {
+            let mut c = get_db_conn()?;
+            Ok(device_queue_item::dsl::device_queue_item
+                .select(dsl::max(device_queue_item::f_cnt_down))
+                .filter(device_queue_item::dsl::dev_eui.eq(dev_eui))
+                .first(&mut c)?)
+        }
+    })
+    .await?
+}
+
 #[cfg(test)]
 pub mod test {
     use super::*;
@@ -309,5 +322,35 @@ pub mod test {
         // flush
         flush_for_dev_eui(&d.dev_eui).await.unwrap();
         assert_eq!(true, delete_item(&qi.id).await.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_get_max_f_cnt_down() {
+        let _guard = test::prepare().await;
+        let dp = storage::device_profile::test::create_device_profile(None).await;
+        let d = storage::device::test::create_device(
+            EUI64::from_be_bytes([1, 2, 3, 4, 5, 6, 7, 8]),
+            dp.id,
+            None,
+        )
+        .await;
+
+        // create
+        let mut qi = DeviceQueueItem {
+            dev_eui: d.dev_eui,
+            f_port: 10,
+            data: vec![0x01, 0x02, 0x03],
+            ..Default::default()
+        };
+        qi = enqueue_item(qi).await.unwrap();
+
+        // No max_f_cnt.
+        let max_f_cnt = get_max_f_cnt_down(d.dev_eui).await.unwrap();
+        assert_eq!(None, max_f_cnt);
+
+        qi.f_cnt_down = Some(10);
+        update_item(qi).await.unwrap();
+        let max_f_cnt = get_max_f_cnt_down(d.dev_eui).await.unwrap();
+        assert_eq!(Some(10), max_f_cnt);
     }
 }

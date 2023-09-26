@@ -165,6 +165,17 @@ service DeviceService {
       get : "/api/devices/{dev_eui}/queue"
     };
   }
+
+  // GetNextFCntDown returns the next FCntDown to use for enqueing encrypted
+  // downlinks. The difference with the DeviceActivation f_cont_down is that
+  // this method takes potential existing queue-items into account.
+  rpc GetNextFCntDown(GetDeviceNextFCntDownRequest)
+      returns (GetDeviceNextFCntDownResponse) {
+    option (google.api.http) = {
+      post : "/api/devices/{dev_eui}/get-next-f-cnt-down"
+      body : "*"
+    };
+  }
 }
 
 message Device {
@@ -551,4 +562,14 @@ message GetDeviceQueueItemsResponse {
 message FlushDevNoncesRequest {
   // Device EUI (EUI64).
   string dev_eui = 1;
+}
+
+message GetDeviceNextFCntDownRequest {
+  // Device EUI (EUI64).
+  string dev_eui = 1;
+}
+
+message GetDeviceNextFCntDownResponse {
+  // FCntDown.
+  uint32 f_cnt_down = 1;
 }
