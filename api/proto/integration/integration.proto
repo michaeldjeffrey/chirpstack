@@ -55,6 +55,9 @@ enum LogCode {
 
   // Relay new end-device.
   RELAY_NEW_END_DEVICE = 9;
+
+  // Downlink frame-counter.
+  F_CNT_DOWN = 10;
 }
 
 // Device information.
