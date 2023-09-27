@@ -834,18 +834,12 @@ impl Data {
             // * get_next_device_queue_item is called on next downlink
             // * as is_pending was already set to true, a negative ack event is sent
             //   and item is popped from the queue
-            qi.f_cnt_down = Some(if self
-                .device_session
-                .mac_version()
-                .to_string()
-                .starts_with("1.0")
-            {
-                self.device_session.n_f_cnt_down
-            } else {
-                self.device_session.a_f_cnt_down
-            } as i64);
 
-            *qi = device_queue::update_item(qi.clone()).await?;
+            // Do not update the frame-counter in case the queue-item is encrypted.
+            if !qi.is_encrypted {
+                qi.f_cnt_down = Some(self.device_session.get_a_f_cnt_down() as i64);
+                *qi = device_queue::update_item(qi.clone()).await?;
+            }
         }
 
         Ok(())
